@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Xcode — proyecto generado por XcodeGen (fuente de verdad: project.yml)
+*.xcodeproj/
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods / Carthage (por si acaso)
+Pods/
+Carthage/Build/
+
+# Backend (sync MIMIT)
+backend/node_modules/
+backend/.env
+*.env
+
+# Secrets
+*.secret

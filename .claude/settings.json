@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" || exit 0; files=$( { git diff --name-only -- '*.swift'; git diff --name-only --cached -- '*.swift'; } 2>/dev/null | sort -u); [ -z \"$files\" ] && exit 0; echo '[verify] Swift files changed — syntax-checking:'; echo \"$files\"; out=$(echo \"$files\" | xargs -I{} xcrun swift -frontend -parse \"{}\" 2>&1); echo \"$out\" | grep -E 'error:|warning:' | head -20; echo \"$out\" | grep -q 'error:' && exit 1 || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}
