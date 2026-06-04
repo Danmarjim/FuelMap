@@ -27,7 +27,7 @@ Canon listo:
 | ✅ FM-1 | Proyecto Xcode + TCA (solo TCA; Supabase/AdMob diferidos a FM-5/FM-11) | M | — |
 | FM-2 | Esquema Supabase + RPC + RLS | M | — |
 | FM-3 | Sync MIMIT (GitHub Actions) | L | FM-2 |
-| FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
+| ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
 | FM-5 | APIClient (supabase-swift) | M | FM-1,2,4 |
 | FM-6 | LocationClient + permisos | M | FM-1 |
 | FM-7 | MapFeature + MapView | L | FM-4,5,6 |
@@ -41,9 +41,9 @@ Canon listo:
 
 ## Próximo paso inmediato
 
-- **FM-1 hecho** (2026-06-04): esqueleto TCA compila + 1 test passing en simulador.
-- Siguiente: **FM-4** (modelos + DTOs + mapeo) y/o **FM-6** (LocationClient) — ninguno depende del backend.
-- Estrategia mock: FM-5 introducirá `APIClient` con `liveValue` mock para correr la app sin Supabase hasta FM-2/FM-3.
+- **FM-1 y FM-4 hechos** (2026-06-04): esqueleto TCA + capa de modelos/DTOs/mapeo, 8 tests passing.
+- Siguiente: **FM-6** (LocationClient) → **FM-5** (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → **FM-7** (mapa con pins mock).
+- Estrategia mock: la app correrá contra el mock de `APIClient` hasta tener Supabase (FM-2/FM-3).
 
 ## Deuda registrada (no bloqueante)
 

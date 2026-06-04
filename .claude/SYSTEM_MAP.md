@@ -53,13 +53,19 @@ Core/
 
 | File | Type | Responsibility |
 |---|---|---|
-| `Network/APIClient.swift` | `@Dependency` | <!-- VERIFY --> Cliente Supabase, RPC `nearby_stations`, async/await |
-| `Network/DTOs/` | Decodable | <!-- VERIFY --> DTOs de respuesta Supabase → mapeados a Models |
-| `Location/LocationClient.swift` | `@Dependency` | <!-- VERIFY --> Wrapper CoreLocation, permisos, ubicación actual |
-| `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner |
-| `Models/Station.swift` | struct | <!-- VERIFY --> Modelo de dominio de impianto |
-| `Models/Price.swift` | struct | <!-- VERIFY --> Precio por combustible + isSelf |
-| `Models/FuelType.swift` | enum | <!-- VERIFY --> benzina, gasolio, GPL, metano... |
+| `Models/Station.swift` | struct | Modelo de dominio de impianto; `cheapest` deriva el precio mínimo (FM-4). |
+| `Models/FuelPrice.swift` | struct | Precio por combustible: `fuel`, `price` (Decimal 3 dec.), `isSelf`, `communicatedAt` (FM-4). |
+| `Models/FuelType.swift` | enum | benzina/gasolio/gpl/metano/hvo/altro; rawValue = normalización backend (ADR-003, FM-4). |
+| `Models/Coordinate.swift` | struct | Coordenada validada; `validated(lat:lng:)` descarta nulas/(0,0)/fuera de rango (NF6, FM-4). |
+| `Network/DTOs/NearbyStationRowDTO.swift` | Decodable | Fila plana de la RPC `nearby_stations` (RFC §3.1, FM-4). |
+| `Network/DTOs/StationMapper.swift` | enum | Agrupa filas por estación → `[Station]`; descarta coords inválidas, normaliza fuel (FM-4). |
+| `Network/DTOs/JSONDecoder+FuelMap.swift` | ext | Decoder compartido: convertFromSnakeCase + fechas ISO8601 (FM-4). |
+| `Network/DTOs/ISO8601.swift` | enum | Parseo ISO8601 tolerante a fracciones de segundo (FM-4). |
+| `Foundation/Decimal+Rounding.swift` | ext | `rounded(_:mode:)` para precios a 3 decimales (FM-4). |
+| `Foundation/String+NilIfEmpty.swift` | ext | `nilIfEmpty` para campos vacíos del MIMIT (FM-4). |
+| `Network/APIClient.swift` | `@Dependency` | <!-- VERIFY --> Cliente Supabase, RPC `nearby_stations`, async/await (FM-5) |
+| `Location/LocationClient.swift` | `@Dependency` | <!-- VERIFY --> Wrapper CoreLocation, permisos, ubicación actual (FM-6) |
+| `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
 
 ---
 

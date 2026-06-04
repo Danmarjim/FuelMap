@@ -74,13 +74,39 @@
 
 ---
 
+## Plan Iteration: FM-4 — Modelos + DTOs + Mapeo — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §2.2, §3.1, §3.2; ADR-003)
+- Separación wire/dominio: DTO `Decodable` (snake_case) ↔ `StationMapper` ↔ modelos `Sendable`.
+- Validación de coords agnóstica al país (rango mundial) para escalabilidad; `(0,0)`/nulas descartadas (NF6).
+- Precios redondeados a 3 decimales en el límite del mapeo para neutralizar imprecisión de `Decimal` desde JSON.
+
+### Developer (implementation)
+- `Core/Models/`: `Station` (con `cheapest`), `FuelPrice`, `FuelType` (rawValue = normalización backend), `Coordinate` (`validated`).
+- `Core/Network/DTOs/`: `NearbyStationRowDTO`, `StationMapper`, `JSONDecoder+FuelMap` (convertFromSnakeCase + ISO8601), `ISO8601` (tolerante a fracciones).
+- `Core/Foundation/`: `Decimal+Rounding`, `String+NilIfEmpty`.
+- DTOs `Decodable` (nunca `Codable`). Sin dependencia de backend ni red.
+
+### QA (tests)
+- `StationMapperTests` (6): agrupación por id, descarte de coords inválidas, normalización fuel→`.altro`, redondeo, `cheapest`.
+- `FuelTypeTests` (2): rawValues canónicos y fallback de desconocidos.
+- **8 tests passing** (incluye el smoke de FM-1). SwiftLint: 0 violations.
+
+### Review
+- Quirk transitorio: el simulador falló a veces al lanzar (`preflight checks / Busy`); se resuelve con `simctl bootstatus` antes del test (no es código).
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- App iOS arrancable: esqueleto TCA (`AppFeature`/`AppView`) compila y corre en simulador, muestra placeholder. 1 test Swift Testing passing.
-- Proyecto generado con XcodeGen (`project.yml`); deps SPM: solo TCA (supabase-swift/AdMob diferidos a FM-5/FM-11).
-- Backend (FM-2/FM-3) aún sin tocar — se trabajará con `APIClient` mock hasta entonces.
-- Canon: `prd/PRD-001`, `rfc/RFC-001`, `decisions/ADR-001..003`, `issues/FM-1..FM-14` (FM-1 hecho).
-- **Próximo paso:** FM-4 (modelos + DTOs + mapeo) y/o FM-6 (LocationClient); ambos sin dependencia de backend. FM-5 introducirá `APIClient` con `liveValue` mock.
+- Capa de modelos de dominio + mapeo de la RPC lista y testeada (8 tests). Sin red aún.
+- App iOS arrancable: esqueleto TCA + capa `Core/Models` y `Core/Network/DTOs`.
+- Proyecto XcodeGen; deps SPM: solo TCA (supabase-swift/AdMob diferidos a FM-5/FM-11).
+- Backend (FM-2/FM-3) sin tocar — se trabajará con `APIClient` mock.
+- Issues hechos: FM-1, FM-4.
+- **Próximo paso:** FM-6 (LocationClient) y luego FM-5 (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → FM-7 (mapa).
 
 ---
 

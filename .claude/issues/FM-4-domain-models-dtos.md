@@ -47,12 +47,16 @@ struct Station: Identifiable, Equatable, Sendable {
 
 Mock/stub strategy: fixtures JSON de filas RPC.
 
+## Status: DONE (2026-06-04)
+
+> Añadidos sobre el plan original: `JSONDecoder.fuelMap` (decoder compartido), `ISO8601` (fechas tolerantes a fracciones), helpers `Decimal.rounded`/`String.nilIfEmpty`. Distancia (`distance_m`) NO se incorpora a `Station` (se siguió RFC §2.2 estrictamente; FM-10 la tratará).
+
 ## Acceptance Criteria
-- [ ] Modelos `Sendable`/`Equatable` definidos según RFC §2.2.
-- [ ] DTOs `Decodable` decodifican la forma de fila de la RPC.
-- [ ] `StationMapper` agrupa por estación y descarta coords inválidas.
-- [ ] `Station.cheapest` correcto.
-- [ ] Tests pass.
+- [x] Modelos `Sendable`/`Equatable` definidos según RFC §2.2 (`Station`, `FuelPrice`, `FuelType`, `Coordinate`).
+- [x] DTO `NearbyStationRowDTO` **`Decodable`** decodifica la fila RPC (snake_case → camelCase).
+- [x] `StationMapper` agrupa por estación y descarta coords inválidas (nulas/(0,0)/fuera de rango).
+- [x] `Station.cheapest` correcto.
+- [x] Tests pass: 7 nuevos (StationMapperTests×5, FuelTypeTests×2); 8 totales. SwiftLint 0.
 
 ## References
 - RFC: §2.2, §3.1, §3.2
