@@ -7,26 +7,21 @@
 
 import ComposableArchitecture
 
-/// Reducer raíz de la app. Compondrá `MapFeature`, `FiltersFeature` y
-/// `StationDetailFeature` (RFC §1, §6.2). En FM-1 es un esqueleto vacío.
+/// Reducer raíz de la app. Compone las features (RFC §1).
 @Reducer
 struct AppFeature {
     @ObservableState
     struct State: Equatable {
-        // Las features hijas se añadirán en FM-7+ (Map), FM-8 (Filters), FM-9 (Detail).
+        var map = MapFeature.State()
     }
 
     enum Action {
-        // Acciones de composición a definir al integrar las features hijas.
-        case onAppear
+        case map(MapFeature.Action)
     }
 
     var body: some ReducerOf<Self> {
-        Reduce { _, action in
-            switch action {
-            case .onAppear:
-                return .none
-            }
+        Scope(state: \.map, action: \.map) {
+            MapFeature()
         }
     }
 }

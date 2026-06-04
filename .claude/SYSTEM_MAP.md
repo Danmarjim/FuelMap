@@ -40,10 +40,13 @@ Core/
 
 | File | Type | Responsibility |
 |---|---|---|
-| `Map/MapFeature.swift` | Reducer | <!-- VERIFY --> State del mapa, carga de estaciones por región/radio, selección |
-| `Map/MapView.swift` | View | <!-- VERIFY --> Map iOS 17+, annotations/clustering, banner AdMob |
-| `StationDetail/StationDetailFeature.swift` | Reducer | <!-- VERIFY --> Detalle de estación, todos los combustibles |
-| `Filters/FiltersFeature.swift` | Reducer | <!-- VERIFY --> Tipo de combustible, self/servito, radio |
+| `App/AppFeature.swift` | Reducer | Raíz; `Scope` a `MapFeature` (FM-7). |
+| `App/AppView.swift` | View | Raíz; aloja `MapView` (FM-7). |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga por centro con debounce/cancelación, guard de jitter, selección, error (FM-7). |
+| `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
+| `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); `isCheapest` para FM-10 (FM-7). |
+| `StationDetail/StationDetailFeature.swift` | Reducer | <!-- VERIFY --> Detalle de estación, todos los combustibles (FM-9) |
+| `Filters/FiltersFeature.swift` | Reducer | <!-- VERIFY --> Tipo de combustible, self/servito, radio (FM-8) |
 
 ---
 

@@ -144,14 +144,39 @@
 
 ---
 
+## Plan Iteration: FM-7 — MapFeature + MapView — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §6.2, §1; ADR-002)
+- `MapFeature` reducer: onAppear→permiso→ubicación (o centro Italia por defecto); carga por centro con `.cancellable(cancelInFlight:)` + debounce 400 ms (`continuousClock`); guard de jitter; `stationTapped`→`selected`; error tipado→mensaje.
+- `AppFeature` compone `MapFeature` vía `Scope`.
+
+### Developer (implementation)
+- `Features/Map/`: `MapFeature` (reducer), `MapView` (`Map` iOS 17, annotations de precio, `onMapCameraChange(.onEnd)`, recentrado one-shot, status bar loading/empty/error), `StationPin` (cápsula de precio).
+- `App/AppFeature` + `App/AppView` reescritos para alojar el mapa.
+- Mock (`APIClient+Mock`) trasladado para situar fixtures alrededor del centro pedido (demo con cualquier ubicación).
+
+### QA (tests)
+- `MapFeatureTests` (6): onAppear con/sin permiso, debounce+cancelación, guard de jitter, fallo→error, tap→selected. `AppFeatureTests` actualizado (composición). 
+- **22 tests passing**. SwiftLint 0.
+
+### Review
+- **Bug encontrado en simulador y corregido:** `onMapCameraChange` se re-disparaba con micro-jitter, cancelando la carga debounced en vuelo y dejando `isLoading` pegado ("Caricamento…" perpetuo). Fix: guard de epsilon (0.0005°) en `mapCameraChanged` → también reduce consultas (NF1).
+- Verificado en simulador (iPhone 17, iOS 26.5): pins de precio sobre Roma, banner se limpia, recentrado y debounce OK (capturas).
+- **Deuda registrada:** clustering real (PRD F6) — SwiftUI `Map` iOS 17 no clusteriza annotations custom; con ~22k estaciones reales hará falta `MKMapView`+`MKClusterAnnotation` o clustering por grid. No necesario con el mock (6). Ver plan.md.
+- Verdict: **APPROVED (con deuda de clustering)**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- `Core/` completo para el flujo de mapa con mocks: modelos+mapeo (FM-4), `LocationClient` (FM-6), `APIClient` mock (FM-5). 16 tests.
-- App iOS arrancable: esqueleto TCA + `Core/{Models,Network,Network/DTOs,Location}`.
-- `APIClient.liveValue` = mock con fixtures de Roma (TEMP hasta Supabase FM-2/FM-3).
+- **App funcional con mapa:** muestra gasolineras con precio sobre el mapa (mock), centra en usuario o Italia, recarga al mover (debounce), estados loading/empty/error. Verificado en simulador.
+- `Core/` + `Features/Map/` completos para el flujo principal con mocks. 22 tests.
+- `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5.
-- **Próximo paso:** FM-7 (MapFeature + MapView): pins con precio contra el `APIClient` mock, clustering, debounce/cancelación, default region Italia cuando no hay ubicación.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7.
+- Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3).
+- **Próximo paso:** FM-8 (FiltersFeature: combustible/self/radio) o FM-9 (detalle). Recomendado FM-8 para hacer el mapa interactivo.
 
 ---
 

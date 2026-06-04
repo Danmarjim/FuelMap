@@ -30,7 +30,7 @@ Canon listo:
 | ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
 | 🟡 FM-5 | APIClient (mock; supabase-swift real en FM-2/FM-3) | M | FM-1,4 |
 | ✅ FM-6 | LocationClient + permisos | M | FM-1 |
-| FM-7 | MapFeature + MapView | L | FM-4,5,6 |
+| ✅ FM-7 | MapFeature + MapView (clustering → deuda) | L | FM-4,5,6 |
 | FM-8 | FiltersFeature | M | FM-7 |
 | FM-9 | StationDetail | M | FM-7 |
 | FM-10 | Más barata + orden | S | FM-7,8 |
@@ -41,13 +41,13 @@ Canon listo:
 
 ## Próximo paso inmediato
 
-- **FM-1, FM-4, FM-6, FM-5 (mock) hechos** (2026-06-04): Core listo para el mapa, 16 tests passing.
-- 🟡 FM-5 parcial: `APIClient` con `liveValue` mock; la implementación real sobre supabase-swift se completa con FM-2/FM-3.
-- Siguiente: **FM-7** (MapFeature + MapView con pins mock; default region Italia sin ubicación).
+- **FM-1, FM-4, FM-6, FM-5 (mock), FM-7 hechos** (2026-06-04): app funcional con mapa + pins de precio (mock), 22 tests passing. Verificado en simulador.
+- Siguiente: **FM-8** (FiltersFeature: combustible/self/radio) para hacer el mapa interactivo, o **FM-9** (detalle de estación).
 
 ## Deuda registrada (no bloqueante)
 
-- [Vacío al inicio — se irá poblando conforme aparezca deuda aceptada.]
+- **Clustering real (PRD F6)** — SwiftUI `Map` (iOS 17) no clusteriza annotations custom. Con ~22k estaciones reales hará falta `MKMapView`+`MKClusterAnnotation` (UIViewRepresentable) o clustering por grid en el reducer. No necesario con el mock (6 estaciones). Origen: FM-7.
+- **APIClient real (FM-5 → FM-2/FM-3)** — `liveValue` es un mock; sustituir por supabase-swift contra la RPC `nearby_stations` cuando exista el backend. No enviar el mock a producción (verificar en FM-14).
 
 ## Convenciones del workflow
 

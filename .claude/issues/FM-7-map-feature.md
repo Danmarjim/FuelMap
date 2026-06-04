@@ -55,12 +55,16 @@ Dependencies: FM-4, FM-5, FM-6
 
 Mock/stub strategy: `TestStore` con `apiClient`/`locationClient` `testValue`; reloj de test para el debounce.
 
+## Status: DONE (2026-06-04) — clustering diferido a deuda
+
+> Verificado en simulador (iPhone 17, iOS 26.5): pins de precio sobre Roma, recentrado y debounce OK. Bug corregido: jitter de cámara dejaba `isLoading` pegado → guard de epsilon. `selected` se almacena (presentación del detalle en FM-9).
+
 ## Acceptance Criteria
-- [ ] El mapa se centra en el usuario (o región por defecto si denegado) y muestra pins con precio.
-- [ ] Cambiar región recarga con debounce y cancela la petición anterior.
-- [ ] Clustering visible con muchos pins.
-- [ ] Estados loading/empty/error manejados.
-- [ ] Tests pass (TestStore).
+- [x] El mapa se centra en el usuario (o región por defecto si denegado) y muestra pins con precio.
+- [x] Cambiar región recarga con debounce (400 ms) y cancela la petición anterior (`.cancellable(cancelInFlight:)`).
+- [~] **Clustering → DEUDA.** SwiftUI `Map` iOS 17 no clusteriza annotations custom; con datos reales (~22k) hará falta `MKMapView`/grid. No necesario con el mock (6). Registrado en plan.md.
+- [x] Estados loading/empty/error manejados (status bar).
+- [x] Tests pass: 6 nuevos (`MapFeatureTests`); 22 totales. SwiftLint 0.
 
 ## References
 - RFC: §6.2, §1

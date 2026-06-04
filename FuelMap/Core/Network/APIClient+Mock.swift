@@ -14,13 +14,21 @@ extension APIClient {
     /// por precio ascendente. Útil para desarrollo y previews hasta tener Supabase.
     static func mock(stations: [Station] = StationFixtures.all) -> APIClient {
         APIClient(
-            nearbyStations: { _, _, fuel, selfOnly in
-                stations
+            nearbyStations: { center, _, fuel, selfOnly in
+                // Traslada las fixtures (ancladas en Roma) alrededor del `center` pedido,
+                // para que los pins aparezcan donde esté el mapa (también con ubicación real).
+                let dLat = center.latitude - StationFixtures.anchor.latitude
+                let dLng = center.longitude - StationFixtures.anchor.longitude
+                return stations
                     .compactMap { station -> Station? in
                         var prices = station.prices.filter { $0.fuel == fuel }
                         if selfOnly { prices = prices.filter(\.isSelf) }
                         guard !prices.isEmpty else { return nil }
-                        return station.with(prices: prices)
+                        let moved = Coordinate(
+                            latitude: station.coordinate.latitude + dLat,
+                            longitude: station.coordinate.longitude + dLng
+                        )
+                        return station.with(prices: prices, coordinate: moved)
                     }
                     .sorted { lhs, rhs in
                         let lhsPrice = lhs.cheapest?.price ?? .greatestFiniteMagnitude
@@ -39,11 +47,11 @@ extension APIClient {
 }
 
 private extension Station {
-    func with(prices: [FuelPrice]) -> Station {
+    func with(prices: [FuelPrice], coordinate: Coordinate? = nil) -> Station {
         Station(
             id: id, name: name, brand: brand, address: address,
             municipality: municipality, province: province,
-            coordinate: coordinate, prices: prices
+            coordinate: coordinate ?? self.coordinate, prices: prices
         )
     }
 }
@@ -84,6 +92,9 @@ enum StationFixtures {
             benzinaSelf: "1.869", benzinaServ: "1.949", gasolioSelf: "1.779", gasolioServ: "1.889"
         )
     ]
+
+    /// Ancla de las fixtures (centro de Roma). El mock traslada relativo a este punto.
+    static let anchor = Coordinate(latitude: 41.9028, longitude: 12.4964)
 
     private static let communicatedAt = ISO8601.date(from: "2026-06-03T08:00:00+00:00")
 

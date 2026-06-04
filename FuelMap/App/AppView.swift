@@ -8,17 +8,12 @@
 import ComposableArchitecture
 import SwiftUI
 
-/// Vista raíz. En FM-1 muestra un placeholder; alojará el `MapView` en FM-7.
+/// Vista raíz. Aloja el mapa (RFC §1).
 struct AppView: View {
     let store: StoreOf<AppFeature>
 
     var body: some View {
-        ContentUnavailableView {
-            Label("FuelMap", systemImage: "fuelpump.fill")
-        } description: {
-            Text("Mapa de gasolineras italianas y precios — en construcción.")
-        }
-        .onAppear { store.send(.onAppear) }
+        MapView(store: store.scope(state: \.map, action: \.map))
     }
 }
 
