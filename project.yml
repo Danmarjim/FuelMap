@@ -1,0 +1,63 @@
+name: FuelMap
+
+options:
+  bundleIdPrefix: com.danmarjim
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: it
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+packages:
+  ComposableArchitecture:
+    url: https://github.com/pointfreeco/swift-composable-architecture
+    from: "1.15.0"
+
+targets:
+  FuelMap:
+    type: application
+    platform: iOS
+    sources:
+      - path: FuelMap
+    dependencies:
+      - package: ComposableArchitecture
+        product: ComposableArchitecture
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.danmarjim.fuelmap
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_CFBundleDisplayName: FuelMap
+
+  FuelMapTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: FuelMapTests
+    dependencies:
+      # Solo el host app: TCA llega transitivamente. Re-enlazar el paquete
+      # estático aquí provoca undefined symbols de CasePathsCore/PerceptionCore.
+      - target: FuelMap
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  FuelMap:
+    build:
+      targets:
+        FuelMap: all
+        FuelMapTests: [test]
+    test:
+      targets:
+        - FuelMapTests
