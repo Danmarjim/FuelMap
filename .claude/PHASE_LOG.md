@@ -99,14 +99,36 @@
 
 ---
 
+## Plan Iteration: FM-6 — LocationClient + permisos — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §3.3, §6.1)
+- `LocationClient` como `@Dependency` (struct de closures `@Sendable`): status síncrono + async para request/location.
+- Coordinador `@MainActor` (Sendable) propietario de `CLLocationManager`; delegate→continuations; `LockIsolated<CLAuthorizationStatus>` para lectura síncrona thread-safe.
+- `currentLocation` lanza `LocationError.authorizationDenied` sin permiso; live `desiredAccuracy` = 100 m.
+
+### Developer (implementation)
+- `Core/Location/LocationClient.swift` (+ `LocationError`, registro en `DependencyValues`, `testValue` unimplemented).
+- `project.yml`: `NSLocationWhenInUseUsageDescription` (base it; l10n en FM-13).
+
+### QA (tests)
+- `LocationClientTests` (3): notDetermined→request, denied→throws, authorized→coordinate (stubs inyectables).
+- **11 tests passing**. SwiftLint 0.
+
+### Review
+- Swift 6 strict: resueltos (1) `LockIsolated.setValue` autoclosure `@Sendable` → extraer local; (2) captura de `manager` no-Sendable en `assumeIsolated` → extraer valores Sendable (status/coordenada) en contexto `nonisolated` antes de cruzar al main actor.
+- La lógica live de CoreLocation requiere integración/manual (no unit-testable); el contrato sí está cubierto.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- Capa de modelos de dominio + mapeo de la RPC lista y testeada (8 tests). Sin red aún.
-- App iOS arrancable: esqueleto TCA + capa `Core/Models` y `Core/Network/DTOs`.
-- Proyecto XcodeGen; deps SPM: solo TCA (supabase-swift/AdMob diferidos a FM-5/FM-11).
-- Backend (FM-2/FM-3) sin tocar — se trabajará con `APIClient` mock.
-- Issues hechos: FM-1, FM-4.
-- **Próximo paso:** FM-6 (LocationClient) y luego FM-5 (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → FM-7 (mapa).
+- `Core/`: modelos+mapeo (FM-4) y `LocationClient` (FM-6) listos y testeados (11 tests). Sin red aún.
+- App iOS arrancable: esqueleto TCA + `Core/Models`, `Core/Network/DTOs`, `Core/Location`.
+- Proyecto XcodeGen; deps SPM: solo TCA. Backend (FM-2/FM-3) sin tocar.
+- Issues hechos: FM-1, FM-4, FM-6.
+- **Próximo paso:** FM-5 (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → FM-7 (mapa con pins mock).
 
 ---
 

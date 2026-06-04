@@ -41,12 +41,16 @@ struct LocationClient: Sendable {
 
 Mock/stub strategy: `testValue` con estados de autorización y ubicación inyectables.
 
+## Status: DONE (2026-06-04)
+
+> Coordinador `@MainActor` (Sendable) + `LockIsolated` para status síncrono. `Info.plist` con la usage description en base italiano vía `INFOPLIST_KEY_*`; la localización it/es/en completa se hace en FM-13. La lógica live de CoreLocation no es unit-testable (requiere integración/manual); los tests cubren el contrato con stubs.
+
 ## Acceptance Criteria
-- [ ] `requestWhenInUse` devuelve el estado tras la decisión del usuario.
-- [ ] `currentLocation` entrega `Coordinate` cuando hay permiso; lanza si denegado.
-- [ ] Sin warnings de concurrencia Swift 6.
-- [ ] `Info.plist` con descripción de uso localizada.
-- [ ] Tests pass.
+- [x] `requestWhenInUse` devuelve el estado tras la decisión del usuario.
+- [x] `currentLocation` entrega `Coordinate` cuando hay permiso; lanza `LocationError.authorizationDenied` si denegado.
+- [x] Sin warnings de concurrencia Swift 6 (strict `complete`).
+- [x] `Info.plist`: `NSLocationWhenInUseUsageDescription` (base it; l10n → FM-13).
+- [x] Tests pass: 3 nuevos (`LocationClientTests`); 11 totales. SwiftLint 0.
 
 ## References
 - RFC: §3.3, §6.1

@@ -29,7 +29,7 @@ Canon listo:
 | FM-3 | Sync MIMIT (GitHub Actions) | L | FM-2 |
 | ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
 | FM-5 | APIClient (supabase-swift) | M | FM-1,2,4 |
-| FM-6 | LocationClient + permisos | M | FM-1 |
+| ✅ FM-6 | LocationClient + permisos | M | FM-1 |
 | FM-7 | MapFeature + MapView | L | FM-4,5,6 |
 | FM-8 | FiltersFeature | M | FM-7 |
 | FM-9 | StationDetail | M | FM-7 |
@@ -41,8 +41,8 @@ Canon listo:
 
 ## Próximo paso inmediato
 
-- **FM-1 y FM-4 hechos** (2026-06-04): esqueleto TCA + capa de modelos/DTOs/mapeo, 8 tests passing.
-- Siguiente: **FM-6** (LocationClient) → **FM-5** (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → **FM-7** (mapa con pins mock).
+- **FM-1, FM-4 y FM-6 hechos** (2026-06-04): esqueleto TCA + modelos/DTOs/mapeo + LocationClient, 11 tests passing.
+- Siguiente: **FM-5** (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → **FM-7** (mapa con pins mock).
 - Estrategia mock: la app correrá contra el mock de `APIClient` hasta tener Supabase (FM-2/FM-3).
 
 ## Deuda registrada (no bloqueante)

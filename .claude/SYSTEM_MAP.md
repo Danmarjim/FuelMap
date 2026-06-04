@@ -64,7 +64,7 @@ Core/
 | `Foundation/Decimal+Rounding.swift` | ext | `rounded(_:mode:)` para precios a 3 decimales (FM-4). |
 | `Foundation/String+NilIfEmpty.swift` | ext | `nilIfEmpty` para campos vacíos del MIMIT (FM-4). |
 | `Network/APIClient.swift` | `@Dependency` | <!-- VERIFY --> Cliente Supabase, RPC `nearby_stations`, async/await (FM-5) |
-| `Location/LocationClient.swift` | `@Dependency` | <!-- VERIFY --> Wrapper CoreLocation, permisos, ubicación actual (FM-6) |
+| `Location/LocationClient.swift` | `@Dependency` | Wrapper CoreLocation (coordinador `@MainActor` + `LockIsolated` para status síncrono); `authorizationStatus`/`requestWhenInUse`/`currentLocation`; `LocationError` (FM-6). |
 | `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
 
 ---
