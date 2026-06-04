@@ -63,7 +63,8 @@ Core/
 | `Network/DTOs/ISO8601.swift` | enum | Parseo ISO8601 tolerante a fracciones de segundo (FM-4). |
 | `Foundation/Decimal+Rounding.swift` | ext | `rounded(_:mode:)` para precios a 3 decimales (FM-4). |
 | `Foundation/String+NilIfEmpty.swift` | ext | `nilIfEmpty` para campos vacíos del MIMIT (FM-4). |
-| `Network/APIClient.swift` | `@Dependency` | <!-- VERIFY --> Cliente Supabase, RPC `nearby_stations`, async/await (FM-5) |
+| `Network/APIClient.swift` | `@Dependency` | `nearbyStations`/`stationDetail` async; `APIError` tipado. `liveValue` = mock TEMP hasta FM-2/FM-3 (ADR-001) (FM-5). |
+| `Network/APIClient+Mock.swift` | mock + fixtures | `APIClient.mock()` filtra/ordena por precio; `StationFixtures` (6 estaciones de Roma) para mock y previews (FM-5). |
 | `Location/LocationClient.swift` | `@Dependency` | Wrapper CoreLocation (coordinador `@MainActor` + `LockIsolated` para status síncrono); `authorizationStatus`/`requestWhenInUse`/`currentLocation`; `LocationError` (FM-6). |
 | `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
 

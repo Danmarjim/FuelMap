@@ -122,13 +122,36 @@
 
 ---
 
+## Plan Iteration: FM-5 — APIClient (mock) — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §3.2; ADR-001)
+- `APIClient` `@Dependency` (`nearbyStations`, `stationDetail`) con `APIError` tipado.
+- **Ajuste de scope (estrategia mock):** `liveValue` es temporalmente un mock con fixtures; la implementación real sobre `supabase-swift` llega con FM-2/FM-3 (cambio de una línea en `liveValue`, contrato intacto).
+
+### Developer (implementation)
+- `Core/Network/APIClient.swift`: contrato + `APIError` + `DependencyKey` (live/preview = mock; testValue unimplemented) + registro en `DependencyValues`.
+- `Core/Network/APIClient+Mock.swift`: `mock()` (filtra por fuel/self, ordena por precio asc) + `StationFixtures` (6 estaciones de Roma con benzina/gasolio, self/servito).
+
+### QA (tests)
+- `APIClientTests` (5): orden por precio asc, selfOnly excluye servito, filtro por combustible, detalle completo, id desconocido → `noResults`.
+- **16 tests passing**. SwiftLint 0.
+
+### Review
+- Bug propio detectado por test: la más barata en benzina self es id 4 (1.849), no id 2 — corregido en el test.
+- Riesgo anotado: no enviar el mock a producción → swap obligatorio en FM-5-real (FM-2/FM-3) y verificación en FM-14.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- `Core/`: modelos+mapeo (FM-4) y `LocationClient` (FM-6) listos y testeados (11 tests). Sin red aún.
-- App iOS arrancable: esqueleto TCA + `Core/Models`, `Core/Network/DTOs`, `Core/Location`.
-- Proyecto XcodeGen; deps SPM: solo TCA. Backend (FM-2/FM-3) sin tocar.
-- Issues hechos: FM-1, FM-4, FM-6.
-- **Próximo paso:** FM-5 (`APIClient` con `liveValue` mock devolviendo `[Station]` de fixtures) → FM-7 (mapa con pins mock).
+- `Core/` completo para el flujo de mapa con mocks: modelos+mapeo (FM-4), `LocationClient` (FM-6), `APIClient` mock (FM-5). 16 tests.
+- App iOS arrancable: esqueleto TCA + `Core/{Models,Network,Network/DTOs,Location}`.
+- `APIClient.liveValue` = mock con fixtures de Roma (TEMP hasta Supabase FM-2/FM-3).
+- Proyecto XcodeGen; deps SPM: solo TCA.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5.
+- **Próximo paso:** FM-7 (MapFeature + MapView): pins con precio contra el `APIClient` mock, clustering, debounce/cancelación, default region Italia cuando no hay ubicación.
 
 ---
 
