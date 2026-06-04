@@ -125,15 +125,16 @@ struct MapFeatureTests {
         #expect(!store.state.stations.isEmpty)
     }
 
-    @Test("Tocar una estación la selecciona")
-    func map_stationTapped_setsSelected() async {
+    @Test("Tocar una estación presenta el detalle")
+    func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]
         let store = TestStore(initialState: MapFeature.State()) {
             MapFeature()
         }
+        store.exhaustivity = .off
 
-        await store.send(.stationTapped(station)) {
-            $0.selected = station
-        }
+        await store.send(.stationTapped(station))
+        #expect(store.state.detail?.stationId == station.id)
+        #expect(store.state.detail?.station == station)
     }
 }

@@ -42,12 +42,13 @@ Core/
 |---|---|---|
 | `App/AppFeature.swift` | Reducer | Raíz; `Scope` a `MapFeature` (FM-7). |
 | `App/AppView.swift` | View | Raíz; aloja `MapView` (FM-7). |
-| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga por centro con debounce/cancelación, guard de jitter, selección, error (FM-7). |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
 | `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); `isCheapest` para FM-10 (FM-7). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
-| `StationDetail/StationDetailFeature.swift` | Reducer | <!-- VERIFY --> Detalle de estación, todos los combustibles (FM-9) |
+| `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
+| `StationDetail/StationDetailView.swift` | View | Sheet: precios por combustible (self/servito) + hora + "Indicazioni" (FM-9). |
 
 ---
 

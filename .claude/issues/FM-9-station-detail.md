@@ -35,12 +35,16 @@ Dependencies: FM-7
 
 Mock/stub strategy: `TestStore` con `apiClient.stationDetail` `testValue`.
 
+## Status: DONE (2026-06-04)
+
+> Presentación TCA `@Presents`/`.sheet(item:)`. El pin pre-rellena la estación; `onAppear` refina con `stationDetail`. Captura del sheet no posible headless (sin idb/tap); cubierto por tests + preview.
+
 ## Acceptance Criteria
-- [ ] El detalle muestra todos los combustibles con self/servito y hora.
-- [ ] "Indicazioni" abre Apple Maps con destino correcto.
-- [ ] Estados loading/error manejados.
-- [ ] `#Preview` para `StationDetailView`.
-- [ ] Tests pass.
+- [x] El detalle muestra todos los combustibles con self/servito y hora de actualización.
+- [x] "Indicazioni" abre Apple Maps con destino correcto (`openURL`, test verifica el `daddr`).
+- [x] Estados loading/error manejados.
+- [x] `#Preview` para `StationDetailView`.
+- [x] Tests pass: 4 nuevos (StationDetailFeatureTests×3 + map tap presenta detalle); 29 totales. SwiftLint 0.
 
 ## References
 - RFC: §6.2

@@ -190,15 +190,36 @@
 
 ---
 
+## Plan Iteration: FM-9 — StationDetail — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §6.2)
+- Presentación con `@Presents`/`.ifLet`/`.sheet`; el pin pre-rellena la estación y `onAppear` refina con `stationDetail` (todos los combustibles).
+- Deep link a Apple Maps vía `@Dependency(\.openURL)`; cierre vía `@Dependency(\.dismiss)`.
+
+### Developer (implementation)
+- `Features/StationDetail/`: `StationDetailFeature` (carga, directions, close), `StationDetailView` (sheet con precios por combustible self/servito, hora de actualización, "Indicazioni", estados loading/error).
+- `MapFeature`: `selected` → `@Presents detail`; `stationTapped` presenta; `.ifLet`. `MapView`: `.sheet(item:)` con detents medium/large.
+
+### QA (tests)
+- `StationDetailFeatureTests` (3): carga detalle completo, fallo sin datos→error, directions abre Apple Maps con destino correcto. `MapFeatureTests`: tap presenta detalle.
+- **29 tests passing**. SwiftLint 0.
+
+### Review
+- App verificada sin crash en simulador (wiring de presentación). Captura del sheet no posible headless (sin idb/tap), cubierto por tests + preview.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- **App funcional e interactiva:** mapa con pins de precio (mock) + filtros (combustible/self/radio) que recargan; centra en usuario o Italia; estados loading/empty/error. Verificado en simulador.
-- `Core/` + `Features/{Map,Filters}` completos con mocks. 26 tests.
+- **App con flujo completo (mock):** mapa + filtros + **detalle de estación** (todos los combustibles, self/servito, "Indicazioni" a Apple Maps). Verificada en simulador.
+- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 29 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9.
 - Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3).
-- **Próximo paso:** FM-9 (detalle de estación al tocar un pin: todos los combustibles, deep link Apple Maps).
+- **Próximo paso:** FM-10 (estación más barata destacada + orden por precio/distancia).
 
 ---
 

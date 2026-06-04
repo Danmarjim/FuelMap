@@ -32,7 +32,7 @@ Canon listo:
 | ✅ FM-6 | LocationClient + permisos | M | FM-1 |
 | ✅ FM-7 | MapFeature + MapView (clustering → deuda) | L | FM-4,5,6 |
 | ✅ FM-8 | FiltersFeature | M | FM-7 |
-| FM-9 | StationDetail | M | FM-7 |
+| ✅ FM-9 | StationDetail | M | FM-7 |
 | FM-10 | Más barata + orden | S | FM-7,8 |
 | FM-11 | AdMob + UMP + ATT | M | FM-1,7 |
 | FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
@@ -41,8 +41,8 @@ Canon listo:
 
 ## Próximo paso inmediato
 
-- **FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8 hechos** (2026-06-04): app interactiva con mapa + filtros, 26 tests passing. Verificado en simulador.
-- Siguiente: **FM-9** (detalle de estación al tocar pin: todos los combustibles, deep link Apple Maps).
+- **FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9 hechos** (2026-06-04): app con flujo completo (mapa + filtros + detalle), 29 tests passing. Verificado en simulador.
+- Siguiente: **FM-10** (estación más barata destacada + orden por precio/distancia).
 
 ## Deuda registrada (no bloqueante)
 

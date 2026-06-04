@@ -19,7 +19,7 @@ struct MapFeature {
         var filters = FiltersFeature.State()
         var stations: [Station] = []
         var isLoading = false
-        var selected: Station?
+        @Presents var detail: StationDetailFeature.State?
         var errorMessage: String?
         /// Objetivo de recentrado one-shot (p. ej. ubicación del usuario al arrancar).
         var recenter: Coordinate?
@@ -32,6 +32,7 @@ struct MapFeature {
         case mapCameraChanged(center: Coordinate)
         case stationsResponse(Result<[Station], APIError>)
         case stationTapped(Station)
+        case detail(PresentationAction<StationDetailFeature.Action>)
         case filters(FiltersFeature.Action)
         case reload
     }
@@ -97,9 +98,15 @@ struct MapFeature {
                 return .none
 
             case let .stationTapped(station):
-                state.selected = station
+                state.detail = StationDetailFeature.State(stationId: station.id, station: station)
+                return .none
+
+            case .detail:
                 return .none
             }
+        }
+        .ifLet(\.$detail, action: \.detail) {
+            StationDetailFeature()
         }
     }
 

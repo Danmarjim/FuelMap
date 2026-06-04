@@ -44,6 +44,10 @@ struct MapView: View {
         .safeAreaInset(edge: .bottom) {
             FiltersView(store: store.scope(state: \.filters, action: \.filters))
         }
+        .sheet(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
+            StationDetailView(store: detailStore)
+                .presentationDetents([.medium, .large])
+        }
         .onAppear { store.send(.onAppear) }
         .onChange(of: store.recenter) { _, target in
             guard let target else { return }
