@@ -17,4 +17,19 @@ enum FuelType: String, Sendable, CaseIterable, Equatable {
     case metano
     case hvo
     case altro
+
+    /// Tipos que el usuario puede seleccionar en el filtro (excluye `hvo`/`altro`).
+    static let selectable: [FuelType] = [.benzina, .gasolio, .gpl, .metano]
+
+    /// Nombre para mostrar en UI.
+    var label: String {
+        switch self {
+        case .benzina: return "Benzina"
+        case .gasolio: return "Gasolio"
+        case .gpl: return "GPL"
+        case .metano: return "Metano"
+        case .hvo: return "HVO"
+        case .altro: return "Altro"
+        }
+    }
 }

@@ -34,11 +34,15 @@ Dependencies: FM-7
 
 Mock/stub strategy: `TestStore` componiendo Filters dentro de Map; assert de efecto `reload`.
 
+## Status: DONE (2026-06-04)
+
+> `fuel`/`selfOnly`/`radiusKm` movidos a `FiltersFeature.State` (estaban inline en MapFeature). `MapFeature` compone con `Scope` y recarga ante `.filters`. Fixtures enriquecidas con GPL/metano para demo. Tap headless no probado (sin idb); comportamiento cubierto por tests.
+
 ## Acceptance Criteria
-- [ ] Cambiar combustible/self/radio actualiza el estado y recarga el mapa.
-- [ ] UI accesible (Dynamic Type; detalle a fondo en FM-13).
-- [ ] `#Preview` para `FiltersView`.
-- [ ] Tests pass.
+- [x] Cambiar combustible/self/radio actualiza el estado y recarga el mapa (`map_filterChange_reloads`).
+- [x] UI con material; Dynamic Type a fondo en FM-13.
+- [x] `#Preview` para `FiltersView`.
+- [x] Tests pass: 4 nuevos (FiltersFeatureTests×3 + map_filterChange_reloads); 26 totales. SwiftLint 0.
 
 ## References
 - RFC: §6.2

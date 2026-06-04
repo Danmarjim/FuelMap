@@ -59,12 +59,15 @@ private extension Station {
 // MARK: - Fixtures
 
 /// Gasolineras de muestra (zona de Roma) para mock y previews.
+/// Todas con benzina y gasolio (self/servito); algunas además con GPL o metano
+/// (solo self) para que cambiar de combustible en los filtros sea visible.
 enum StationFixtures {
     static let all: [Station] = [
         station(
             id: 1, name: "Eni Roma Centro", brand: "Eni", address: "Via Cavour 100",
             lat: 41.9009, lng: 12.4933,
-            benzinaSelf: "1.879", benzinaServ: "1.989", gasolioSelf: "1.789", gasolioServ: "1.899"
+            benzinaSelf: "1.879", benzinaServ: "1.989", gasolioSelf: "1.789", gasolioServ: "1.899",
+            gplSelf: "0.729"
         ),
         station(
             id: 2, name: "Q8 Termini", brand: "Q8", address: "Via Marsala 20",
@@ -74,22 +77,26 @@ enum StationFixtures {
         station(
             id: 3, name: "IP Trastevere", brand: "IP", address: "Viale di Trastevere 150",
             lat: 41.8790, lng: 12.4690,
-            benzinaSelf: "1.899", benzinaServ: "1.999", gasolioSelf: "1.809", gasolioServ: "1.919"
+            benzinaSelf: "1.899", benzinaServ: "1.999", gasolioSelf: "1.809", gasolioServ: "1.919",
+            gplSelf: "0.749"
         ),
         station(
             id: 4, name: "Tamoil Ostiense", brand: "Tamoil", address: "Via Ostiense 300",
             lat: 41.8650, lng: 12.4810,
-            benzinaSelf: "1.849", benzinaServ: "1.959", gasolioSelf: "1.759", gasolioServ: "1.869"
+            benzinaSelf: "1.849", benzinaServ: "1.959", gasolioSelf: "1.759", gasolioServ: "1.869",
+            gplSelf: "0.719"
         ),
         station(
             id: 5, name: "Esso Prenestina", brand: "Esso", address: "Via Prenestina 450",
             lat: 41.8950, lng: 12.5400,
-            benzinaSelf: "1.889", benzinaServ: "1.979", gasolioSelf: "1.799", gasolioServ: "1.909"
+            benzinaSelf: "1.889", benzinaServ: "1.979", gasolioSelf: "1.799", gasolioServ: "1.909",
+            metanoSelf: "1.399"
         ),
         station(
             id: 6, name: "Api Flaminio", brand: "Api", address: "Via Flaminia 80",
             lat: 41.9180, lng: 12.4760,
-            benzinaSelf: "1.869", benzinaServ: "1.949", gasolioSelf: "1.779", gasolioServ: "1.889"
+            benzinaSelf: "1.869", benzinaServ: "1.949", gasolioSelf: "1.779", gasolioServ: "1.889",
+            metanoSelf: "1.379"
         )
     ]
 
@@ -104,18 +111,28 @@ enum StationFixtures {
     private static func station(
         id: Int, name: String, brand: String, address: String,
         lat: Double, lng: Double,
-        benzinaSelf: String, benzinaServ: String, gasolioSelf: String, gasolioServ: String
+        benzinaSelf: String, benzinaServ: String, gasolioSelf: String, gasolioServ: String,
+        gplSelf: String? = nil, metanoSelf: String? = nil
     ) -> Station {
-        Station(
+        var prices: [FuelPrice] = [
+            FuelPrice(fuel: .benzina, price: price(benzinaSelf), isSelf: true, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .benzina, price: price(benzinaServ), isSelf: false, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .gasolio, price: price(gasolioSelf), isSelf: true, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .gasolio, price: price(gasolioServ), isSelf: false, communicatedAt: communicatedAt)
+        ]
+        if let gplSelf {
+            prices.append(FuelPrice(fuel: .gpl, price: price(gplSelf), isSelf: true, communicatedAt: communicatedAt))
+        }
+        if let metanoSelf {
+            prices.append(
+                FuelPrice(fuel: .metano, price: price(metanoSelf), isSelf: true, communicatedAt: communicatedAt)
+            )
+        }
+        return Station(
             id: id, name: name, brand: brand, address: address,
             municipality: "Roma", province: "RM",
             coordinate: Coordinate(latitude: lat, longitude: lng),
-            prices: [
-                FuelPrice(fuel: .benzina, price: price(benzinaSelf), isSelf: true, communicatedAt: communicatedAt),
-                FuelPrice(fuel: .benzina, price: price(benzinaServ), isSelf: false, communicatedAt: communicatedAt),
-                FuelPrice(fuel: .gasolio, price: price(gasolioSelf), isSelf: true, communicatedAt: communicatedAt),
-                FuelPrice(fuel: .gasolio, price: price(gasolioServ), isSelf: false, communicatedAt: communicatedAt)
-            ]
+            prices: prices
         )
     }
 }

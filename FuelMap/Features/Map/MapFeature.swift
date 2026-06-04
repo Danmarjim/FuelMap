@@ -16,9 +16,7 @@ struct MapFeature {
         var center: Coordinate = .italyDefault
         /// Apertura del mapa (latitudeDelta) para el zoom de la cámara.
         var span: Double = 0.08
-        var fuel: FuelType = .benzina
-        var selfOnly = false
-        var radiusKm: Double = 5
+        var filters = FiltersFeature.State()
         var stations: [Station] = []
         var isLoading = false
         var selected: Station?
@@ -34,7 +32,7 @@ struct MapFeature {
         case mapCameraChanged(center: Coordinate)
         case stationsResponse(Result<[Station], APIError>)
         case stationTapped(Station)
-        case fuelChanged(FuelType)
+        case filters(FiltersFeature.Action)
         case reload
     }
 
@@ -45,6 +43,9 @@ struct MapFeature {
     private enum CancelID { case reload }
 
     var body: some ReducerOf<Self> {
+        Scope(state: \.filters, action: \.filters) {
+            FiltersFeature()
+        }
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -77,8 +78,8 @@ struct MapFeature {
                 state.center = center
                 return load(&state, debounced: true)
 
-            case let .fuelChanged(fuel):
-                state.fuel = fuel
+            case .filters:
+                // Cualquier cambio de filtro (combustible/self/radio) recarga.
                 return load(&state)
 
             case .reload:
@@ -107,9 +108,9 @@ struct MapFeature {
     private func load(_ state: inout State, debounced: Bool = false) -> Effect<Action> {
         state.isLoading = true
         let center = state.center
-        let radius = state.radiusKm
-        let fuel = state.fuel
-        let selfOnly = state.selfOnly
+        let radius = state.filters.radiusKm
+        let fuel = state.filters.fuel
+        let selfOnly = state.filters.selfOnly
         return .run { send in
             if debounced {
                 try await clock.sleep(for: .milliseconds(400))

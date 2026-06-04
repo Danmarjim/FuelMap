@@ -45,8 +45,9 @@ Core/
 | `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga por centro con debounce/cancelación, guard de jitter, selección, error (FM-7). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
 | `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); `isCheapest` para FM-10 (FM-7). |
+| `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
+| `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | <!-- VERIFY --> Detalle de estación, todos los combustibles (FM-9) |
-| `Filters/FiltersFeature.swift` | Reducer | <!-- VERIFY --> Tipo de combustible, self/servito, radio (FM-8) |
 
 ---
 

@@ -168,15 +168,37 @@
 
 ---
 
+## Plan Iteration: FM-8 — FiltersFeature + FiltersView — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §6.2)
+- `fuel`/`selfOnly`/`radiusKm` movidos de `MapFeature.State` a `FiltersFeature.State` (`BindingReducer`).
+- `MapFeature` compone `FiltersFeature` (`Scope`) y recarga ante cualquier acción `.filters`.
+
+### Developer (implementation)
+- `Features/Filters/`: `FiltersFeature` (`BindableAction`), `FiltersView` (segmented combustible + toggle self + menú radio, panel inferior con material). `RadiusOption` {1,3,5,10,20}.
+- `MapFeature`/`MapView`/`AppFeature` adaptados; `load()` lee `state.filters`.
+- `FuelType.selectable` + `label`. Fixtures enriquecidas (GPL en 1/3/4, metano en 5/6) para que cambiar de combustible sea visible.
+
+### QA (tests)
+- `FiltersFeatureTests` (3): toggle self, cambio de combustible, cambio de radio. `MapFeatureTests`: cambio de filtro recarga. `AppFeatureTests` actualizado (`filters.fuel`).
+- **26 tests passing**. SwiftLint 0.
+
+### Review
+- Verificado en simulador: panel de filtros (Benzina/Gasolio/GPL/Metano + Self + radio) sobre el mapa con pins. Tap headless no probado (sin idb) pero comportamiento cubierto por tests.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- **App funcional con mapa:** muestra gasolineras con precio sobre el mapa (mock), centra en usuario o Italia, recarga al mover (debounce), estados loading/empty/error. Verificado en simulador.
-- `Core/` + `Features/Map/` completos para el flujo principal con mocks. 22 tests.
+- **App funcional e interactiva:** mapa con pins de precio (mock) + filtros (combustible/self/radio) que recargan; centra en usuario o Italia; estados loading/empty/error. Verificado en simulador.
+- `Core/` + `Features/{Map,Filters}` completos con mocks. 26 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8.
 - Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3).
-- **Próximo paso:** FM-8 (FiltersFeature: combustible/self/radio) o FM-9 (detalle). Recomendado FM-8 para hacer el mapa interactivo.
+- **Próximo paso:** FM-9 (detalle de estación al tocar un pin: todos los combustibles, deep link Apple Maps).
 
 ---
 

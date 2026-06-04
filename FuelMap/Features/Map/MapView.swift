@@ -41,6 +41,9 @@ struct MapView: View {
             ))
         }
         .safeAreaInset(edge: .top) { statusBar }
+        .safeAreaInset(edge: .bottom) {
+            FiltersView(store: store.scope(state: \.filters, action: \.filters))
+        }
         .onAppear { store.send(.onAppear) }
         .onChange(of: store.recenter) { _, target in
             guard let target else { return }

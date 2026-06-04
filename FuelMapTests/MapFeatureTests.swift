@@ -108,6 +108,23 @@ struct MapFeatureTests {
         #expect(store.state.isLoading == false)
     }
 
+    @Test("Cambiar un filtro recarga las estaciones")
+    func map_filterChange_reloads() async {
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        } withDependencies: {
+            $0.apiClient = .mock()
+            $0.continuousClock = ImmediateClock()
+        }
+        store.exhaustivity = .off
+
+        await store.send(.filters(.binding(.set(\.fuel, .gasolio))))
+        await store.receive(\.stationsResponse.success)
+
+        #expect(store.state.filters.fuel == .gasolio)
+        #expect(!store.state.stations.isEmpty)
+    }
+
     @Test("Tocar una estación la selecciona")
     func map_stationTapped_setsSelected() async {
         let station = StationFixtures.all[0]
