@@ -24,6 +24,24 @@ struct MapFeature {
         /// Objetivo de recentrado one-shot (p. ej. ubicación del usuario al arrancar).
         var recenter: Coordinate?
         var didRequestLocation = false
+        var sortOrder: StationSort = .price
+        /// Estación más barata del conjunto actual (para destacarla en el mapa).
+        var cheapestStationID: Int?
+
+        /// Estaciones ordenadas según `sortOrder` (para la lista).
+        var sortedStations: [Station] {
+            switch sortOrder {
+            case .price:
+                return stations.sorted {
+                    ($0.cheapest?.price ?? .greatestFiniteMagnitude)
+                        < ($1.cheapest?.price ?? .greatestFiniteMagnitude)
+                }
+            case .distance:
+                return stations.sorted {
+                    center.distance(to: $0.coordinate) < center.distance(to: $1.coordinate)
+                }
+            }
+        }
     }
 
     enum Action: Equatable {
@@ -34,6 +52,8 @@ struct MapFeature {
         case stationTapped(Station)
         case detail(PresentationAction<StationDetailFeature.Action>)
         case filters(FiltersFeature.Action)
+        case sortOrderChanged(StationSort)
+        case recenterOnStation(Station)
         case reload
     }
 
@@ -83,6 +103,14 @@ struct MapFeature {
                 // Cualquier cambio de filtro (combustible/self/radio) recarga.
                 return load(&state)
 
+            case let .sortOrderChanged(order):
+                state.sortOrder = order
+                return .none
+
+            case let .recenterOnStation(station):
+                state.recenter = station.coordinate
+                return .none
+
             case .reload:
                 return load(&state)
 
@@ -90,6 +118,10 @@ struct MapFeature {
                 state.isLoading = false
                 state.errorMessage = nil
                 state.stations = stations
+                state.cheapestStationID = stations.min {
+                    ($0.cheapest?.price ?? .greatestFiniteMagnitude)
+                        < ($1.cheapest?.price ?? .greatestFiniteMagnitude)
+                }?.id
                 return .none
 
             case let .stationsResponse(.failure(error)):
@@ -140,6 +172,19 @@ struct MapFeature {
 extension Coordinate {
     /// Centro por defecto (Roma) cuando no hay ubicación del usuario.
     static let italyDefault = Coordinate(latitude: 41.9028, longitude: 12.4964)
+}
+
+/// Criterio de orden de la lista de estaciones (RFC §4 FM-10).
+enum StationSort: String, CaseIterable, Sendable, Equatable {
+    case price
+    case distance
+
+    var label: String {
+        switch self {
+        case .price: return "Prezzo"
+        case .distance: return "Distanza"
+        }
+    }
 }
 
 private extension APIError {

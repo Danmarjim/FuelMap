@@ -211,15 +211,37 @@
 
 ---
 
+## Plan Iteration: FM-10 — Más barata destacada + orden — Completed
+**Date:** 2026-06-04
+
+### Architect (RFC §4; PRD F7, F13)
+- `cheapestStationID` derivado al recibir estaciones (F7); `StationSort {price, distance}` + `sortedStations` computado (F13).
+- `Coordinate.distance(to:)` (haversine) en el modelo de dominio (testeable, sin CoreLocation).
+
+### Developer (implementation)
+- `MapFeature`: `sortOrder`, `cheapestStationID`, `sortedStations`; acciones `sortOrderChanged`/`recenterOnStation`. `StationPin` verde si más barata.
+- `Features/Map/StationListView`: lista ordenable (segmented precio/distancia), distancia por fila, fila→recentrar; sheet desde botón en el mapa.
+- `Coordinate.distance(to:)`.
+
+### QA (tests)
+- `MapFeatureTests`: marca la más barata, `sortedStations` por precio y distancia. `CoordinateTests` (2): `validated`, `distance` (Roma↔Milán ≈477 km). 
+- **33 tests passing**. SwiftLint 0.
+
+### Review
+- Verificado en simulador: pin más barato en **verde** (id 4, 1.849 €) y botón de lista. La lista (sort) requiere tap headless → cubierta por tests.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-04
-- **App con flujo completo (mock):** mapa + filtros + **detalle de estación** (todos los combustibles, self/servito, "Indicazioni" a Apple Maps). Verificada en simulador.
-- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 29 tests.
+- **App con flujo completo (mock):** mapa (pins, más barata en verde) + filtros + lista ordenable (precio/distancia) + detalle. Verificada en simulador.
+- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 33 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9, FM-10.
 - Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3).
-- **Próximo paso:** FM-10 (estación más barata destacada + orden por precio/distancia).
+- **Próximo paso:** FM-11 (AdMob banner + UMP + ATT) — requiere añadir GoogleMobileAds; o FM-13 (a11y/estados/l10n). Recomendado FM-13 antes que AdMob.
 
 ---
 

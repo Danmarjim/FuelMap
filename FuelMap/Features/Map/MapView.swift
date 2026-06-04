@@ -19,14 +19,19 @@ struct MapView: View {
             span: MKCoordinateSpan(latitudeDelta: 0.08, longitudeDelta: 0.08)
         )
     )
+    @State private var showingList = false
 
     var body: some View {
         Map(position: $camera) {
             UserAnnotation()
             ForEach(store.stations) { station in
                 Annotation("", coordinate: station.coordinate.clCoordinate) {
-                    StationPin(name: station.name, price: station.cheapest?.price)
-                        .onTapGesture { store.send(.stationTapped(station)) }
+                    StationPin(
+                        name: station.name,
+                        price: station.cheapest?.price,
+                        isCheapest: station.id == store.cheapestStationID
+                    )
+                    .onTapGesture { store.send(.stationTapped(station)) }
                 }
             }
         }
@@ -40,6 +45,7 @@ struct MapView: View {
                 center: Coordinate(latitude: center.latitude, longitude: center.longitude)
             ))
         }
+        .overlay(alignment: .topLeading) { listButton }
         .safeAreaInset(edge: .top) { statusBar }
         .safeAreaInset(edge: .bottom) {
             FiltersView(store: store.scope(state: \.filters, action: \.filters))
@@ -47,6 +53,23 @@ struct MapView: View {
         .sheet(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
             StationDetailView(store: detailStore)
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showingList) {
+            StationListView(
+                stations: store.sortedStations,
+                center: store.center,
+                cheapestStationID: store.cheapestStationID,
+                sort: Binding(
+                    get: { store.sortOrder },
+                    set: { store.send(.sortOrderChanged($0)) }
+                ),
+                onSelect: { station in
+                    showingList = false
+                    store.send(.recenterOnStation(station))
+                },
+                onClose: { showingList = false }
+            )
+            .presentationDetents([.medium, .large])
         }
         .onAppear { store.send(.onAppear) }
         .onChange(of: store.recenter) { _, target in
@@ -60,6 +83,20 @@ struct MapView: View {
                 )
             }
         }
+    }
+
+    private var listButton: some View {
+        Button {
+            showingList = true
+        } label: {
+            Image(systemName: "list.bullet")
+                .font(.headline)
+                .padding(10)
+                .background(.regularMaterial, in: Circle())
+        }
+        .padding(.leading, 12)
+        .padding(.top, 6)
+        .accessibilityLabel("Elenco distributori")
     }
 
     @ViewBuilder

@@ -125,6 +125,38 @@ struct MapFeatureTests {
         #expect(!store.state.stations.isEmpty)
     }
 
+    @Test("La respuesta marca la estación más barata")
+    func map_stationsResponse_setsCheapest() async {
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        } withDependencies: {
+            $0.apiClient = .mock()
+            $0.continuousClock = ImmediateClock()
+        }
+        store.exhaustivity = .off
+
+        await store.send(.reload)
+        await store.receive(\.stationsResponse.success)
+
+        // Benzina más barata = Tamoil (id 4, 1.849).
+        #expect(store.state.cheapestStationID == 4)
+    }
+
+    @Test("sortedStations ordena por precio y por distancia")
+    func map_sortedStations_byPriceAndDistance() {
+        var state = MapFeature.State()
+        state.center = Coordinate(latitude: 41.9028, longitude: 12.4964)
+        state.stations = StationFixtures.all
+
+        state.sortOrder = .price
+        let byPrice = state.sortedStations.compactMap { $0.cheapest?.price }
+        #expect(byPrice == byPrice.sorted())
+
+        state.sortOrder = .distance
+        let byDistance = state.sortedStations.map { state.center.distance(to: $0.coordinate) }
+        #expect(byDistance == byDistance.sorted())
+    }
+
     @Test("Tocar una estación presenta el detalle")
     func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]

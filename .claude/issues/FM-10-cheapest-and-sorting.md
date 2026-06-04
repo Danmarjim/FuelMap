@@ -33,10 +33,14 @@ Dependencies: FM-7, FM-8
 
 Mock/stub strategy: `TestStore` con set de estaciones fixture.
 
+## Status: DONE (2026-06-04)
+
+> Añadida `StationListView` (lista ordenable, sheet desde botón en el mapa) para que el orden por precio/distancia sea útil. `Coordinate.distance(to:)` (haversine) para la distancia. Verificado el pin verde en simulador; la lista (sort) cubierta por tests.
+
 ## Acceptance Criteria
-- [ ] La estación más barata del radio se distingue visualmente.
-- [ ] Orden por precio y por distancia funciona.
-- [ ] Tests pass.
+- [x] La estación más barata del radio se distingue visualmente (pin verde) — verificado en simulador.
+- [x] Orden por precio y por distancia funciona (`sortedStations`; `StationListView` con segmented).
+- [x] Tests pass: 4 nuevos (cheapest, sortedStations, CoordinateTests×2); 33 totales. SwiftLint 0.
 
 ## References
 - RFC: §4; PRD F7, F13

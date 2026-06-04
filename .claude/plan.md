@@ -33,7 +33,7 @@ Canon listo:
 | ✅ FM-7 | MapFeature + MapView (clustering → deuda) | L | FM-4,5,6 |
 | ✅ FM-8 | FiltersFeature | M | FM-7 |
 | ✅ FM-9 | StationDetail | M | FM-7 |
-| FM-10 | Más barata + orden | S | FM-7,8 |
+| ✅ FM-10 | Más barata + orden | S | FM-7,8 |
 | FM-11 | AdMob + UMP + ATT | M | FM-1,7 |
 | FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
 | FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
@@ -41,8 +41,8 @@ Canon listo:
 
 ## Próximo paso inmediato
 
-- **FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9 hechos** (2026-06-04): app con flujo completo (mapa + filtros + detalle), 29 tests passing. Verificado en simulador.
-- Siguiente: **FM-10** (estación más barata destacada + orden por precio/distancia).
+- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10 hechos** (2026-06-04): app con mapa+más barata, filtros, lista ordenable y detalle. 33 tests passing. Verificado en simulador.
+- Siguiente: **FM-13** (a11y/estados/l10n) recomendado antes de **FM-11** (AdMob+UMP+ATT, que añade GoogleMobileAds). FM-12 (favoritos) es nice-to-have.
 
 ## Deuda registrada (no bloqueante)
 

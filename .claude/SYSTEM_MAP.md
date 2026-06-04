@@ -44,7 +44,8 @@ Core/
 | `App/AppView.swift` | View | Raíz; aloja `MapView` (FM-7). |
 | `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
-| `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); `isCheapest` para FM-10 (FM-7). |
+| `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); verde si `isCheapest` (FM-7/FM-10). |
+| `Map/StationListView.swift` | View | Lista ordenable (precio/distancia) de estaciones; fila→recentrar; destaca la más barata (FM-10). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
@@ -61,7 +62,7 @@ Core/
 | `Models/Station.swift` | struct | Modelo de dominio de impianto; `cheapest` deriva el precio mínimo (FM-4). |
 | `Models/FuelPrice.swift` | struct | Precio por combustible: `fuel`, `price` (Decimal 3 dec.), `isSelf`, `communicatedAt` (FM-4). |
 | `Models/FuelType.swift` | enum | benzina/gasolio/gpl/metano/hvo/altro; rawValue = normalización backend (ADR-003, FM-4). |
-| `Models/Coordinate.swift` | struct | Coordenada validada; `validated(lat:lng:)` descarta nulas/(0,0)/fuera de rango (NF6, FM-4). |
+| `Models/Coordinate.swift` | struct | Coordenada validada; `validated()` (NF6, FM-4); `distance(to:)` haversine (FM-10). |
 | `Network/DTOs/NearbyStationRowDTO.swift` | Decodable | Fila plana de la RPC `nearby_stations` (RFC §3.1, FM-4). |
 | `Network/DTOs/StationMapper.swift` | enum | Agrupa filas por estación → `[Station]`; descarta coords inválidas, normaliza fuel (FM-4). |
 | `Network/DTOs/JSONDecoder+FuelMap.swift` | ext | Decoder compartido: convertFromSnakeCase + fechas ISO8601 (FM-4). |
