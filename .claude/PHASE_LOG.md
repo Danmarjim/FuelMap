@@ -419,7 +419,7 @@
 ## Current State
 **Date:** 2026-06-05
 - **App con datos reales + UX enriquecida:** mapa con **color de precio (heat map)**, clustering, **monograma de marca** en pines, lista, detalle (badge de marca, **frescura del precio**, **selector de navegación** Apple/Google/Waze), favoritos. Localizada it/es/en. AdMob (test) + UMP/ATT.
-- iOS: **49 tests**, SwiftLint 0. Backend desplegado (Supabase + cron CI). Repo `Danmarjim/FuelMap` (privado) al día. ADRs 001–004.
+- iOS: **50 tests**, SwiftLint 0. Backend desplegado (Supabase + cron CI). Repo `Danmarjim/FuelMap` (privado) al día. ADRs 001–004.
 - Pendiente usuario: aplicar `0002_station_detail.sql` (detalle).
 - Issues hechos: FM-1…FM-13, FM-2/3/5/15, FM-16/17/18/19. **Restante: FM-14** (App Store prep).
 - **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Mejora futura: logos reales de marca (drop-in).
