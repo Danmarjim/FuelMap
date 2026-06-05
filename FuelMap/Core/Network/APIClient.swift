@@ -16,6 +16,21 @@ enum APIError: Error, Equatable, Sendable {
     case noResults
 }
 
+extension APIError {
+    /// Mensaje localizado (it/es/en) para mostrar al usuario.
+    /// `noResults` varía según el contexto (mapa vs detalle).
+    func userMessage(noResults: String) -> String {
+        switch self {
+        case .noResults:
+            return noResults
+        case .unauthorized:
+            return String(localized: "Accesso non autorizzato.")
+        case .network, .server, .decoding:
+            return String(localized: "Errore di connessione. Riprova.")
+        }
+    }
+}
+
 /// Única puerta de la app hacia los datos (RFC §3.2).
 ///
 /// `liveValue` es **temporalmente un mock** (fixtures) hasta que el backend exista

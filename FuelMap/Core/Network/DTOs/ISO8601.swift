@@ -11,13 +11,21 @@ import Foundation
 /// o ausencia de fracciones de segundo (los `timestamptz` pueden venir con o sin
 /// microsegundos, y `.iso8601` por defecto falla con fracciones).
 enum ISO8601 {
-    static func date(from string: String) -> Date? {
-        let withFractional = ISO8601DateFormatter()
-        withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = withFractional.date(from: string) { return date }
+    // Formatters cacheados: construirlos es caro y `ISO8601DateFormatter` es
+    // thread-safe para lectura, de ahí `nonisolated(unsafe)`.
+    nonisolated(unsafe) private static let withFractional: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        return plain.date(from: string)
+    nonisolated(unsafe) private static let plain: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    static func date(from string: String) -> Date? {
+        withFractional.date(from: string) ?? plain.date(from: string)
     }
 }

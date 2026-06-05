@@ -147,7 +147,9 @@ struct MapFeature {
 
             case let .stationsResponse(.failure(error)):
                 state.isLoading = false
-                state.errorMessage = error.userMessage
+                state.errorMessage = error.userMessage(
+                    noResults: String(localized: "Nessun distributore trovato in zona.")
+                )
                 return .none
 
             case let .stationTapped(station):
@@ -194,11 +196,6 @@ struct MapFeature {
 
 // MARK: - Helpers
 
-extension Coordinate {
-    /// Centro por defecto (Roma) cuando no hay ubicación del usuario.
-    static let italyDefault = Coordinate(latitude: 41.9028, longitude: 12.4964)
-}
-
 /// Criterio de orden de la lista de estaciones (RFC §4 FM-10).
 enum StationSort: String, CaseIterable, Sendable, Equatable {
     case price
@@ -206,22 +203,8 @@ enum StationSort: String, CaseIterable, Sendable, Equatable {
 
     var label: String {
         switch self {
-        case .price: return "Prezzo"
-        case .distance: return "Distanza"
-        }
-    }
-}
-
-private extension APIError {
-    /// Mensaje localizado (it/es/en) para mostrar al usuario.
-    var userMessage: String {
-        switch self {
-        case .noResults:
-            return String(localized: "Nessun distributore trovato in zona.")
-        case .unauthorized:
-            return String(localized: "Accesso non autorizzato.")
-        case .network, .server, .decoding:
-            return String(localized: "Errore di connessione. Riprova.")
+        case .price: return String(localized: "Prezzo")
+        case .distance: return String(localized: "Distanza")
         }
     }
 }

@@ -69,7 +69,9 @@ struct StationDetailFeature {
                 state.isLoading = false
                 // Si ya teníamos datos del pin, los conservamos; si no, mostramos error.
                 if state.station == nil {
-                    state.errorMessage = error.userMessage
+                    state.errorMessage = error.userMessage(
+                        noResults: String(localized: "Distributore non trovato.")
+                    )
                 }
                 return .none
 
@@ -92,7 +94,8 @@ struct StationDetailFeature {
             case .directionsTapped:
                 guard let coordinate = state.station?.coordinate else { return .none }
                 let destination = "\(coordinate.latitude),\(coordinate.longitude)"
-                guard let url = URL(string: "http://maps.apple.com/?daddr=\(destination)") else {
+                // Scheme nativo de Apple Maps (robusto, sin pasar por Safari).
+                guard let url = URL(string: "maps://?daddr=\(destination)") else {
                     return .none
                 }
                 return .run { _ in await openURL(url) }
@@ -100,19 +103,6 @@ struct StationDetailFeature {
             case .closeTapped:
                 return .run { _ in await dismiss() }
             }
-        }
-    }
-}
-
-private extension APIError {
-    var userMessage: String {
-        switch self {
-        case .noResults:
-            return String(localized: "Distributore non trovato.")
-        case .unauthorized:
-            return String(localized: "Accesso non autorizzato.")
-        case .network, .server, .decoding:
-            return String(localized: "Errore di connessione. Riprova.")
         }
     }
 }

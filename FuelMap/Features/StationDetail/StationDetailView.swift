@@ -100,7 +100,7 @@ struct StationDetailView: View {
             Text(kind)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-            Text("\(price.formatted(.number.precision(.fractionLength(3)))) €")
+            Text(price.fuelPriceLabel)
                 .font(.subheadline.weight(.semibold))
                 .monospacedDigit()
         }

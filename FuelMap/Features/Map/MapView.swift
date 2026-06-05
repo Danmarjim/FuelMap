@@ -15,7 +15,7 @@ struct MapView: View {
 
     @State private var camera: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: Coordinate.italyDefault.clCoordinate,
+            center: Coordinate.italyDefault.clLocationCoordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.08, longitudeDelta: 0.08)
         )
     )
@@ -26,7 +26,7 @@ struct MapView: View {
         Map(position: $camera) {
             UserAnnotation()
             ForEach(store.stations) { station in
-                Annotation("", coordinate: station.coordinate.clCoordinate) {
+                Annotation("", coordinate: station.coordinate.clLocationCoordinate) {
                     StationPin(
                         name: station.name,
                         fuel: store.filters.fuel,
@@ -42,10 +42,7 @@ struct MapView: View {
             MapCompass()
         }
         .onMapCameraChange(frequency: .onEnd) { context in
-            let center = context.region.center
-            store.send(.mapCameraChanged(
-                center: Coordinate(latitude: center.latitude, longitude: center.longitude)
-            ))
+            store.send(.mapCameraChanged(center: Coordinate(context.region.center)))
         }
         .overlay(alignment: .topLeading) {
             VStack(spacing: 8) {
@@ -97,7 +94,7 @@ struct MapView: View {
             withAnimation {
                 camera = .region(
                     MKCoordinateRegion(
-                        center: target.clCoordinate,
+                        center: target.clLocationCoordinate,
                         span: MKCoordinateSpan(latitudeDelta: store.span, longitudeDelta: store.span)
                     )
                 )
@@ -147,14 +144,6 @@ struct MapView: View {
             .padding(.vertical, 6)
             .background(.regularMaterial, in: Capsule())
             .padding(.top, 6)
-    }
-}
-
-// MARK: - Helpers
-
-private extension Coordinate {
-    var clCoordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 }
 

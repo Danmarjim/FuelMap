@@ -58,7 +58,7 @@ struct StationListView: View {
             }
             Spacer()
             if let price = station.cheapest?.price {
-                Text("\(price.formatted(.number.precision(.fractionLength(3)))) €")
+                Text(price.fuelPriceLabel)
                     .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
                     .foregroundStyle(station.id == cheapestStationID ? .green : .primary)

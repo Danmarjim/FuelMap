@@ -101,7 +101,7 @@ enum StationFixtures {
     ]
 
     /// Ancla de las fixtures (centro de Roma). El mock traslada relativo a este punto.
-    static let anchor = Coordinate(latitude: 41.9028, longitude: 12.4964)
+    static let anchor = Coordinate.italyDefault
 
     private static let communicatedAt = ISO8601.date(from: "2026-06-03T08:00:00+00:00")
 

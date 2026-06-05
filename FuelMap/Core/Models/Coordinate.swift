@@ -28,6 +28,10 @@ extension Coordinate {
 }
 
 extension Coordinate {
+    /// Centro por defecto (Roma) cuando no hay ubicación del usuario; también ancla
+    /// de referencia para las fixtures del mock.
+    static let italyDefault = Coordinate(latitude: 41.9028, longitude: 12.4964)
+
     /// Construye una coordenada validando que lat/lng existan, no sean (0,0)
     /// —marcador habitual de "sin datos"— y estén en rango mundial.
     ///

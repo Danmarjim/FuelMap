@@ -44,8 +44,7 @@ struct StationPin: View {
     }
 
     private var priceText: String {
-        guard let price else { return "—" }
-        return "\(price.formatted(.number.precision(.fractionLength(3)))) €"
+        price?.fuelPriceLabel ?? "—"
     }
 
     private var accessibilityText: String {

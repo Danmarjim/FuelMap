@@ -11,7 +11,7 @@ extension JSONDecoder {
     /// Decoder compartido para las respuestas de Supabase: snake_case → camelCase
     /// y fechas ISO8601 tolerantes a fracciones de segundo. Lo usan el `APIClient`
     /// (FM-5) y los tests del mapper.
-    static var fuelMap: JSONDecoder {
+    static let fuelMap: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .custom { decoder in
@@ -26,5 +26,5 @@ extension JSONDecoder {
             return date
         }
         return decoder
-    }
+    }()
 }

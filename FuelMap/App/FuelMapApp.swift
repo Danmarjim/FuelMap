@@ -10,15 +10,14 @@ import SwiftUI
 
 @main
 struct FuelMapApp: App {
+    // Owner estable del Store raíz: no recrear en cada evaluación de `body`.
+    @State private var store = Store(initialState: AppFeature.State()) {
+        AppFeature()
+    }
+
     var body: some Scene {
         WindowGroup {
-            // NOTE: el Store se crea inline para el esqueleto (FM-1). Se promoverá
-            // a un owner estable (@State / static) al introducir estado real en FM-7.
-            AppView(
-                store: Store(initialState: AppFeature.State()) {
-                    AppFeature()
-                }
-            )
+            AppView(store: store)
         }
     }
 }

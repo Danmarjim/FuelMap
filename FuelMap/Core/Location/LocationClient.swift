@@ -130,9 +130,7 @@ extension LocationCoordinator: CLLocationManagerDelegate {
         _ manager: CLLocationManager,
         didUpdateLocations locations: [CLLocation]
     ) {
-        let coordinate = locations.last.map {
-            Coordinate(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
-        }
+        let coordinate = locations.last.map { Coordinate($0.coordinate) }
         MainActor.assumeIsolated {
             guard let coordinate else { return }
             let pending = locationContinuations
