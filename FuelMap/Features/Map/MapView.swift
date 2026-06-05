@@ -47,7 +47,7 @@ struct MapView: View {
             .padding(.leading, 12)
             .padding(.top, 6)
         }
-        .safeAreaInset(edge: .top) { statusBar }
+        .overlay(alignment: .top) { statusBar }
         .safeAreaInset(edge: .bottom) {
             FiltersView(store: store.scope(state: \.filters, action: \.filters))
         }
