@@ -17,6 +17,9 @@ settings:
     # Recomendados por Xcode (validate settings) para un proyecto localizado:
     CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED: YES
     STRING_CATALOG_GENERATE_SYMBOLS: YES
+    # Firma (para dispositivo/TestFlight). Requiere haber aceptado el PLA en la cuenta Apple.
+    DEVELOPMENT_TEAM: HLC2ZTTHKH
+    CODE_SIGN_STYLE: Automatic
 
 packages:
   ComposableArchitecture:
