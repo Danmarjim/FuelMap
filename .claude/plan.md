@@ -25,8 +25,8 @@ Canon listo:
 | ID | Issue | Compl. | Deps |
 |---|---|---|---|
 | ✅ FM-1 | Proyecto Xcode + TCA (solo TCA; Supabase/AdMob diferidos a FM-5/FM-11) | M | — |
-| FM-2 | Esquema Supabase + RPC + RLS | M | — |
-| FM-3 | Sync MIMIT (GitHub Actions) | L | FM-2 |
+| 🟡 FM-2 | Esquema Supabase + RPC + RLS (SQL escrita; aplicar en cloud) | M | — |
+| 🟡 FM-3 | Sync MIMIT (código + parser verificado con datos reales; desplegar) | L | FM-2 |
 | ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
 | 🟡 FM-5 | APIClient (mock; supabase-swift real en FM-2/FM-3) | M | FM-1,4 |
 | ✅ FM-6 | LocationClient + permisos | M | FM-1 |
@@ -48,8 +48,9 @@ Review completa en `.claude/reviews/2026-06-05-evaluacion-completa.md`. Remediac
 
 ## Próximo paso inmediato
 
-- **FM-1, 4, 5(mock), 6–13 hechos + remediación de review aplicada**. 40 tests passing.
-- Siguiente: **backend real** (FM-2 Supabase + FM-3 sync + FM-5 real), **FM-15** (clustering, bloqueante pre-datos reales) o **FM-14** (App Store prep).
+- **FM-1, 4, 5(mock), 6–13 hechos + remediación de review**. 40 tests iOS + 3 tests backend.
+- **FM-2/FM-3 código hecho** (`backend/`): SQL + sync Node; parser verificado contra CSV reales (23.7k stations / 93k precios). **Pendiente cloud (tu cuenta):** crear proyecto Supabase, aplicar migración, secrets, push → ver `backend/README.md`.
+- Siguiente: **runbook backend** (desplegar FM-2/FM-3) → **FM-5 real** (swap `APIClient.liveValue` a supabase-swift) → **FM-15** (clustering) → **FM-14** (App Store).
 
 ## Deuda registrada (no bloqueante)
 

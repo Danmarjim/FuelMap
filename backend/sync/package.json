@@ -1,0 +1,14 @@
+{
+  "name": "fuelmap-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sync diario de los open data del MIMIT a Supabase (FuelMap, FM-3)",
+  "scripts": {
+    "sync": "node sync.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

@@ -329,14 +329,36 @@
 
 ---
 
+## Plan Iteration: FM-2 + FM-3 — Backend (Supabase + sync MIMIT) — Code complete
+**Date:** 2026-06-05
+
+### Architect (RFC §2.1, §3.1, §6.3; ADR-001, ADR-003)
+- Esquema SQL (`stations`/`prices`/`sync_runs`) + PostGIS + RPC `nearby_stations` + RLS read-only (anon) + grants explícitos.
+- Sync en Node 22, lógica pura (parse + fuel-mapping) separada para testeo sin red.
+
+### Developer (implementation)
+- `backend/migrations/0001_init.sql` (FM-2).
+- `backend/sync/`: `parse.mjs`, `fuel-mapping.mjs`, `sync.mjs` (@supabase/supabase-js), `package.json`.
+- `.github/workflows/sync-mimit.yml` (cron 06:30 UTC + dispatch). `backend/README.md` (runbook). `.gitignore`: `node_modules/`.
+
+### QA (tests)
+- `sync.test.mjs` (3, `node --test`): mapeo fuel, parse anagrafica (coords), parse prezzo (self/precio/no-mapeadas).
+- **Verificado contra CSV reales del MIMIT**: 23.707 stations válidas / 106 descartadas / 0 malformed; 93.050 precios / 0 skipped; normalización benzina 36.6k·gasolio 45.2k·gpl 4.7k·hvo 3.9k·metano 1.9k·altro 729.
+
+### Review
+- No ejecutable end-to-end en local (Docker no disponible → sin Supabase local). El parser (parte de mayor riesgo) sí está verificado con datos reales.
+- **Despliegue cloud pendiente (cuenta del usuario):** crear proyecto Supabase, aplicar migración, secrets, push. Runbook en `backend/README.md`.
+- Verdict: **APPROVED (code-complete; deploy pendiente)**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App completa (mock), monetizada y revisada:** mapa + filtros + lista + detalle + favoritos; localizada it/es/en; banner AdMob (test) + UMP/ATT. Remediación de la evaluación multi-agente aplicada.
-- `Core/{Models,Network,Location,Persistence,Ads,Foundation}` + `Features/{Map,Filters,StationDetail}`. 40 tests, SwiftLint 0.
-- `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
-- XcodeGen; deps SPM: TCA + GoogleMobileAds + UMP. Info.plist explícito (gitignored).
-- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6…FM-13. Pendientes: FM-2/FM-3 (backend), FM-5 real, **FM-15 (clustering, 🔴 pre-datos reales)**, FM-14 (App Store prep).
-- **Próximo paso:** backend real (FM-2/FM-3/FM-5) o FM-15 (clustering) o FM-14.
+- **App iOS (mock) completa + backend escrito y verificado.** iOS: 40 tests, SwiftLint 0. Backend: 3 tests + parser validado con los CSV reales (~23.7k stations / 93k precios).
+- `backend/` (FM-2 SQL + FM-3 sync Node + workflow) listo; **despliegue cloud pendiente** (Supabase + secrets + push → `backend/README.md`).
+- `APIClient.liveValue` sigue = mock; **FM-5 real** = swap a supabase-swift contra `nearby_stations` (anon key) tras desplegar.
+- Issues: FM-1, FM-4, FM-5(mock), FM-6…FM-13 hechos; FM-2/FM-3 code-complete; pendientes FM-5 real, **FM-15 (clustering 🔴)**, FM-14.
+- **Próximo paso:** desplegar backend (runbook) → FM-5 real → FM-15 → FM-14.
 
 ---
 

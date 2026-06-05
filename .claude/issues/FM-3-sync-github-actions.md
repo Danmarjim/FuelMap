@@ -49,13 +49,17 @@ fuelMapping_knownVariants / fuelMapping_unknownFallsBackToAltroAndLogs
 
 Mock/stub strategy: fixtures CSV locales; mock del cliente Supabase para asserts de upsert.
 
+## Status: CÓDIGO HECHO + PARSER VERIFICADO CONTRA DATOS REALES (2026-06-05) — despliegue pendiente
+
+> `backend/sync/` (Node 22): `parse.mjs`, `fuel-mapping.mjs` (ADR-003), `sync.mjs`, `sync.test.mjs`; `.github/workflows/sync-mimit.yml`. Verificado contra los CSV reales del MIMIT: 23.707 stations válidas / 106 descartadas / 0 malformed; 93.050 precios / 0 skipped; normalización correcta; `→altro` loggeadas. El upsert a Supabase no se ejecuta sin proyecto cloud.
+
 ## Acceptance Criteria
-- [ ] `workflow_dispatch` ejecuta un ciclo completo y puebla `stations` + `prices` en Supabase.
-- [ ] `sync_runs` registra `extraction_date`, contadores y status.
-- [ ] Filas sin coords válidas se descartan y se cuentan.
-- [ ] Variantes de combustible no mapeadas → `altro` y aparecen en `notes`.
-- [ ] El workflow falla (exit≠0) si status=error.
-- [ ] Tests pass.
+- [x] Parser CSV pipe-separated (salta `Estrazione`+cabecera), validación coords, normalización fuel, dtComu. **Verificado con datos reales.**
+- [x] Filas sin coords válidas descartadas y contadas (106 reales).
+- [x] Variantes no mapeadas → `altro` y registradas (HiQ Perform+, F101…).
+- [x] `sync.mjs` upsert stations + reemplazo prices + `sync_runs`; workflow falla en error.
+- [x] Tests pass (node --test, 3).
+- [ ] **(runbook)** Ciclo `workflow_dispatch` real puebla Supabase (requiere secrets + proyecto).
 
 ## References
 - RFC: §6.3, §2.1

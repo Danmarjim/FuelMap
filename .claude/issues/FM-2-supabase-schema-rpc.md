@@ -41,12 +41,15 @@ RLS:
 
 Mock/stub strategy: datos seed en una DB de prueba (no la de producción).
 
+## Status: SQL ESCRITA (2026-06-05) — aplicación pendiente de proyecto Supabase (cloud)
+
+> `backend/migrations/0001_init.sql`: esquema + PostGIS + RPC `nearby_stations` + RLS read-only (anon) + grants. No ejecutable en local (Docker no disponible → sin Supabase local). Aplicar vía dashboard/CLI (ver `backend/README.md`).
+
 ## Acceptance Criteria
-- [ ] Migración aplica limpia sobre un proyecto Supabase nuevo.
-- [ ] `nearby_stations(lat,lng,5,'benzina',false,200)` devuelve filas con `distance_m` y orden por precio.
-- [ ] RLS: `anon` puede SELECT/RPC, no puede INSERT/UPDATE/DELETE.
-- [ ] Índice GIST presente en `stations.location`.
-- [ ] Tests pass.
+- [x] Migración escrita (tablas, índices GIST, RPC, RLS, grants).
+- [ ] **(runbook)** Migración aplicada sobre proyecto Supabase nuevo.
+- [ ] **(runbook)** `nearby_stations(...)` devuelve filas con `distance_m` y orden por precio.
+- [ ] **(runbook)** RLS verificada (anon solo lectura).
 
 ## References
 - RFC: `.claude/rfc/RFC-001-fuelmap-architecture.md` §2.1, §3.1

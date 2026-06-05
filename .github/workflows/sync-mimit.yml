@@ -1,0 +1,27 @@
+name: Sync MIMIT
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # 06:30 UTC ≈ 08:30 CEST (RFC §6.3)
+  workflow_dispatch: {} # ejecución manual
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/sync
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install deps
+        run: npm install
+      - name: Test parser
+        run: node --test
+      - name: Run sync
+        run: node sync.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

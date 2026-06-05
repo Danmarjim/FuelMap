@@ -22,7 +22,7 @@ Pods/
 Carthage/Build/
 
 # Backend (sync MIMIT)
-backend/node_modules/
+node_modules/
 backend/.env
 *.env
 

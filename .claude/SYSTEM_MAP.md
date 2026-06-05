@@ -95,12 +95,17 @@ Core/
 
 ## Backend (fuera del repo iOS)
 
-| Componente | Responsibility |
-|---|---|
-| Supabase | PostgreSQL + PostGIS. Tablas `stations`, `prices`. RPC geoespacial `nearby_stations(lat,lng,radius_km,fuel)`. API REST autogenerada. |
-| GitHub Actions (sync) | Cron diario: descarga `anagrafica_impianti_attivi.csv` + `prezzo_alle_8.csv` del MIMIT → upsert en Supabase. |
+**Path:** `backend/` (FM-2/FM-3, código hecho; despliegue cloud pendiente)
 
-> El esquema SQL y el script de sync se definirán en el RFC. Ubicación del código de sync (mismo repo `/backend` o repo aparte) a decidir en RFC.
+| File | Responsibility |
+|---|---|
+| `backend/migrations/0001_init.sql` | Esquema (`stations`,`prices`,`sync_runs`) + PostGIS + índices GIST + RPC `nearby_stations` + RLS read-only (anon) + grants (FM-2). |
+| `backend/sync/parse.mjs` | Parse CSV pipe-separated; salta `Estrazione`+cabecera; valida coords (NF6); dtComu (FM-3). |
+| `backend/sync/fuel-mapping.mjs` | `normalizeFuel` descCarburante→FuelType (ADR-003) (FM-3). |
+| `backend/sync/sync.mjs` | Descarga MIMIT → upsert stations + reemplazo prices + `sync_runs` (service_role) (FM-3). |
+| `backend/sync/sync.test.mjs` | Tests del parser/mapeo (`node --test`) (FM-3). |
+| `.github/workflows/sync-mimit.yml` | Cron 06:30 UTC + `workflow_dispatch` (FM-3). |
+| `backend/README.md` | Runbook de despliegue (Supabase + secrets + push). |
 
 ---
 
