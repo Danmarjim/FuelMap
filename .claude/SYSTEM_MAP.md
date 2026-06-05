@@ -40,6 +40,7 @@ Core/
 
 | File | Type | Responsibility |
 |---|---|---|
+| `Resources/Localizable.xcstrings` | String Catalog | Strings UI en it (fuente) + es + en (FM-13). |
 | `App/AppFeature.swift` | Reducer | Raíz; `Scope` a `MapFeature` (FM-7). |
 | `App/AppView.swift` | View | Raíz; aloja `MapView` (FM-7). |
 | `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |

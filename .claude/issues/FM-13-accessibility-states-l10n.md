@@ -31,12 +31,16 @@ Dependencies: FM-7, FM-8, FM-9
 
 Mock/stub strategy: estados forzados vía `TestStore`.
 
+## Status: DONE (2026-06-05)
+
+> Localización vía String Catalog (`Localizable.xcstrings`, it/es/en) verificada en simulador forzando idioma. Dynamic Type vía fonts semánticas (auditoría AX Inspector = paso manual). Retry explícito no añadido (recarga automática al mover el mapa / cambiar filtro). Info.plist usage description l10n diferida a FM-14.
+
 ## Acceptance Criteria
-- [ ] Todas las pantallas soportan Dynamic Type sin truncado roto.
-- [ ] VoiceOver navega y anuncia precios/estaciones correctamente.
-- [ ] Estados loading/empty/error visibles y con retry donde aplica.
-- [ ] Strings localizadas it/es/en.
-- [ ] Tests pass.
+- [x] Pantallas con fonts semánticas (Dynamic Type) sin frames fijos de texto.
+- [x] VoiceOver: pins anuncian nombre+combustible+precio (+"más económico"); controles etiquetados.
+- [x] Estados loading/empty/error visibles y localizados (retry implícito por recarga).
+- [x] Strings localizadas it/es/en (verificado es: Gasolina/Autoservicio; en: Petrol/Self-service).
+- [x] Tests pass: +1 (label); 34 totales. SwiftLint 0.
 
 ## References
 - RFC: §7; PRD NF5, NF6

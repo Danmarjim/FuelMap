@@ -24,4 +24,11 @@ struct FuelTypeTests {
     func fuelType_unknownRawValueIsNil() {
         #expect(FuelType(rawValue: "Hi-Q Diesel") == nil)
     }
+
+    @Test("Todos los casos tienen label localizada no vacía")
+    func fuelType_labelNonEmpty() {
+        for fuel in FuelType.allCases {
+            #expect(!fuel.label.isEmpty)
+        }
+    }
 }

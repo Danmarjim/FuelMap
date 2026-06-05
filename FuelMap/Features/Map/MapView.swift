@@ -28,6 +28,7 @@ struct MapView: View {
                 Annotation("", coordinate: station.coordinate.clCoordinate) {
                     StationPin(
                         name: station.name,
+                        fuel: store.filters.fuel,
                         price: station.cheapest?.price,
                         isCheapest: station.id == store.cheapestStationID
                     )
@@ -102,24 +103,21 @@ struct MapView: View {
     @ViewBuilder
     private var statusBar: some View {
         if store.isLoading {
-            Label("Caricamento…", systemImage: "arrow.triangle.2.circlepath")
-                .font(.footnote)
-                .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(.regularMaterial, in: Capsule())
-                .padding(.top, 6)
+            banner(Text("Caricamento…"), systemImage: "arrow.triangle.2.circlepath")
         } else if let error = store.errorMessage {
-            Label(error, systemImage: "exclamationmark.triangle.fill")
-                .font(.footnote)
-                .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(.regularMaterial, in: Capsule())
-                .padding(.top, 6)
+            banner(Text(error), systemImage: "exclamationmark.triangle.fill")
         } else if store.stations.isEmpty {
-            Label("Nessun distributore in zona", systemImage: "mappin.slash")
-                .font(.footnote)
-                .padding(.horizontal, 12).padding(.vertical, 6)
-                .background(.regularMaterial, in: Capsule())
-                .padding(.top, 6)
+            banner(Text("Nessun distributore in zona"), systemImage: "mappin.slash")
         }
+    }
+
+    private func banner(_ title: Text, systemImage: String) -> some View {
+        Label { title } icon: { Image(systemName: systemImage) }
+            .font(.footnote)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.regularMaterial, in: Capsule())
+            .padding(.top, 6)
     }
 }
 

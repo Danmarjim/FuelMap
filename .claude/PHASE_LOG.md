@@ -233,15 +233,40 @@
 
 ---
 
+## Plan Iteration: FM-13 — Accesibilidad, estados y localización — Completed
+**Date:** 2026-06-05
+
+### Architect (RFC §7; PRD NF5, NF6)
+- Localización vía **String Catalog** (`Localizable.xcstrings`), fuente it + es + en; claves = textos italianos fuente.
+- VoiceOver: pins anuncian nombre + combustible + precio (+ "más económico").
+
+### Developer (implementation)
+- `Resources/Localizable.xcstrings` con todos los textos UI (it/es/en).
+- `FuelType.label` y `APIError.userMessage` (Map y Detail) → `String(localized:)`.
+- `StationPin`: param `fuel`, accesibilidad mejorada; `MapView` pasa el combustible; `statusBar` refactorizado (helper `banner`, sin duplicación).
+- `StationDetailView.priceLabel` → `LocalizedStringKey` (Self/Servito localizados); título fallback localizado.
+
+### QA (tests)
+- `FuelTypeTests`: `label` no vacía para todos los casos. 
+- **34 tests passing**. SwiftLint 0.
+
+### Review
+- Verificado en simulador forzando idioma: **es** (Gasolina/Diésel/GLP/Metano, Autoservicio) y **en** (Petrol/Diesel/LPG/CNG, Self-service). it por defecto.
+- Dynamic Type cubierto por fonts semánticas (sin tamaños fijos); auditoría AX Inspector es paso manual no headless.
+- Pendiente menor: la usage description de ubicación (`Info.plist`) sigue en italiano → localizar en FM-14 (InfoPlist.xcstrings).
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
-**Date:** 2026-06-04
-- **App con flujo completo (mock):** mapa (pins, más barata en verde) + filtros + lista ordenable (precio/distancia) + detalle. Verificada en simulador.
-- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 33 tests.
+**Date:** 2026-06-05
+- **App con flujo completo y localizada (it/es/en):** mapa (pins, más barata en verde, VoiceOver) + filtros + lista ordenable + detalle; estados loading/empty/error localizados. Verificada en simulador en los 3 idiomas.
+- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 34 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9, FM-10.
-- Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3).
-- **Próximo paso:** FM-11 (AdMob banner + UMP + ATT) — requiere añadir GoogleMobileAds; o FM-13 (a11y/estados/l10n). Recomendado FM-13 antes que AdMob.
+- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9, FM-10, FM-13.
+- Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3), Info.plist l10n (FM-14).
+- **Próximo paso:** FM-11 (AdMob + UMP + ATT, añade GoogleMobileAds) o FM-12 (favoritos, nice-to-have), o backend real (FM-2/FM-3).
 
 ---
 

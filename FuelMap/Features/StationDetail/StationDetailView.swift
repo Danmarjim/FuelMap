@@ -23,7 +23,7 @@ struct StationDetailView: View {
                     ContentUnavailableView("Errore", systemImage: "exclamationmark.triangle", description: Text(error))
                 }
             }
-            .navigationTitle(store.station?.name ?? "Distributore")
+            .navigationTitle(store.station?.name ?? String(localized: "Distributore"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -79,10 +79,11 @@ struct StationDetailView: View {
                     priceLabel("Servito", servito.price)
                 }
             }
+            .accessibilityElement(children: .combine)
         }
     }
 
-    private func priceLabel(_ kind: String, _ price: Decimal) -> some View {
+    private func priceLabel(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
         HStack(spacing: 6) {
             Text(kind)
                 .font(.caption2)

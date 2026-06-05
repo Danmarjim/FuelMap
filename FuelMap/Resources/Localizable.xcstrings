@@ -1,0 +1,174 @@
+{
+  "sourceLanguage" : "it",
+  "version" : "1.0",
+  "strings" : {
+    "Accesso non autorizzato." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unauthorized access." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso no autorizado." } }
+      }
+    },
+    "Aggiornato il %@" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updated on %@" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizado el %@" } }
+      }
+    },
+    "Altro" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Other" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Otro" } }
+      }
+    },
+    "Benzina" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Petrol" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Gasolina" } }
+      }
+    },
+    "Carburante" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Fuel" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Combustible" } }
+      }
+    },
+    "Caricamento…" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading…" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cargando…" } }
+      }
+    },
+    "Chiudi" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cerrar" } }
+      }
+    },
+    "Distanza" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Distance" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Distancia" } }
+      }
+    },
+    "Distributore" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Station" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Gasolinera" } }
+      }
+    },
+    "Distributore non trovato." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Station not found." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Gasolinera no encontrada." } }
+      }
+    },
+    "Distributori" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Stations" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Gasolineras" } }
+      }
+    },
+    "Elenco distributori" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Station list" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Lista de gasolineras" } }
+      }
+    },
+    "Errore" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Error" } }
+      }
+    },
+    "Errore di connessione. Riprova." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection error. Please try again." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Error de conexión. Inténtalo de nuevo." } }
+      }
+    },
+    "Gasolio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Diesel" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Diésel" } }
+      }
+    },
+    "GPL" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "LPG" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "GLP" } }
+      }
+    },
+    "il più economico" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "cheapest" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "el más barato" } }
+      }
+    },
+    "Indicazioni" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Directions" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cómo llegar" } }
+      }
+    },
+    "Metano" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "CNG" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Metano" } }
+      }
+    },
+    "Nessun distributore" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No stations" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ninguna gasolinera" } }
+      }
+    },
+    "Nessun distributore in zona" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No stations in this area" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No hay gasolineras en la zona" } }
+      }
+    },
+    "Nessun distributore trovato in zona." : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No stations found in this area." } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "No se han encontrado gasolineras en la zona." } }
+      }
+    },
+    "Ordina per" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Sort by" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ordenar por" } }
+      }
+    },
+    "Prezzi" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Prices" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Precios" } }
+      }
+    },
+    "Prezzo" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Price" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Precio" } }
+      }
+    },
+    "Raggio" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Radius" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Radio" } }
+      }
+    },
+    "Self service" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Self-service" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Autoservicio" } }
+      }
+    },
+    "Servito" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Full-service" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Atendido" } }
+      }
+    }
+  }
+}

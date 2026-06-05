@@ -188,15 +188,15 @@ enum StationSort: String, CaseIterable, Sendable, Equatable {
 }
 
 private extension APIError {
-    /// Mensaje localizado (base italiano) para mostrar al usuario. l10n completa en FM-13.
+    /// Mensaje localizado (it/es/en) para mostrar al usuario.
     var userMessage: String {
         switch self {
         case .noResults:
-            return "Nessun distributore trovato in zona."
+            return String(localized: "Nessun distributore trovato in zona.")
         case .unauthorized:
-            return "Accesso non autorizzato."
+            return String(localized: "Accesso non autorizzato.")
         case .network, .server, .decoding:
-            return "Errore di connessione. Riprova."
+            return String(localized: "Errore di connessione. Riprova.")
         }
     }
 }

@@ -83,11 +83,11 @@ private extension APIError {
     var userMessage: String {
         switch self {
         case .noResults:
-            return "Distributore non trovato."
+            return String(localized: "Distributore non trovato.")
         case .unauthorized:
-            return "Accesso non autorizzato."
+            return String(localized: "Accesso non autorizzato.")
         case .network, .server, .decoding:
-            return "Errore di connessione. Riprova."
+            return String(localized: "Errore di connessione. Riprova.")
         }
     }
 }

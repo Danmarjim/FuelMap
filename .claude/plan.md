@@ -36,18 +36,19 @@ Canon listo:
 | ✅ FM-10 | Más barata + orden | S | FM-7,8 |
 | FM-11 | AdMob + UMP + ATT | M | FM-1,7 |
 | FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
-| FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
+| ✅ FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
 | FM-14 | Privacy labels + App Store prep | S | FM-11,13 |
 
 ## Próximo paso inmediato
 
-- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10 hechos** (2026-06-04): app con mapa+más barata, filtros, lista ordenable y detalle. 33 tests passing. Verificado en simulador.
-- Siguiente: **FM-13** (a11y/estados/l10n) recomendado antes de **FM-11** (AdMob+UMP+ATT, que añade GoogleMobileAds). FM-12 (favoritos) es nice-to-have.
+- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 13 hechos**: app completa, localizada (it/es/en) y accesible. 34 tests passing. Verificado en simulador en los 3 idiomas.
+- Siguiente: **FM-11** (AdMob+UMP+ATT, añade GoogleMobileAds), **FM-12** (favoritos, nice-to-have) o el **backend real** (FM-2/FM-3).
 
 ## Deuda registrada (no bloqueante)
 
 - **Clustering real (PRD F6)** — SwiftUI `Map` (iOS 17) no clusteriza annotations custom. Con ~22k estaciones reales hará falta `MKMapView`+`MKClusterAnnotation` (UIViewRepresentable) o clustering por grid en el reducer. No necesario con el mock (6 estaciones). Origen: FM-7.
 - **APIClient real (FM-5 → FM-2/FM-3)** — `liveValue` es un mock; sustituir por supabase-swift contra la RPC `nearby_stations` cuando exista el backend. No enviar el mock a producción (verificar en FM-14).
+- **Info.plist l10n (FM-13 → FM-14)** — la usage description de ubicación sigue en italiano; localizar es/en vía `InfoPlist.xcstrings` en FM-14.
 
 ## Convenciones del workflow
 

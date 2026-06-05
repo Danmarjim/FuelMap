@@ -5,6 +5,8 @@
 //  Created on 04/06/2026.
 //
 
+import Foundation
+
 /// Tipo de combustible normalizado.
 ///
 /// Los `rawValue` coinciden con la normalización que aplica el sync del backend
@@ -21,15 +23,15 @@ enum FuelType: String, Sendable, CaseIterable, Equatable {
     /// Tipos que el usuario puede seleccionar en el filtro (excluye `hvo`/`altro`).
     static let selectable: [FuelType] = [.benzina, .gasolio, .gpl, .metano]
 
-    /// Nombre para mostrar en UI.
+    /// Nombre localizado para mostrar en UI.
     var label: String {
         switch self {
-        case .benzina: return "Benzina"
-        case .gasolio: return "Gasolio"
-        case .gpl: return "GPL"
-        case .metano: return "Metano"
+        case .benzina: return String(localized: "Benzina")
+        case .gasolio: return String(localized: "Gasolio")
+        case .gpl: return String(localized: "GPL")
+        case .metano: return String(localized: "Metano")
         case .hvo: return "HVO"
-        case .altro: return "Altro"
+        case .altro: return String(localized: "Altro")
         }
     }
 }

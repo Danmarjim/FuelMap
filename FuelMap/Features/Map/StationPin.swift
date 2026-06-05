@@ -12,6 +12,7 @@ import SwiftUI
 /// `isCheapest` se usará en FM-10 para destacar la estación más barata.
 struct StationPin: View {
     let name: String
+    let fuel: FuelType
     let price: Decimal?
     var isCheapest: Bool = false
 
@@ -39,20 +40,28 @@ struct StationPin: View {
         }
         .shadow(radius: 1.5)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(name), \(priceText)"))
+        .accessibilityLabel(Text(accessibilityText))
     }
 
     private var priceText: String {
         guard let price else { return "—" }
         return "\(price.formatted(.number.precision(.fractionLength(3)))) €"
     }
+
+    private var accessibilityText: String {
+        var text = "\(name), \(fuel.label) \(priceText)"
+        if isCheapest {
+            text += ", " + String(localized: "il più economico")
+        }
+        return text
+    }
 }
 
 #Preview {
     HStack(spacing: 20) {
-        StationPin(name: "Eni Roma Centro", price: Decimal(string: "1.879"))
-        StationPin(name: "Tamoil Ostiense", price: Decimal(string: "1.849"), isCheapest: true)
-        StationPin(name: "Sconosciuto", price: nil)
+        StationPin(name: "Eni Roma Centro", fuel: .benzina, price: Decimal(string: "1.879"))
+        StationPin(name: "Tamoil Ostiense", fuel: .benzina, price: Decimal(string: "1.849"), isCheapest: true)
+        StationPin(name: "Sconosciuto", fuel: .benzina, price: nil)
     }
     .padding()
 }
