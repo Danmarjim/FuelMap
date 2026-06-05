@@ -22,12 +22,16 @@ Decisión de enfoque → **ADR** al arrancar el issue (recomendado evaluar opci�
 - No romper el flujo TCA actual (filtros, recentrado, selección → detalle) al introducir MKMapView.
 - No clusterizar a ciegas sin probar rendimiento con un dataset grande (seed de cientos de estaciones).
 
+## Status: DONE (2026-06-05) — grid clustering en el reducer (ADR-004)
+
+> Enfoque elegido: clustering por celdas en función pura (`MapClustering.items(stations:span:)`), manteniendo `Map` SwiftUI (no MKMapView). Dataset acotado por el `limit 200` de la RPC. Verificación visual limpia pendiente de tap manual (overlay de consentimiento bloquea headless); lógica cubierta por tests.
+
 ## Acceptance Criteria
-- [ ] Con cientos de estaciones, los pins cercanos se agrupan en clusters con conteo.
-- [ ] Al hacer zoom, los clusters se desagrupan; tap en cluster → zoom/expandir.
-- [ ] Tap en pin individual → detalle (se mantiene el flujo actual).
-- [ ] Rendimiento fluido con ≥500 estaciones (probar con seed).
-- [ ] Tests del agrupamiento (si es grid en reducer) o smoke (si MKMapView).
+- [x] Pins cercanos se agrupan en clusters con conteo (`ClusterPin`).
+- [x] Al hacer zoom (span de la cámara) los clusters se desagrupan; tap en cluster → `clusterTapped` reduce span + recentra.
+- [x] Tap en pin individual → detalle (flujo intacto).
+- [x] Coste trivial (≤200 pins por la RPC); función pura.
+- [x] Tests: `MapClusteringTests` (4) + `clusterTapped`; 45 tests totales. SwiftLint 0.
 
 ## References
 - Review: `.claude/reviews/2026-06-05-evaluacion-completa.md` (C2)

@@ -25,16 +25,8 @@ struct MapView: View {
     var body: some View {
         Map(position: $camera) {
             UserAnnotation()
-            ForEach(store.stations) { station in
-                Annotation("", coordinate: station.coordinate.clLocationCoordinate) {
-                    StationPin(
-                        name: station.name,
-                        fuel: store.filters.fuel,
-                        price: station.cheapest?.price,
-                        isCheapest: station.id == store.cheapestStationID
-                    )
-                    .onTapGesture { store.send(.stationTapped(station)) }
-                }
+            ForEach(store.mapItems) { item in
+                annotation(for: item)
             }
         }
         .mapControls {
@@ -42,7 +34,10 @@ struct MapView: View {
             MapCompass()
         }
         .onMapCameraChange(frequency: .onEnd) { context in
-            store.send(.mapCameraChanged(center: Coordinate(context.region.center)))
+            store.send(.mapCameraChanged(
+                center: Coordinate(context.region.center),
+                span: context.region.span.latitudeDelta
+            ))
         }
         .overlay(alignment: .topLeading) {
             VStack(spacing: 8) {
@@ -100,6 +95,27 @@ struct MapView: View {
                 )
             }
             store.send(.recenterHandled)
+        }
+    }
+
+    @MapContentBuilder
+    private func annotation(for item: MapItem) -> some MapContent {
+        switch item {
+        case let .station(station):
+            Annotation("", coordinate: station.coordinate.clLocationCoordinate) {
+                StationPin(
+                    name: station.name,
+                    fuel: store.filters.fuel,
+                    price: station.cheapest?.price,
+                    isCheapest: station.id == store.cheapestStationID
+                )
+                .onTapGesture { store.send(.stationTapped(station)) }
+            }
+        case let .cluster(cluster):
+            Annotation("", coordinate: cluster.coordinate.clLocationCoordinate) {
+                ClusterPin(count: cluster.count, cheapestPrice: cluster.cheapestPrice)
+                    .onTapGesture { store.send(.clusterTapped(cluster)) }
+            }
         }
     }
 

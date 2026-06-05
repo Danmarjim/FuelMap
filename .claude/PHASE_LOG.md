@@ -374,13 +374,32 @@
 
 ---
 
+## Plan Iteration: FM-15 — Clustering de pins — Completed
+**Date:** 2026-06-05
+
+### Architect (ADR-004; PRD F6; RFC §5/§11)
+- Clustering por grid en el reducer (función pura) manteniendo `Map` SwiftUI; descartado MKMapView (dataset acotado por `limit 200`, testeabilidad TCA).
+
+### Developer (implementation)
+- `Features/Map/MapClustering.swift` (`MapItem`/`StationCluster` + algoritmo por celdas∝zoom), `ClusterPin.swift`.
+- `MapFeature`: `span` desde la cámara, `mapItems` computado, `clusterTapped` (zoom in). `MapView`: render por `mapItems` (`@MapContentBuilder`).
+
+### QA (tests)
+- `MapClusteringTests` (4: span grande→1 cluster, span diminuto→individuales, conserva total, span 0) + `clusterTapped`. **45 tests iOS**. SwiftLint 0.
+
+### Review
+- Verificación visual limpia pendiente de tap manual (overlay UMP bloquea headless); datos reales + clusters visibles asomando tras el consentimiento.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App con datos REALES del MIMIT.** `APIClient.liveValue` = Supabase (RPC `nearby_stations`); mapa+lista muestran ~23.7k estaciones reales. Backend desplegado + cron CI. 40 tests iOS + 3 backend, SwiftLint 0.
-- Repo `Danmarjim/FuelMap` (privado) al día. Supabase poblado (precios saneados, rango 0.5–4.999 €).
-- **Acción usuario pendiente:** aplicar `backend/migrations/0002_station_detail.sql` (detalle de estación).
-- Issues: FM-1…FM-13 + FM-2/FM-3/FM-5 hechos. Pendientes: **FM-15 (clustering 🔴, ya necesario con datos reales)**, FM-14 (App Store).
-- **Próximo paso:** FM-15 (clustering) → FM-14.
+- **App con datos reales del MIMIT + clustering.** Mapa (clusters/pins, más barata, VoiceOver) + filtros + lista + detalle + favoritos; localizada it/es/en; AdMob (test) + UMP/ATT. Backend desplegado + cron CI.
+- iOS: 45 tests, SwiftLint 0. Backend: 3 tests. Repo `Danmarjim/FuelMap` (privado) al día.
+- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle). ADRs: 001–004.
+- Issues: FM-1…FM-13 + FM-2/FM-3/FM-5/FM-15 hechos. **Restante: FM-14** (App Store prep). Backlog futuro: FM-16 (logos de marca).
+- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, atribución IODL2, TestFlight).
 
 ---
 

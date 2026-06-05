@@ -38,7 +38,7 @@ Canon listo:
 | ✅ FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
 | ✅ FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
 | FM-14 | Privacy labels + App Store prep | S | FM-11,13 |
-| 🔴 FM-15 | Clustering de pins (bloqueante pre-datos reales) | L | FM-7 |
+| ✅ FM-15 | Clustering de pins (grid en reducer, ADR-004) | L | FM-7 |
 
 ## Evaluación multi-agente (2026-06-05) — hecha
 
@@ -48,14 +48,14 @@ Review completa en `.claude/reviews/2026-06-05-evaluacion-completa.md`. Remediac
 
 ## Próximo paso inmediato
 
-- **FM-1…FM-13 + review + FM-2/FM-3 (desplegados) + FM-5 real hechos.** App lee datos reales del MIMIT (RPC `nearby_stations` verificada vía anon key; filtro de precio basura aplicado → más barata real 1.639 €). 40 tests iOS + 3 backend.
-- **Acción tuya pendiente:** aplicar `backend/migrations/0002_station_detail.sql` en el SQL editor (para que el detalle de estación funcione; mapa+lista ya tiran de datos reales).
-- **Siguiente: FM-15 (clustering)** — ahora sí necesario: con ~22k reales y `limit 200`, el mapa muestra muchos pins sin agrupar. Luego **FM-14** (App Store: IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n).
+- **FM-1…FM-13 + review + FM-2/FM-3 (desplegados) + FM-5 real + FM-15 (clustering) hechos.** App con datos reales del MIMIT + clustering. 45 tests iOS + 3 backend.
+- **Acción tuya pendiente:** aplicar `backend/migrations/0002_station_detail.sql` (detalle de estación).
+- **Siguiente: FM-14** (App Store): IDs AdMob reales + `SKAdNetworkItems`, privacy labels (`PrivacyInfo.xcprivacy`), l10n del Info.plist, atribución IODL 2.0, prep TestFlight. (Único issue restante; FM-16 logos de marca = backlog futuro.)
 
 ## Deuda registrada (no bloqueante)
 
-- **FM-15 Clustering (PRD F6, Must-have)** — 🔴 bloqueante antes de datos reales. Issue creado. Origen: review C2.
 - **Carga inicial supeditada al permiso de ubicación** (review N13) — las estaciones no cargan hasta responder el prompt; valorar cargar con centro por defecto en paralelo + timeout en `currentLocation`.
+- **FM-16 Logos de marca** (backlog futuro) — el MIMIT solo da `Bandiera` (texto, 325 marcas); empaquetar logos propios de las ~12 top + fallback genérico (consideración de marca registrada).
 - **Pulido a11y menor (review)** — contexto VoiceOver en dirección/marca del detalle; conservar zoom al recentrar; `MapView.camera` init desde `store.center/span`; extraer `topViewController()` a helper desacoplado.
 - **APIClient real (FM-5 → FM-2/FM-3)** — `liveValue` es un mock; sustituir por supabase-swift contra la RPC `nearby_stations` cuando exista el backend. No enviar el mock a producción (verificar en FM-14).
 - **Info.plist l10n (FM-13 → FM-14)** — la usage description de ubicación sigue en italiano; localizar es/en vía `InfoPlist.xcstrings` en FM-14.

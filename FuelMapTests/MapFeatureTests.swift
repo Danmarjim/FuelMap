@@ -68,8 +68,8 @@ struct MapFeatureTests {
 
         let first = Coordinate(latitude: 41.0, longitude: 12.0)
         let second = Coordinate(latitude: 45.0, longitude: 9.0)
-        await store.send(.mapCameraChanged(center: first))
-        await store.send(.mapCameraChanged(center: second))
+        await store.send(.mapCameraChanged(center: first, span: 0.08))
+        await store.send(.mapCameraChanged(center: second, span: 0.08))
 
         await clock.advance(by: .milliseconds(400))
         await store.receive(\.stationsResponse.success)
@@ -77,18 +77,35 @@ struct MapFeatureTests {
         #expect(store.state.center == second)
     }
 
-    @Test("Cambios de cámara sub-significativos (jitter) no recargan")
-    func map_cameraChanged_ignoresJitter() async {
+    @Test("Jitter de centro no recarga; el span (zoom) sí se actualiza")
+    func map_cameraChanged_ignoresJitterButUpdatesSpan() async {
         let store = TestStore(initialState: MapFeature.State()) {
             MapFeature()
         } withDependencies: {
             $0.apiClient = .mock()
             $0.continuousClock = ImmediateClock()
         }
-        // Jitter dentro del epsilon (0.0005) respecto al centro por defecto (Roma):
-        // no debe mutar estado ni lanzar efectos (aserción exhaustiva por defecto).
+        // Jitter de centro dentro del epsilon (0.0005) respecto a Roma: solo cambia el
+        // span (para reclusterizar), sin recarga ni cambio de centro (aserción exhaustiva).
         let jitter = Coordinate(latitude: 41.9030, longitude: 12.4966)
-        await store.send(.mapCameraChanged(center: jitter))
+        await store.send(.mapCameraChanged(center: jitter, span: 0.05)) {
+            $0.span = 0.05
+        }
+    }
+
+    @Test("clusterTapped acerca el zoom y recentra en el cluster")
+    func map_clusterTapped_zoomsIn() async {
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        }
+        let cluster = StationCluster(
+            id: "0:0", coordinate: Coordinate(latitude: 45.0, longitude: 9.0),
+            count: 5, cheapestPrice: nil
+        )
+        await store.send(.clusterTapped(cluster)) {
+            $0.span = 0.08 / 3
+            $0.recenter = cluster.coordinate
+        }
     }
 
     @Test("Un fallo de la API muestra mensaje de error")

@@ -47,6 +47,8 @@ Core/
 | `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
 | `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
+| `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
+| `Map/ClusterPin.swift` | View | Pin de cluster (círculo + conteo); tap→zoom (FM-15). |
 | `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); verde si `isCheapest` (FM-7/FM-10). |
 | `Map/StationListView.swift` | View | Lista ordenable (precio/distancia) de estaciones; fila→recentrar; destaca la más barata (FM-10). |
 | `Map/FavoritesView.swift` | View | Lista de favoritos (sheet); fila→recentrar; estado vacío (FM-12). |

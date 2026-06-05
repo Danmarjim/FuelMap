@@ -29,6 +29,11 @@ struct MapFeature {
         var cheapestStationID: Int?
         var favorites: [FavoriteStationInfo] = []
 
+        /// Elementos del mapa: estaciones individuales o clusters según el zoom (FM-15).
+        var mapItems: [MapItem] {
+            MapClustering.items(stations: stations, span: span)
+        }
+
         /// Estaciones ordenadas según `sortOrder` (para la lista).
         var sortedStations: [Station] {
             switch sortOrder {
@@ -48,13 +53,14 @@ struct MapFeature {
     enum Action: Equatable {
         case onAppear
         case locationResponse(Coordinate?)
-        case mapCameraChanged(center: Coordinate)
+        case mapCameraChanged(center: Coordinate, span: Double)
         case stationsResponse(Result<[Station], APIError>)
         case stationTapped(Station)
         case detail(PresentationAction<StationDetailFeature.Action>)
         case filters(FiltersFeature.Action)
         case sortOrderChanged(StationSort)
         case recenterOnStation(Station)
+        case clusterTapped(StationCluster)
         case recenterHandled
         case loadFavorites
         case favoritesResponse([FavoriteStationInfo])
@@ -98,9 +104,11 @@ struct MapFeature {
                 }
                 return load(&state)
 
-            case let .mapCameraChanged(center):
-                // Ignora micro-movimientos de cámara (jitter): evita reiniciar el
-                // debounce sin cesar (que dejaría isLoading pegado) y consultas inútiles.
+            case let .mapCameraChanged(center, span):
+                // El span (zoom) se actualiza siempre para reclusterizar; el centro y la
+                // recarga solo si el movimiento supera el epsilon (ignora el jitter, que
+                // si no reiniciaría el debounce sin cesar dejando isLoading pegado).
+                state.span = span
                 let epsilon = 0.0005
                 let moved = abs(center.latitude - state.center.latitude) > epsilon
                     || abs(center.longitude - state.center.longitude) > epsilon
@@ -118,6 +126,12 @@ struct MapFeature {
 
             case let .recenterOnStation(station):
                 state.recenter = station.coordinate
+                return .none
+
+            case let .clusterTapped(cluster):
+                // Acercar para desagrupar: reduce el span y recentra en el cluster.
+                state.span = max(state.span / 3, 0.005)
+                state.recenter = cluster.coordinate
                 return .none
 
             case .recenterHandled:

@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "it",
   "strings" : {
+    "%@" : {
+
+    },
+    "%@ distributori" : {
+
+    },
     "%@ km" : {
 
     },
@@ -588,6 +594,9 @@
           }
         }
       }
+    },
+    "Tocca per ingrandire" : {
+
     }
   },
   "version" : "1.0"
