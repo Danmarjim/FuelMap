@@ -393,13 +393,36 @@
 
 ---
 
+## Plan Iteration: UX Enrichment (FM-16/17/18/19) — Completed
+**Date:** 2026-06-05
+
+### Architect (ideación + benchmark)
+- Benchmark de apps (Prezzi Benzina, GasBuddy, Waze/Google Maps): su debilidad (datos viejos) = nuestra ventaja (MIMIT oficial). Validan navegación integrada y "heat map".
+- Lógica pura para color (terciles) y marca (normalización) → testeable.
+
+### Developer (implementation)
+- FM-18 `PriceTiers` (terciles) → color verde/naranja/rojo en `StationPin`/`ClusterPin`.
+- FM-16 `BrandStyle`+`BrandBadge` (color+monograma; logo real = drop-in asset, sin scraping). Monograma en pin, badge en detalle.
+- FM-17 `NavApp` (Apple/Google/Waze) + `confirmationDialog` con apps instaladas (`LSApplicationQueriesSchemes`).
+- FM-19 HVO en `selectable`; frescura relativa del precio en el detalle (highlight si >2 días).
+- `.swiftlint.yml` (permite `id`/`q8`/`ip`).
+
+### QA (tests)
+- `PriceTiersTests`, `BrandStyleTests`, `NavAppTests` + `navigate(.googleMaps)`. **49 tests iOS**. SwiftLint 0.
+
+### Review
+- Verificación visual limpia pendiente de tap manual (overlay de consentimiento); pines de color (heat map) confirmados con datos reales tras el overlay.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App con datos reales del MIMIT + clustering.** Mapa (clusters/pins, más barata, VoiceOver) + filtros + lista + detalle + favoritos; localizada it/es/en; AdMob (test) + UMP/ATT. Backend desplegado + cron CI.
-- iOS: 45 tests, SwiftLint 0. Backend: 3 tests. Repo `Danmarjim/FuelMap` (privado) al día.
-- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle). ADRs: 001–004.
-- Issues: FM-1…FM-13 + FM-2/FM-3/FM-5/FM-15 hechos. **Restante: FM-14** (App Store prep). Backlog futuro: FM-16 (logos de marca).
-- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, atribución IODL2, TestFlight).
+- **App con datos reales + UX enriquecida:** mapa con **color de precio (heat map)**, clustering, **monograma de marca** en pines, lista, detalle (badge de marca, **frescura del precio**, **selector de navegación** Apple/Google/Waze), favoritos. Localizada it/es/en. AdMob (test) + UMP/ATT.
+- iOS: **49 tests**, SwiftLint 0. Backend desplegado (Supabase + cron CI). Repo `Danmarjim/FuelMap` (privado) al día. ADRs 001–004.
+- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle).
+- Issues hechos: FM-1…FM-13, FM-2/3/5/15, FM-16/17/18/19. **Restante: FM-14** (App Store prep).
+- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Mejora futura: logos reales de marca (drop-in).
 
 ---
 

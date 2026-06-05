@@ -7,6 +7,9 @@ Derivado de ideación UX (idea del usuario) — equivalente al heat map de GasBu
 - `StationPin`: fondo de la cápsula por tier (sustituye azul/verde actual). La más barata mantiene un distintivo (estrella).
 - `ClusterPin`: tinte por el tier de su precio más barato.
 
+## Status: DONE (2026-06-05)
+> PriceTiers (terciles) → verde/naranja/rojo en pin y cluster. Tests PriceTiersTests.
+
 ## Acceptance
 - [ ] `PriceTiers.tier(for:)` reparte por terciles; maneja N pequeño/empates; tests.
 - [ ] Pines y clusters coloreados por valor.

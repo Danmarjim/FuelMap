@@ -7,6 +7,9 @@ Derivado de ideación UX. El líder (Prezzi Benzina) integra Google Maps + Waze.
 - Detección con `UIApplication.canOpenURL` → `LSApplicationQueriesSchemes` en Info.plist.
 - Si solo hay Apple Maps, abrir directo (sin sheet).
 
+## Status: DONE (2026-06-05)
+> NavApp (Apple/Google/Waze) + confirmationDialog con apps instaladas (LSApplicationQueriesSchemes). Tests NavAppTests.
+
 ## Acceptance
 - [ ] URLs por proveedor correctas (destino lat,lng); solo se ofrecen las instaladas.
 - [ ] Test de construcción de URLs.

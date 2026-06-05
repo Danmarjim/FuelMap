@@ -49,13 +49,17 @@ Core/
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
 | `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
 | `Map/ClusterPin.swift` | View | Pin de cluster (círculo + conteo); tap→zoom (FM-15). |
-| `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); verde si `isCheapest` (FM-7/FM-10). |
+| `Map/PriceTiers.swift` | lógica | Terciles de precio → `PriceTier` (verde/naranja/rojo) (FM-18). |
+| `Map/BrandStyle.swift` | lógica | Normaliza `Bandiera`→marca (color+monograma+asset opcional) (FM-16). |
+| `Map/BrandBadge.swift` | View | Badge de marca (logo si hay asset, si no círculo+monograma) (FM-16). |
+| `Map/StationPin.swift` | View | Pin de precio: color por tier (FM-18) + monograma de marca (FM-16) + estrella si más barata. |
 | `Map/StationListView.swift` | View | Lista ordenable (precio/distancia) de estaciones; fila→recentrar; destaca la más barata (FM-10). |
 | `Map/FavoritesView.swift` | View | Lista de favoritos (sheet); fila→recentrar; estado vacío (FM-12). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
-| `StationDetail/StationDetailView.swift` | View | Sheet: precios por combustible (self/servito) + hora + "Indicazioni" (FM-9). |
+| `StationDetail/StationDetailView.swift` | View | Sheet: precios, frescura relativa (FM-19), badge de marca (FM-16), "Indicazioni"→selector de navegación (FM-17). |
+| `StationDetail/NavApp.swift` | enum | Apple/Google/Waze: deep links de indicaciones + probe de instalación (FM-17). |
 
 ---
 
