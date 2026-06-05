@@ -28,7 +28,7 @@ Canon listo:
 | ✅ FM-2 | Esquema Supabase + RPC + RLS (aplicado en cloud, 2026-06-05) | M | — |
 | ✅ FM-3 | Sync MIMIT (desplegado; cron CI verificado: 23.7k stations / 92.6k precios) | L | FM-2 |
 | ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
-| 🟡 FM-5 | APIClient (mock; supabase-swift real en FM-2/FM-3) | M | FM-1,4 |
+| ✅ FM-5 | APIClient real (supabase-swift contra RPCs; mock→previews/tests) | M | FM-1,2,4 |
 | ✅ FM-6 | LocationClient + permisos | M | FM-1 |
 | ✅ FM-7 | MapFeature + MapView (clustering → FM-15) | L | FM-4,5,6 |
 | ✅ FM-8 | FiltersFeature | M | FM-7 |
@@ -48,8 +48,9 @@ Review completa en `.claude/reviews/2026-06-05-evaluacion-completa.md`. Remediac
 
 ## Próximo paso inmediato
 
-- **FM-1…FM-13 + remediación de review hechos. FM-2/FM-3 DESPLEGADOS** (Supabase poblado: 23.7k stations / 92.6k precios; cron GitHub Actions verificado en CI). Repo en GitHub `Danmarjim/FuelMap` (privado).
-- **Siguiente: FM-5 real** — swap de `APIClient.liveValue` (mock) a `supabase-swift` contra la RPC `nearby_stations` (URL `https://npbhmiaegxvmxntcppgd.supabase.co` + anon key). Luego **FM-15** (clustering, bloqueante con datos reales) → **FM-14** (App Store).
+- **FM-1…FM-13 + review + FM-2/FM-3 (desplegados) + FM-5 real hechos.** App lee datos reales del MIMIT (RPC `nearby_stations` verificada vía anon key; filtro de precio basura aplicado → más barata real 1.639 €). 40 tests iOS + 3 backend.
+- **Acción tuya pendiente:** aplicar `backend/migrations/0002_station_detail.sql` en el SQL editor (para que el detalle de estación funcione; mapa+lista ya tiran de datos reales).
+- **Siguiente: FM-15 (clustering)** — ahora sí necesario: con ~22k reales y `limit 200`, el mapa muestra muchos pins sin agrupar. Luego **FM-14** (App Store: IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n).
 
 ## Deuda registrada (no bloqueante)
 

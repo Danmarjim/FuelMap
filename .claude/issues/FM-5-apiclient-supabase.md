@@ -44,7 +44,11 @@ enum APIError: Error, Equatable, Sendable { case network(String), decoding, unau
 
 Mock/stub strategy: protocolo/closure para la capa Supabase, inyectando respuestas JSON fixture.
 
-## Status: PARCIAL — mock hecho (2026-06-04); real (supabase-swift) pendiente de FM-2/FM-3
+## Status: DONE — real (supabase-swift) 2026-06-05
+
+> `APIClient.live()` sobre supabase-swift 2.46 contra RPC `nearby_stations`/`station_detail` (0002); decode `JSONDecoder.fuelMap` + `StationMapper`. `liveValue`=.live, `previewValue`=.mock, `testValue`=unimplemented. RPC verificada vía anon key (200 estaciones Roma, RLS ok). Detalle requiere aplicar 0002.
+
+### (histórico) Status anterior: PARCIAL — mock hecho (2026-06-04)
 
 > **Estrategia mock (petición del usuario):** `liveValue` = `APIClient.mock()` con `StationFixtures` (6 estaciones de Roma). Contrato + `APIError` + `testValue` listos. La implementación real sobre `supabase-swift` contra la RPC `nearby_stations` se completa cuando exista el backend (FM-2/FM-3): sustituir `liveValue`, sin cambiar el contrato. **Riesgo:** no enviar el mock a producción → swap obligatorio + verificación en FM-14.
 

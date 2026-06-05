@@ -352,13 +352,35 @@
 
 ---
 
+## Plan Iteration: FM-5 real + data-quality — Completed
+**Date:** 2026-06-05
+
+### Architect (RFC §3.1, §3.2; ADR-001)
+- `APIClient.liveValue` = Supabase real (supabase-swift 2.46) contra RPC `nearby_stations`/`station_detail`; `previewValue`=mock, `testValue`=unimplemented. Contrato intacto.
+- RPC `station_detail` (migración 0002) para el detalle (todos los combustibles), reutilizando DTO + mapper.
+- Calidad de datos: filtro de precio plausible [0.3, 6.0] en el sync (el MIMIT trae basura tipo 0.1 €).
+
+### Developer (implementation)
+- `Core/Network/`: `SupabaseConfig` (URL + anon key), `APIClient+Live`. `APIClient` DependencyKey actualizado.
+- `backend/migrations/0002_station_detail.sql`. `backend/sync/parse.mjs` filtro de precio + test.
+
+### QA (tests)
+- 40 tests iOS (mock en previews/tests) + 3 backend. RPC verificada vía anon key (200 estaciones Roma, RLS ok). Repoblado en CI tras el fix → más barata real 1.639 € (antes 0.1 € basura).
+
+### Review
+- App iOS lee datos reales (mapa + lista vía `nearby_stations`). Detalle requiere aplicar 0002 (acción del usuario en SQL editor).
+- Verificación visual en simulador pendiente del usuario (el overlay de consentimiento UMP bloquea screenshots headless).
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App iOS (mock) completa + backend escrito y verificado.** iOS: 40 tests, SwiftLint 0. Backend: 3 tests + parser validado con los CSV reales (~23.7k stations / 93k precios).
-- `backend/` (FM-2 SQL + FM-3 sync Node + workflow) listo; **despliegue cloud pendiente** (Supabase + secrets + push → `backend/README.md`).
-- `APIClient.liveValue` sigue = mock; **FM-5 real** = swap a supabase-swift contra `nearby_stations` (anon key) tras desplegar.
-- Issues: FM-1, FM-4, FM-5(mock), FM-6…FM-13 hechos; FM-2/FM-3 code-complete; pendientes FM-5 real, **FM-15 (clustering 🔴)**, FM-14.
-- **Próximo paso:** desplegar backend (runbook) → FM-5 real → FM-15 → FM-14.
+- **App con datos REALES del MIMIT.** `APIClient.liveValue` = Supabase (RPC `nearby_stations`); mapa+lista muestran ~23.7k estaciones reales. Backend desplegado + cron CI. 40 tests iOS + 3 backend, SwiftLint 0.
+- Repo `Danmarjim/FuelMap` (privado) al día. Supabase poblado (precios saneados, rango 0.5–4.999 €).
+- **Acción usuario pendiente:** aplicar `backend/migrations/0002_station_detail.sql` (detalle de estación).
+- Issues: FM-1…FM-13 + FM-2/FM-3/FM-5 hechos. Pendientes: **FM-15 (clustering 🔴, ya necesario con datos reales)**, FM-14 (App Store).
+- **Próximo paso:** FM-15 (clustering) → FM-14.
 
 ---
 

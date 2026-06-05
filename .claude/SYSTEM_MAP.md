@@ -75,8 +75,10 @@ Core/
 | `Foundation/Decimal+FuelPrice.swift` | ext | `fuelPriceLabel` ("1,879 €"); formateo de precio compartido (review). |
 | `Foundation/String+NilIfEmpty.swift` | ext | `nilIfEmpty` para campos vacíos del MIMIT (FM-4). |
 | `Location/Coordinate+CoreLocation.swift` | ext | `clLocationCoordinate` + `init(_ CLLocationCoordinate2D)` compartidos (review). |
-| `Network/APIClient.swift` | `@Dependency` | `nearbyStations`/`stationDetail` async; `APIError` tipado. `liveValue` = mock TEMP hasta FM-2/FM-3 (ADR-001) (FM-5). |
-| `Network/APIClient+Mock.swift` | mock + fixtures | `APIClient.mock()` filtra/ordena por precio; `StationFixtures` (6 estaciones de Roma) para mock y previews (FM-5). |
+| `Network/APIClient.swift` | `@Dependency` | `nearbyStations`/`stationDetail` async; `APIError` tipado. `liveValue` = `.live()` (Supabase), `previewValue` = `.mock()`, `testValue` unimplemented (FM-5). |
+| `Network/APIClient+Live.swift` | impl real | RPC `nearby_stations`/`station_detail` vía supabase-swift; decode `JSONDecoder.fuelMap` + `StationMapper` (FM-5). |
+| `Network/SupabaseConfig.swift` | config | URL + anon key (read-only/RLS) + `SupabaseClient` compartido (FM-5). |
+| `Network/APIClient+Mock.swift` | mock + fixtures | `APIClient.mock()` (previews/tests); `StationFixtures` (6 estaciones de Roma) (FM-5). |
 | `Location/LocationClient.swift` | `@Dependency` | Wrapper CoreLocation (coordinador `@MainActor` + `LockIsolated` para status síncrono); `authorizationStatus`/`requestWhenInUse`/`currentLocation`; `LocationError` (FM-6). |
 | `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
 
@@ -100,6 +102,7 @@ Core/
 | File | Responsibility |
 |---|---|
 | `backend/migrations/0001_init.sql` | Esquema (`stations`,`prices`,`sync_runs`) + PostGIS + índices GIST + RPC `nearby_stations` + RLS read-only (anon) + grants (FM-2). |
+| `backend/migrations/0002_station_detail.sql` | RPC `station_detail(in_id)` — todos los combustibles de una estación (FM-5). |
 | `backend/sync/parse.mjs` | Parse CSV pipe-separated; salta `Estrazione`+cabecera; valida coords (NF6); dtComu (FM-3). |
 | `backend/sync/fuel-mapping.mjs` | `normalizeFuel` descCarburante→FuelType (ADR-003) (FM-3). |
 | `backend/sync/sync.mjs` | Descarga MIMIT → upsert stations + reemplazo prices + `sync_runs` (service_role) (FM-3). |

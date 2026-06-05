@@ -1,27 +1,6 @@
 {
   "sourceLanguage" : "it",
   "strings" : {
-    "%@ €" : {
-
-    },
-    "Centra la mappa qui" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Center the map here" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Centrar el mapa aquí" } }
-      }
-    },
-    "Filtra solo le stazioni self-service" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Show only self-service stations" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mostrar solo gasolineras de autoservicio" } }
-      }
-    },
-    "Nessun prezzo disponibile" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "No prices available" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Ningún precio disponible" } }
-      }
-    },
     "%@ km" : {
 
     },
@@ -137,6 +116,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cargando…"
+          }
+        }
+      }
+    },
+    "Centra la mappa qui" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Center the map here"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Centrar el mapa aquí"
           }
         }
       }
@@ -273,6 +268,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Error de conexión. Inténtalo de nuevo."
+          }
+        }
+      }
+    },
+    "Filtra solo le stazioni self-service" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show only self-service stations"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar solo gasolineras de autoservicio"
           }
         }
       }
@@ -425,6 +436,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin favoritos"
+          }
+        }
+      }
+    },
+    "Nessun prezzo disponibile" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No prices available"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ningún precio disponible"
           }
         }
       }
