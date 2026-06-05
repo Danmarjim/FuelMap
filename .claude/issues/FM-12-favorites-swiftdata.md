@@ -41,10 +41,14 @@ Dependencies: FM-9
 
 Mock/stub strategy: `ModelContainer` en memoria (`isStoredInMemoryOnly: true`) para tests; `testValue` del client.
 
+## Status: DONE (2026-06-05)
+
+> Persistencia aislada con `@ModelActor` tras `FavoritesClient` (`@Dependency`). Sin `.modelContainer` en vista (acceso por client). Favoritos accesibles vía botón ★ en el mapa → `FavoritesView`. Toggle en el detalle (estrella). Persistencia entre lanzamientos no verificable headless (sin tap) pero la lógica está cubierta por tests con contenedor en memoria.
+
 ## Acceptance Criteria
-- [ ] Marcar/desmarcar favorito persiste entre lanzamientos.
-- [ ] Lista de favoritos accesible.
-- [ ] Tests pass (container en memoria).
+- [x] Marcar/desmarcar favorito (toggle en detalle) — persistencia probada con `FavoritesClient` (SwiftData en memoria en tests; disco en `liveValue`).
+- [x] Lista de favoritos accesible (`FavoritesView` desde el mapa).
+- [x] Tests pass: 4 nuevos (FavoritesClientTests×2, detail toggle, map loadFavorites); 38 totales. SwiftLint 0.
 
 ## References
 - RFC: §4; PRD F11

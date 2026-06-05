@@ -54,6 +54,25 @@ struct StationDetailFeatureTests {
         #expect(store.state.errorMessage != nil)
     }
 
+    @Test("favoriteToggled marca y desmarca el favorito")
+    func detail_favoriteToggle() async {
+        let station = StationFixtures.all[0]
+        let store = TestStore(
+            initialState: StationDetailFeature.State(stationId: station.id, station: station)
+        ) {
+            StationDetailFeature()
+        } withDependencies: {
+            $0.favoritesClient = .inMemory()
+        }
+        store.exhaustivity = .off
+
+        await store.send(.favoriteToggled)
+        await store.receive(\.favoriteStatus) { $0.isFavorite = true }
+
+        await store.send(.favoriteToggled)
+        await store.receive(\.favoriteStatus) { $0.isFavorite = false }
+    }
+
     @Test("directionsTapped abre Apple Maps con el destino correcto")
     func detail_directions_opensAppleMaps() async {
         let station = StationFixtures.all[0]

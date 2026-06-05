@@ -8,6 +8,12 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Acceso no autorizado." } }
       }
     },
+    "Aggiungi ai preferiti" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add to favorites" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Añadir a favoritos" } }
+      }
+    },
     "Aggiornato il %@" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Updated on %@" } },
@@ -122,6 +128,12 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Ninguna gasolinera" } }
       }
     },
+    "Nessun preferito" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No favorites" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Sin favoritos" } }
+      }
+    },
     "Nessun distributore in zona" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "No stations in this area" } },
@@ -140,6 +152,12 @@
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Ordenar por" } }
       }
     },
+    "Preferiti" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Favorites" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Favoritos" } }
+      }
+    },
     "Prezzi" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Prices" } },
@@ -156,6 +174,12 @@
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "Radius" } },
         "es" : { "stringUnit" : { "state" : "translated", "value" : "Radio" } }
+      }
+    },
+    "Rimuovi dai preferiti" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove from favorites" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Quitar de favoritos" } }
       }
     },
     "Self service" : {

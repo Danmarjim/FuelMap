@@ -258,15 +258,39 @@
 
 ---
 
+## Plan Iteration: FM-12 — Favoritos (SwiftData) — Completed
+**Date:** 2026-06-05
+
+### Architect (RFC §4; PRD F11)
+- Persistencia SwiftData aislada con **`@ModelActor`** (`FavoritesStore`) tras un `FavoritesClient` (`@Dependency` de closures `@Sendable`) — sin acoplar SwiftData a las vistas ni romper Swift 6 strict.
+- Tipos Sendable (`FavoriteStationInfo`, `FavoriteInput`) cruzan el límite del actor; los `@Model` no.
+
+### Developer (implementation)
+- `Core/Persistence/`: `FavoriteStation` (`@Model`), `FavoritesClient` (+`FavoritesStore`, `ModelContainer.fuelMapShared`, in-memory para test/preview).
+- `StationDetailFeature`/View: estado `isFavorite`, carga en onAppear (merge), `favoriteToggled`, botón estrella en la barra.
+- `MapFeature`/View: `favorites`, `loadFavorites` (onAppear + al cerrar el detalle), `favoriteSelected`→recentrar; botón ★ + `FavoritesView` (sheet).
+- Localización de las 4 cadenas nuevas (it/es/en). No se usa `.modelContainer` en vista (acceso vía client).
+
+### QA (tests)
+- `FavoritesClientTests` (2): toggle add/remove + isFavorite/all; orden por recencia. `StationDetailFeatureTests`: toggle marca/desmarca. `MapFeatureTests`: loadFavorites puebla.
+- **38 tests passing**. SwiftLint 0.
+
+### Review
+- Verificado en simulador: botón ★ junto al de lista; app sin crash. La hoja de favoritos requiere tap headless → cubierta por tests.
+- `force_try` documentado solo en fallbacks de creación de contenedor en memoria.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App con flujo completo y localizada (it/es/en):** mapa (pins, más barata en verde, VoiceOver) + filtros + lista ordenable + detalle; estados loading/empty/error localizados. Verificada en simulador en los 3 idiomas.
-- `Core/` + `Features/{Map,Filters,StationDetail}` con mocks. 34 tests.
+- **App con todas las features cliente (mock):** mapa (pins, más barata, VoiceOver) + filtros + lista ordenable + detalle + **favoritos persistentes (SwiftData)**; localizada it/es/en. Verificada en simulador.
+- `Core/{Models,Network,Location,Persistence}` + `Features/{Map,Filters,StationDetail}` con mocks. 38 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-6, FM-5 (mock), FM-7, FM-8, FM-9, FM-10, FM-13.
+- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6, FM-7, FM-8, FM-9, FM-10, FM-12, FM-13.
 - Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3), Info.plist l10n (FM-14).
-- **Próximo paso:** FM-11 (AdMob + UMP + ATT, añade GoogleMobileAds) o FM-12 (favoritos, nice-to-have), o backend real (FM-2/FM-3).
+- **Próximo paso:** FM-11 (AdMob + UMP + ATT) o backend real (FM-2/FM-3). Luego FM-14 (App Store prep) y la evaluación final con agentes.
 
 ---
 

@@ -18,6 +18,7 @@ struct StationDetailFeature {
         var station: Station?
         var isLoading = false
         var errorMessage: String?
+        var isFavorite = false
 
         var id: Int { stationId }
     }
@@ -25,11 +26,14 @@ struct StationDetailFeature {
     enum Action: Equatable {
         case onAppear
         case stationResponse(Result<Station, APIError>)
+        case favoriteStatus(Bool)
+        case favoriteToggled
         case directionsTapped
         case closeTapped
     }
 
     @Dependency(\.apiClient) var apiClient
+    @Dependency(\.favoritesClient) var favoritesClient
     @Dependency(\.openURL) var openURL
     @Dependency(\.dismiss) var dismiss
 
@@ -39,16 +43,21 @@ struct StationDetailFeature {
             case .onAppear:
                 state.isLoading = true
                 let id = state.stationId
-                return .run { send in
-                    do {
-                        let station = try await apiClient.stationDetail(id)
-                        await send(.stationResponse(.success(station)))
-                    } catch let error as APIError {
-                        await send(.stationResponse(.failure(error)))
-                    } catch {
-                        await send(.stationResponse(.failure(.network(error.localizedDescription))))
+                return .merge(
+                    .run { send in
+                        do {
+                            let station = try await apiClient.stationDetail(id)
+                            await send(.stationResponse(.success(station)))
+                        } catch let error as APIError {
+                            await send(.stationResponse(.failure(error)))
+                        } catch {
+                            await send(.stationResponse(.failure(.network(error.localizedDescription))))
+                        }
+                    },
+                    .run { send in
+                        await send(.favoriteStatus(favoritesClient.isFavorite(id)))
                     }
-                }
+                )
 
             case let .stationResponse(.success(station)):
                 state.isLoading = false
@@ -63,6 +72,22 @@ struct StationDetailFeature {
                     state.errorMessage = error.userMessage
                 }
                 return .none
+
+            case let .favoriteStatus(isFavorite):
+                state.isFavorite = isFavorite
+                return .none
+
+            case .favoriteToggled:
+                guard let station = state.station else { return .none }
+                let input = FavoriteInput(
+                    id: station.id,
+                    name: station.name,
+                    latitude: station.coordinate.latitude,
+                    longitude: station.coordinate.longitude
+                )
+                return .run { send in
+                    await send(.favoriteStatus(favoritesClient.toggle(input)))
+                }
 
             case .directionsTapped:
                 guard let coordinate = state.station?.coordinate else { return .none }

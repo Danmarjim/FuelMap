@@ -27,6 +27,7 @@ struct MapFeature {
         var sortOrder: StationSort = .price
         /// Estación más barata del conjunto actual (para destacarla en el mapa).
         var cheapestStationID: Int?
+        var favorites: [FavoriteStationInfo] = []
 
         /// Estaciones ordenadas según `sortOrder` (para la lista).
         var sortedStations: [Station] {
@@ -54,11 +55,15 @@ struct MapFeature {
         case filters(FiltersFeature.Action)
         case sortOrderChanged(StationSort)
         case recenterOnStation(Station)
+        case loadFavorites
+        case favoritesResponse([FavoriteStationInfo])
+        case favoriteSelected(FavoriteStationInfo)
         case reload
     }
 
     @Dependency(\.apiClient) var apiClient
     @Dependency(\.locationClient) var locationClient
+    @Dependency(\.favoritesClient) var favoritesClient
     @Dependency(\.continuousClock) var clock
 
     private enum CancelID { case reload }
@@ -70,17 +75,20 @@ struct MapFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard !state.didRequestLocation else { return .none }
+                guard !state.didRequestLocation else { return .send(.loadFavorites) }
                 state.didRequestLocation = true
-                return .run { send in
-                    let status = await locationClient.requestWhenInUse()
-                    switch status {
-                    case .authorizedWhenInUse, .authorizedAlways:
-                        await send(.locationResponse(try? await locationClient.currentLocation()))
-                    default:
-                        await send(.locationResponse(nil))
-                    }
-                }
+                return .merge(
+                    .run { send in
+                        let status = await locationClient.requestWhenInUse()
+                        switch status {
+                        case .authorizedWhenInUse, .authorizedAlways:
+                            await send(.locationResponse(try? await locationClient.currentLocation()))
+                        default:
+                            await send(.locationResponse(nil))
+                        }
+                    },
+                    .send(.loadFavorites)
+                )
 
             case let .locationResponse(coordinate):
                 if let coordinate {
@@ -111,6 +119,19 @@ struct MapFeature {
                 state.recenter = station.coordinate
                 return .none
 
+            case .loadFavorites:
+                return .run { send in
+                    await send(.favoritesResponse(favoritesClient.all()))
+                }
+
+            case let .favoritesResponse(favorites):
+                state.favorites = favorites
+                return .none
+
+            case let .favoriteSelected(favorite):
+                state.recenter = favorite.coordinate
+                return .none
+
             case .reload:
                 return load(&state)
 
@@ -132,6 +153,10 @@ struct MapFeature {
             case let .stationTapped(station):
                 state.detail = StationDetailFeature.State(stationId: station.id, station: station)
                 return .none
+
+            case .detail(.dismiss):
+                // Al cerrar el detalle, refresca favoritos (pudo cambiar el toggle).
+                return .send(.loadFavorites)
 
             case .detail:
                 return .none

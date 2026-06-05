@@ -108,6 +108,23 @@ struct MapFeatureTests {
         #expect(store.state.isLoading == false)
     }
 
+    @Test("loadFavorites puebla la lista de favoritos")
+    func map_loadFavorites_populates() async {
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        } withDependencies: {
+            $0.favoritesClient.all = {
+                [FavoriteStationInfo(id: 1, name: "Preferito", coordinate: .italyDefault)]
+            }
+        }
+        store.exhaustivity = .off
+
+        await store.send(.loadFavorites)
+        await store.receive(\.favoritesResponse)
+
+        #expect(store.state.favorites.map(\.id) == [1])
+    }
+
     @Test("Cambiar un filtro recarga las estaciones")
     func map_filterChange_reloads() async {
         let store = TestStore(initialState: MapFeature.State()) {

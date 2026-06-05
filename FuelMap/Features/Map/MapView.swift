@@ -20,6 +20,7 @@ struct MapView: View {
         )
     )
     @State private var showingList = false
+    @State private var showingFavorites = false
 
     var body: some View {
         Map(position: $camera) {
@@ -46,7 +47,14 @@ struct MapView: View {
                 center: Coordinate(latitude: center.latitude, longitude: center.longitude)
             ))
         }
-        .overlay(alignment: .topLeading) { listButton }
+        .overlay(alignment: .topLeading) {
+            VStack(spacing: 8) {
+                listButton
+                favoritesButton
+            }
+            .padding(.leading, 12)
+            .padding(.top, 6)
+        }
         .safeAreaInset(edge: .top) { statusBar }
         .safeAreaInset(edge: .bottom) {
             FiltersView(store: store.scope(state: \.filters, action: \.filters))
@@ -69,6 +77,17 @@ struct MapView: View {
                     store.send(.recenterOnStation(station))
                 },
                 onClose: { showingList = false }
+            )
+            .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showingFavorites) {
+            FavoritesView(
+                favorites: store.favorites,
+                onSelect: { favorite in
+                    showingFavorites = false
+                    store.send(.favoriteSelected(favorite))
+                },
+                onClose: { showingFavorites = false }
             )
             .presentationDetents([.medium, .large])
         }
@@ -95,9 +114,19 @@ struct MapView: View {
                 .padding(10)
                 .background(.regularMaterial, in: Circle())
         }
-        .padding(.leading, 12)
-        .padding(.top, 6)
         .accessibilityLabel("Elenco distributori")
+    }
+
+    private var favoritesButton: some View {
+        Button {
+            showingFavorites = true
+        } label: {
+            Image(systemName: "star")
+                .font(.headline)
+                .padding(10)
+                .background(.regularMaterial, in: Circle())
+        }
+        .accessibilityLabel("Preferiti")
     }
 
     @ViewBuilder

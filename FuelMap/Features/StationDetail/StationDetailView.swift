@@ -26,6 +26,18 @@ struct StationDetailView: View {
             .navigationTitle(store.station?.name ?? String(localized: "Distributore"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        store.send(.favoriteToggled)
+                    } label: {
+                        Image(systemName: store.isFavorite ? "star.fill" : "star")
+                    }
+                    .accessibilityLabel(
+                        store.isFavorite
+                            ? Text("Rimuovi dai preferiti")
+                            : Text("Aggiungi ai preferiti")
+                    )
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Chiudi") { store.send(.closeTapped) }
                 }

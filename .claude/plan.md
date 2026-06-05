@@ -35,14 +35,14 @@ Canon listo:
 | ✅ FM-9 | StationDetail | M | FM-7 |
 | ✅ FM-10 | Más barata + orden | S | FM-7,8 |
 | FM-11 | AdMob + UMP + ATT | M | FM-1,7 |
-| FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
+| ✅ FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
 | ✅ FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
 | FM-14 | Privacy labels + App Store prep | S | FM-11,13 |
 
 ## Próximo paso inmediato
 
-- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 13 hechos**: app completa, localizada (it/es/en) y accesible. 34 tests passing. Verificado en simulador en los 3 idiomas.
-- Siguiente: **FM-11** (AdMob+UMP+ATT, añade GoogleMobileAds), **FM-12** (favoritos, nice-to-have) o el **backend real** (FM-2/FM-3).
+- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 12, 13 hechos**: app con todas las features cliente (incl. favoritos), localizada y accesible. 38 tests passing. Verificado en simulador.
+- Siguiente: **FM-11** (AdMob+UMP+ATT, añade GoogleMobileAds) o el **backend real** (FM-2/FM-3). Luego **FM-14** (App Store prep) y la **evaluación final con agentes**.
 
 ## Deuda registrada (no bloqueante)
 

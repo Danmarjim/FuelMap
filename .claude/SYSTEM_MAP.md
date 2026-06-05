@@ -47,6 +47,7 @@ Core/
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
 | `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); verde si `isCheapest` (FM-7/FM-10). |
 | `Map/StationListView.swift` | View | Lista ordenable (precio/distancia) de estaciones; fila→recentrar; destaca la más barata (FM-10). |
+| `Map/FavoritesView.swift` | View | Lista de favoritos (sheet); fila→recentrar; estado vacío (FM-12). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
@@ -76,6 +77,17 @@ Core/
 | `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
 
 ---
+
+## Persistencia (SwiftData)
+
+**Path:** `FuelMap/Core/Persistence/`
+
+| File | Type | Responsibility |
+|---|---|---|
+| `FavoriteStation.swift` | `@Model` | Estación favorita persistida (id único, nombre, coords, addedAt) (FM-12). |
+| `FavoritesClient.swift` | `@Dependency` + `@ModelActor` | `FavoritesStore` (actor, ModelContext) + `FavoritesClient` (isFavorite/toggle/all); `ModelContainer.fuelMapShared` (FM-12). |
+
+> No se usa `.modelContainer` en la vista (no hay `@Query`); el acceso va por `FavoritesClient`/`@ModelActor`.
 
 ## Backend (fuera del repo iOS)
 
