@@ -34,21 +34,22 @@ Canon listo:
 | ✅ FM-8 | FiltersFeature | M | FM-7 |
 | ✅ FM-9 | StationDetail | M | FM-7 |
 | ✅ FM-10 | Más barata + orden | S | FM-7,8 |
-| FM-11 | AdMob + UMP + ATT | M | FM-1,7 |
+| ✅ FM-11 | AdMob + UMP + ATT (IDs test) | M | FM-1,7 |
 | ✅ FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
 | ✅ FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
 | FM-14 | Privacy labels + App Store prep | S | FM-11,13 |
 
 ## Próximo paso inmediato
 
-- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 12, 13 hechos**: app con todas las features cliente (incl. favoritos), localizada y accesible. 38 tests passing. Verificado en simulador.
-- Siguiente: **FM-11** (AdMob+UMP+ATT, añade GoogleMobileAds) o el **backend real** (FM-2/FM-3). Luego **FM-14** (App Store prep) y la **evaluación final con agentes**.
+- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 11, 12, 13 hechos**: app completa (mock), localizada, accesible y monetizada (banner test + UMP/ATT). 39 tests passing. Verificado en simulador.
+- Siguiente: **backend real** (FM-2 Supabase + FM-3 sync + FM-5 real) o **FM-14** (App Store prep). Luego la **evaluación final con agentes**.
 
 ## Deuda registrada (no bloqueante)
 
 - **Clustering real (PRD F6)** — SwiftUI `Map` (iOS 17) no clusteriza annotations custom. Con ~22k estaciones reales hará falta `MKMapView`+`MKClusterAnnotation` (UIViewRepresentable) o clustering por grid en el reducer. No necesario con el mock (6 estaciones). Origen: FM-7.
 - **APIClient real (FM-5 → FM-2/FM-3)** — `liveValue` es un mock; sustituir por supabase-swift contra la RPC `nearby_stations` cuando exista el backend. No enviar el mock a producción (verificar en FM-14).
 - **Info.plist l10n (FM-13 → FM-14)** — la usage description de ubicación sigue en italiano; localizar es/en vía `InfoPlist.xcstrings` en FM-14.
+- **AdMob producción (FM-11 → FM-14)** — `GADApplicationIdentifier` y el ad unit del banner son IDs de TEST de Google; sustituir por los reales + añadir `SKAdNetworkItems` y privacy labels en FM-14. No publicar con IDs de test.
 
 ## Convenciones del workflow
 

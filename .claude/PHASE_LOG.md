@@ -282,15 +282,39 @@
 
 ---
 
+## Plan Iteration: FM-11 — AdMob + UMP + ATT — Completed
+**Date:** 2026-06-05
+
+### Architect (RFC §6.4, §3.3)
+- `AdClient` (`@Dependency`): `start` (SDK), `requestConsent` (UMP→ATT), `bannerAdUnitID`. Banner FUERA del mapa (PRD F8).
+- Info.plist explícito (XcodeGen `info`) para `GADApplicationIdentifier` + `NSUserTrackingUsageDescription` (no expresables con GENERATE_INFOPLIST_FILE).
+
+### Developer (implementation)
+- SPM: GoogleMobileAds 11.13.0 + GoogleUserMessagingPlatform 2.7.0 (API v11 `GAD*`/`UMP*`, `@preconcurrency import`).
+- `Core/Ads/`: `AdClient` (+`AdConsentCoordinator`, `AdSDK`, `topViewController`), `BannerAdView` (`GADBannerView`, `load(_:)`).
+- `AppFeature.onAppear`→`requestConsent()`+`start()`; `AppView` aloja el banner bajo el mapa.
+- `project.yml`: Info.plist generado (gitignored) con keys de ads/ATT; IDs de TEST de Google.
+
+### QA (tests)
+- `AppFeatureTests`: onAppear ejecuta consent y luego start (orden verificado con spy).
+- **39 tests passing**. SwiftLint 0.
+
+### Review
+- Verificado en simulador (install limpio): **formulario UMP** (test), prompt de ubicación y **banner AdMob en modo test** ("Test mode/Nice job!") visibles. ATT tras UMP (no tap headless).
+- Deuda → FM-14: ad unit real, `SKAdNetworkItems`, l10n del Info.plist.
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App con todas las features cliente (mock):** mapa (pins, más barata, VoiceOver) + filtros + lista ordenable + detalle + **favoritos persistentes (SwiftData)**; localizada it/es/en. Verificada en simulador.
-- `Core/{Models,Network,Location,Persistence}` + `Features/{Map,Filters,StationDetail}` con mocks. 38 tests.
+- **App completa (mock) y monetizada:** mapa + filtros + lista + detalle + favoritos, localizada it/es/en, con **banner AdMob (test) + consentimiento UMP/ATT**. Verificada en simulador.
+- `Core/{Models,Network,Location,Persistence,Ads}` + `Features/{Map,Filters,StationDetail}`. 39 tests.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
-- Proyecto XcodeGen; deps SPM: solo TCA.
-- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6, FM-7, FM-8, FM-9, FM-10, FM-12, FM-13.
-- Deuda: clustering real (FM-7), APIClient real (FM-2/FM-3), Info.plist l10n (FM-14).
-- **Próximo paso:** FM-11 (AdMob + UMP + ATT) o backend real (FM-2/FM-3). Luego FM-14 (App Store prep) y la evaluación final con agentes.
+- XcodeGen; deps SPM: TCA + GoogleMobileAds + UMP. Info.plist explícito (gitignored).
+- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6, FM-7, FM-8, FM-9, FM-10, FM-11, FM-12, FM-13.
+- Deuda: clustering real (FM-7); APIClient real (FM-2/FM-3); FM-14 (ad unit real, SKAdNetworkItems, Info.plist l10n, privacy labels).
+- **Próximo paso:** backend real (FM-2 Supabase + FM-3 sync + FM-5 real) o FM-14 (App Store prep). Luego evaluación final con agentes.
 
 ---
 

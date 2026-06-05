@@ -8,12 +8,19 @@
 import ComposableArchitecture
 import SwiftUI
 
-/// Vista raíz. Aloja el mapa (RFC §1).
+/// Vista raíz. Aloja el mapa y el banner de ads debajo (fuera del mapa) (RFC §1, §6.4).
 struct AppView: View {
     let store: StoreOf<AppFeature>
+    @Dependency(\.adClient) var adClient
 
     var body: some View {
-        MapView(store: store.scope(state: \.map, action: \.map))
+        VStack(spacing: 0) {
+            MapView(store: store.scope(state: \.map, action: \.map))
+            BannerAdView(adUnitID: adClient.bannerAdUnitID())
+                .frame(height: 50)
+                .frame(maxWidth: .infinity)
+        }
+        .onAppear { store.send(.onAppear) }
     }
 }
 

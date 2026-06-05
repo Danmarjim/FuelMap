@@ -1,8 +1,9 @@
 # macOS
 .DS_Store
 
-# Xcode — proyecto generado por XcodeGen (fuente de verdad: project.yml)
+# Xcode — proyecto e Info.plist generados por XcodeGen (fuente de verdad: project.yml)
 *.xcodeproj/
+FuelMap/Info.plist
 
 # Xcode
 build/

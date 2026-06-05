@@ -41,8 +41,10 @@ Core/
 | File | Type | Responsibility |
 |---|---|---|
 | `Resources/Localizable.xcstrings` | String Catalog | Strings UI en it (fuente) + es + en (FM-13). |
-| `App/AppFeature.swift` | Reducer | Raíz; `Scope` a `MapFeature` (FM-7). |
-| `App/AppView.swift` | View | Raíz; aloja `MapView` (FM-7). |
+| `App/AppFeature.swift` | Reducer | Raíz; `Scope` a `MapFeature` (FM-7); `onAppear`→consent+start ads (FM-11). |
+| `App/AppView.swift` | View | Raíz; `MapView` + `BannerAdView` debajo (fuera del mapa) (FM-7/FM-11). |
+| `Core/Ads/AdClient.swift` | `@Dependency` | `start`/`requestConsent` (UMP→ATT)/`bannerAdUnitID` (TEST); `AdConsentCoordinator` (FM-11). |
+| `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
 | `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
 | `Map/StationPin.swift` | View | Pin de precio (cápsula + puntero); verde si `isCheapest` (FM-7/FM-10). |

@@ -19,6 +19,12 @@ packages:
   ComposableArchitecture:
     url: https://github.com/pointfreeco/swift-composable-architecture
     from: "1.15.0"
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    from: "11.0.0"
+  GoogleUserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
+    from: "2.7.0"
 
 targets:
   FuelMap:
@@ -29,17 +35,26 @@ targets:
     dependencies:
       - package: ComposableArchitecture
         product: ComposableArchitecture
+      - package: GoogleMobileAds
+        product: GoogleMobileAds
+      - package: GoogleUserMessagingPlatform
+        product: GoogleUserMessagingPlatform
     settings:
       base:
-        GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: com.danmarjim.fuelmap
         TARGETED_DEVICE_FAMILY: "1"
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
-        INFOPLIST_KEY_CFBundleDisplayName: FuelMap
-        # Base italiano; localización it/es/en se aborda en FM-13.
-        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "FuelMap usa la tua posizione per mostrarti i distributori più vicini e i loro prezzi."
+    info:
+      path: FuelMap/Info.plist
+      properties:
+        CFBundleDisplayName: FuelMap
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        # Base italiano; l10n del Info.plist (es/en) → FM-14.
+        NSLocationWhenInUseUsageDescription: "FuelMap usa la tua posizione per mostrarti i distributori più vicini e i loro prezzi."
+        NSUserTrackingUsageDescription: "Usiamo un identificatore del dispositivo per mostrarti annunci più pertinenti."
+        # ID de app de TEST de Google (sin cuenta AdMob real). Real → FM-14.
+        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
 
   FuelMapTests:
     type: bundle.unit-test
