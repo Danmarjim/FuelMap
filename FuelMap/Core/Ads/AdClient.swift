@@ -56,9 +56,7 @@ extension DependencyValues {
 
 private enum AdSDK {
     static func start() async {
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            GADMobileAds.sharedInstance().start { _ in continuation.resume() }
-        }
+        _ = await GADMobileAds.sharedInstance().start()
     }
 }
 
@@ -70,23 +68,19 @@ enum AdConsentCoordinator {
         await requestTracking()
     }
 
+    @MainActor
     private static func requestUMPConsent() async {
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            UMPConsentInformation.sharedInstance
-                .requestConsentInfoUpdate(with: UMPRequestParameters()) { _ in
-                    Task { @MainActor in
-                        UMPConsentForm.loadAndPresentIfRequired(from: topViewController()) { _ in
-                            continuation.resume()
-                        }
-                    }
-                }
+        do {
+            try await UMPConsentInformation.sharedInstance
+                .requestConsentInfoUpdate(with: UMPRequestParameters())
+            try await UMPConsentForm.loadAndPresentIfRequired(from: topViewController())
+        } catch {
+            // Consentimiento no disponible/error: seguir sin bloquear (ads no personalizados).
         }
     }
 
     private static func requestTracking() async {
-        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            ATTrackingManager.requestTrackingAuthorization { _ in continuation.resume() }
-        }
+        _ = await ATTrackingManager.requestTrackingAuthorization()
     }
 
     /// Controlador visible más arriba, para presentar el formulario de consentimiento.
