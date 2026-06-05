@@ -111,6 +111,8 @@ struct MapView: View {
                 .font(.headline)
                 .padding(10)
                 .background(.regularMaterial, in: Circle())
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .accessibilityLabel("Elenco distributori")
     }
@@ -123,6 +125,8 @@ struct MapView: View {
                 .font(.headline)
                 .padding(10)
                 .background(.regularMaterial, in: Circle())
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .accessibilityLabel("Preferiti")
     }
@@ -141,6 +145,8 @@ struct MapView: View {
     private func banner(_ title: Text, systemImage: String) -> some View {
         Label { title } icon: { Image(systemName: systemImage) }
             .font(.footnote)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(.regularMaterial, in: Capsule())

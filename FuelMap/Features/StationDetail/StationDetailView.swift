@@ -50,9 +50,7 @@ struct StationDetailView: View {
     private func content(for station: Station) -> some View {
         List {
             Section {
-                ForEach(fuelGroups(for: station), id: \.fuel) { group in
-                    fuelRow(group)
-                }
+                pricesContent(for: station)
             } header: {
                 Text("Prezzi")
             } footer: {
@@ -78,6 +76,19 @@ struct StationDetailView: View {
     }
 
     @ViewBuilder
+    private func pricesContent(for station: Station) -> some View {
+        let groups = fuelGroups(for: station)
+        if groups.isEmpty {
+            Text("Nessun prezzo disponibile")
+                .foregroundStyle(.secondary)
+        } else {
+            ForEach(groups, id: \.fuel) { group in
+                fuelRow(group)
+            }
+        }
+    }
+
+    @ViewBuilder
     private func fuelRow(_ group: FuelGroup) -> some View {
         HStack {
             Text(group.fuel.label)
@@ -96,14 +107,21 @@ struct StationDetailView: View {
     }
 
     private func priceLabel(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
-        HStack(spacing: 6) {
-            Text(kind)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(price.fuelPriceLabel)
-                .font(.subheadline.weight(.semibold))
-                .monospacedDigit()
+        // Adapta a VStack si en horizontal no cabe (Dynamic Type grande).
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 6) { priceLabelContent(kind, price) }
+            VStack(alignment: .trailing, spacing: 0) { priceLabelContent(kind, price) }
         }
+    }
+
+    @ViewBuilder
+    private func priceLabelContent(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
+        Text(kind)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+        Text(price.fuelPriceLabel)
+            .font(.subheadline.weight(.semibold))
+            .monospacedDigit()
     }
 
     // MARK: - Data shaping

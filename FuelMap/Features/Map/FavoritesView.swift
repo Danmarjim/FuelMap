@@ -19,8 +19,11 @@ struct FavoritesView: View {
                 Button { onSelect(favorite) } label: {
                     Label(favorite.name, systemImage: "star.fill")
                         .foregroundStyle(.primary)
+                        .frame(minHeight: 44, alignment: .leading)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(Text(favorite.name))
+                .accessibilityHint(Text("Centra la mappa qui"))
             }
             .listStyle(.plain)
             .navigationTitle("Preferiti")

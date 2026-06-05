@@ -29,6 +29,9 @@ struct StationListView: View {
                 ForEach(stations) { station in
                     Button { onSelect(station) } label: { row(station) }
                         .buttonStyle(.plain)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(Text(voiceOverLabel(for: station)))
+                        .accessibilityHint(Text("Centra la mappa qui"))
                 }
             }
             .listStyle(.plain)
@@ -64,7 +67,8 @@ struct StationListView: View {
                     .foregroundStyle(station.id == cheapestStationID ? .green : .primary)
             }
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 6)
+        .frame(minHeight: 44)
     }
 
     private func distanceText(to station: Station) -> String {
@@ -73,6 +77,13 @@ struct StationListView: View {
             return "\(Int(meters.rounded())) m"
         }
         return "\((meters / 1000).formatted(.number.precision(.fractionLength(1)))) km"
+    }
+
+    private func voiceOverLabel(for station: Station) -> String {
+        var parts = [station.name, distanceText(to: station)]
+        if let price = station.cheapest?.price { parts.append(price.fuelPriceLabel) }
+        if station.id == cheapestStationID { parts.append(String(localized: "il più economico")) }
+        return parts.joined(separator: ", ")
     }
 }
 

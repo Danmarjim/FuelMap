@@ -16,16 +16,23 @@ struct StationPin: View {
     let price: Decimal?
     var isCheapest: Bool = false
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     private var tint: Color { isCheapest ? .green : .blue }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
-                Image(systemName: "fuelpump.fill")
+                // Forma distintiva para la más barata (no solo color): estrella.
+                Image(systemName: isCheapest ? "star.fill" : "fuelpump.fill")
                     .font(.caption2)
-                Text(priceText)
-                    .font(.caption2.weight(.bold))
-                    .monospacedDigit()
+                // En tamaños de accesibilidad ocultamos el texto para no desbordar
+                // el pin en el mapa; el precio sigue en el accessibilityLabel.
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Text(priceText)
+                        .font(.caption2.weight(.bold))
+                        .monospacedDigit()
+                }
             }
             .padding(.horizontal, 7)
             .padding(.vertical, 4)
@@ -39,6 +46,8 @@ struct StationPin: View {
                 .offset(y: -3)
         }
         .shadow(radius: 1.5)
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityText))
     }
