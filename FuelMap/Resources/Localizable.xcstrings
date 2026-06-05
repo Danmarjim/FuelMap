@@ -110,12 +110,6 @@
         }
       }
     },
-    "Mappe" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Maps" } },
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mapas" } }
-      }
-    },
     "Caricamento…" : {
       "localizations" : {
         "en" : {
@@ -364,6 +358,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cómo llegar"
+          }
+        }
+      }
+    },
+    "Mappe" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maps"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapas"
           }
         }
       }

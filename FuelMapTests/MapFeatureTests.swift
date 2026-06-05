@@ -210,6 +210,26 @@ struct MapFeatureTests {
         }
     }
 
+    @Test("Seleccionar en la lista recentra y abre el detalle tras cerrar el sheet")
+    func map_stationSelectedFromList_recentersThenOpensDetail() async {
+        let clock = TestClock()
+        let station = StationFixtures.all[0]
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        } withDependencies: {
+            $0.continuousClock = clock
+        }
+        store.exhaustivity = .off
+
+        await store.send(.stationSelectedFromList(station))
+        #expect(store.state.recenter == station.coordinate)
+
+        await clock.advance(by: .milliseconds(350))
+        await store.receive(\.stationTapped)
+        #expect(store.state.detail?.stationId == station.id)
+        #expect(store.state.detail?.selectedFuel == store.state.filters.fuel)
+    }
+
     @Test("Tocar una estación presenta el detalle")
     func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]

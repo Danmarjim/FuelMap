@@ -61,6 +61,7 @@ struct MapFeature {
         case mapCameraChanged(center: Coordinate, span: Double)
         case stationsResponse(Result<[Station], APIError>)
         case stationTapped(Station)
+        case stationSelectedFromList(Station)
         case detail(PresentationAction<StationDetailFeature.Action>)
         case filters(FiltersFeature.Action)
         case sortOrderChanged(StationSort)
@@ -179,8 +180,20 @@ struct MapFeature {
                 return .none
 
             case let .stationTapped(station):
-                state.detail = StationDetailFeature.State(stationId: station.id, station: station)
+                state.detail = StationDetailFeature.State(
+                    stationId: station.id,
+                    station: station,
+                    selectedFuel: state.filters.fuel
+                )
                 return .none
+
+            case let .stationSelectedFromList(station):
+                // Recentra ya; el detalle se abre tras cerrarse el sheet de la lista.
+                state.recenter = station.coordinate
+                return .run { send in
+                    try await clock.sleep(for: .milliseconds(350))
+                    await send(.stationTapped(station))
+                }
 
             case .detail(.dismiss):
                 // Al cerrar el detalle, refresca favoritos (pudo cambiar el toggle).

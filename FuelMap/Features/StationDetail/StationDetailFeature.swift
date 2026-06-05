@@ -16,6 +16,8 @@ struct StationDetailFeature {
         let stationId: Int
         /// Pre-rellenado desde el pin del mapa (un solo combustible); se refina al cargar.
         var station: Station?
+        /// Combustible que el usuario tiene filtrado (se muestra primero y resaltado).
+        var selectedFuel: FuelType = .benzina
         var isLoading = false
         var errorMessage: String?
         var isFavorite = false

@@ -66,7 +66,7 @@ struct MapView: View {
                 ),
                 onSelect: { station in
                     showingList = false
-                    store.send(.recenterOnStation(station))
+                    store.send(.stationSelectedFromList(station))
                 },
                 onClose: { showingList = false }
             )

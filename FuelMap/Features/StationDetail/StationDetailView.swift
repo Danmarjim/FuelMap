@@ -117,11 +117,12 @@ struct StationDetailView: View {
         }
     }
 
-    @ViewBuilder
     private func fuelRow(_ group: FuelGroup) -> some View {
-        HStack {
+        let isSelected = group.fuel == store.selectedFuel
+        return HStack {
             Text(group.fuel.label)
-                .fontWeight(.medium)
+                .fontWeight(isSelected ? .bold : .medium)
+                .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 if let selfPrice = group.selfPrice {
@@ -133,6 +134,7 @@ struct StationDetailView: View {
             }
             .accessibilityElement(children: .combine)
         }
+        .listRowBackground(isSelected ? Color.accentColor.opacity(0.1) : nil)
     }
 
     private func priceLabel(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
@@ -162,7 +164,9 @@ struct StationDetailView: View {
     }
 
     private func fuelGroups(for station: Station) -> [FuelGroup] {
-        FuelType.allCases.compactMap { fuel in
+        // El combustible filtrado va primero; el resto en orden canónico.
+        let order = [store.selectedFuel] + FuelType.allCases.filter { $0 != store.selectedFuel }
+        return order.compactMap { fuel in
             let prices = station.prices.filter { $0.fuel == fuel }
             guard !prices.isEmpty else { return nil }
             return FuelGroup(
