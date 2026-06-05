@@ -33,9 +33,8 @@ extension APIError {
 
 /// Única puerta de la app hacia los datos (RFC §3.2).
 ///
-/// `liveValue` es **temporalmente un mock** (fixtures) hasta que el backend exista
-/// (FM-2 esquema/RPC, FM-3 sync). Migrar a Supabase = sustituir `liveValue` por la
-/// implementación real sobre `supabase-swift` (ver ADR-001). El contrato no cambia.
+/// `liveValue` = Supabase real (`APIClient+Live`); `previewValue` = mock (fixtures);
+/// `testValue` = unimplemented. El contrato no cambia entre ellos.
 struct APIClient: Sendable {
     /// Estaciones con el combustible dado dentro de `radiusKm` del punto, ordenadas por precio.
     var nearbyStations: @Sendable (
@@ -52,8 +51,7 @@ struct APIClient: Sendable {
 // MARK: - Dependency
 
 extension APIClient: DependencyKey {
-    /// TEMP: mock con fixtures hasta FM-2/FM-3. Reemplazar por Supabase real (ADR-001).
-    static let liveValue: APIClient = .mock()
+    static let liveValue: APIClient = .live()
     static let previewValue: APIClient = .mock()
 
     static let testValue = APIClient(
