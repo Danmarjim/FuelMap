@@ -58,7 +58,7 @@ struct MapView: View {
         .sheet(isPresented: $showingList) {
             StationListView(
                 stations: store.sortedStations,
-                center: store.center,
+                origin: store.distanceOrigin,
                 cheapestStationID: store.cheapestStationID,
                 sort: Binding(
                     get: { store.sortOrder },
@@ -109,7 +109,8 @@ struct MapView: View {
                     price: station.cheapest?.price,
                     brand: BrandStyle.from(station.brand),
                     tier: store.priceTiers.tier(for: station.cheapest?.price),
-                    isCheapest: station.id == store.cheapestStationID
+                    isCheapest: station.id == store.cheapestStationID,
+                    isSelected: station.id == store.detail?.stationId
                 )
                 .onTapGesture { store.send(.stationTapped(station)) }
             }

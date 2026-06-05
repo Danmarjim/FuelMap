@@ -14,6 +14,8 @@ struct MapFeature {
     struct State: Equatable {
         /// Centro actual del mapa (usado para consultar la API).
         var center: Coordinate = .italyDefault
+        /// Ubicación del usuario (referencia para distancias). Fijada al arrancar.
+        var userLocation: Coordinate?
         /// Apertura del mapa (latitudeDelta) para el zoom de la cámara.
         var span: Double = 0.08
         var filters = FiltersFeature.State()
@@ -39,6 +41,9 @@ struct MapFeature {
             PriceTiers(prices: stations.compactMap { $0.cheapest?.price })
         }
 
+        /// Origen para calcular distancias: la ubicación del usuario; si no hay, el centro.
+        var distanceOrigin: Coordinate { userLocation ?? center }
+
         /// Estaciones ordenadas según `sortOrder` (para la lista).
         var sortedStations: [Station] {
             switch sortOrder {
@@ -48,8 +53,9 @@ struct MapFeature {
                         < ($1.cheapest?.price ?? .greatestFiniteMagnitude)
                 }
             case .distance:
+                let origin = distanceOrigin
                 return stations.sorted {
-                    center.distance(to: $0.coordinate) < center.distance(to: $1.coordinate)
+                    origin.distance(to: $0.coordinate) < origin.distance(to: $1.coordinate)
                 }
             }
         }
@@ -106,6 +112,7 @@ struct MapFeature {
             case let .locationResponse(coordinate):
                 if let coordinate {
                     state.center = coordinate
+                    state.userLocation = coordinate
                     state.recenter = coordinate
                 }
                 return load(&state)

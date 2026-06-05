@@ -17,6 +17,7 @@ struct StationPin: View {
     var brand: BrandStyle = .independent
     var tier: PriceTier = .mid
     var isCheapest: Bool = false
+    var isSelected: Bool = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -49,11 +50,15 @@ struct StationPin: View {
                 .foregroundStyle(tint)
                 .offset(y: -3)
         }
-        .shadow(radius: 1.5)
+        .shadow(radius: isSelected ? 4 : 1.5)
+        .scaleEffect(isSelected ? 1.35 : 1.0)
+        .zIndex(isSelected ? 1 : 0)
+        .animation(.spring(duration: 0.25), value: isSelected)
         .frame(minWidth: 44, minHeight: 44)
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityText))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     @ViewBuilder

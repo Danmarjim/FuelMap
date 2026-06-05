@@ -11,7 +11,8 @@ import SwiftUI
 /// Vista de presentación pura de datos del mapa (sin reducer propio).
 struct StationListView: View {
     let stations: [Station]
-    let center: Coordinate
+    /// Referencia para la distancia (ubicación del usuario; si no, centro del mapa).
+    let origin: Coordinate
     let cheapestStationID: Int?
     @Binding var sort: StationSort
     let onSelect: (Station) -> Void
@@ -72,7 +73,7 @@ struct StationListView: View {
     }
 
     private func distanceText(to station: Station) -> String {
-        let meters = center.distance(to: station.coordinate)
+        let meters = origin.distance(to: station.coordinate)
         if meters < 1000 {
             return "\(Int(meters.rounded())) m"
         }
@@ -90,7 +91,7 @@ struct StationListView: View {
 #Preview {
     StationListView(
         stations: StationFixtures.all,
-        center: .italyDefault,
+        origin: .italyDefault,
         cheapestStationID: 4,
         sort: .constant(.price),
         onSelect: { _ in },

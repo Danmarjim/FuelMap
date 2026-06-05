@@ -176,18 +176,22 @@ struct MapFeatureTests {
         #expect(store.state.cheapestStationID == 4)
     }
 
-    @Test("sortedStations ordena por precio y por distancia")
+    @Test("sortedStations ordena por precio y por distancia (desde la ubicación del usuario)")
     func map_sortedStations_byPriceAndDistance() {
         var state = MapFeature.State()
-        state.center = Coordinate(latitude: 41.9028, longitude: 12.4964)
+        state.center = Coordinate(latitude: 45.0, longitude: 9.0)        // centro del mapa
+        state.userLocation = Coordinate(latitude: 41.9028, longitude: 12.4964) // usuario
         state.stations = StationFixtures.all
 
         state.sortOrder = .price
         let byPrice = state.sortedStations.compactMap { $0.cheapest?.price }
         #expect(byPrice == byPrice.sorted())
 
+        // La distancia se mide desde la ubicación del usuario, no desde el centro.
         state.sortOrder = .distance
-        let byDistance = state.sortedStations.map { state.center.distance(to: $0.coordinate) }
+        let origin = state.distanceOrigin
+        #expect(origin == state.userLocation)
+        let byDistance = state.sortedStations.map { origin.distance(to: $0.coordinate) }
         #expect(byDistance == byDistance.sorted())
     }
 
