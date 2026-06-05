@@ -85,8 +85,11 @@ $$;
 
 -- ── RLS: el rol anónimo solo lee (la app usa la anon key) ─────────────────────
 
-alter table public.stations enable row level security;
-alter table public.prices   enable row level security;
+alter table public.stations  enable row level security;
+alter table public.prices    enable row level security;
+-- sync_runs: RLS habilitado SIN políticas → solo service_role (el sync) accede;
+-- anon/authenticated quedan bloqueados (es telemetría, no se expone a la app).
+alter table public.sync_runs enable row level security;
 
 drop policy if exists "anon read stations" on public.stations;
 create policy "anon read stations" on public.stations
