@@ -13,6 +13,7 @@ struct AppFeature {
     @ObservableState
     struct State: Equatable {
         var map = MapFeature.State()
+        var bannerAdUnitID = ""
     }
 
     enum Action {
@@ -26,9 +27,10 @@ struct AppFeature {
         Scope(state: \.map, action: \.map) {
             MapFeature()
         }
-        Reduce { _, action in
+        Reduce { state, action in
             switch action {
             case .onAppear:
+                state.bannerAdUnitID = adClient.bannerAdUnitID()
                 // Consentimiento (UMP→ATT) y luego arranque del SDK de ads (RFC §6.4).
                 return .run { _ in
                     await adClient.requestConsent()

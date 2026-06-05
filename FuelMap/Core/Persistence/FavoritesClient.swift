@@ -82,9 +82,28 @@ actor FavoritesStore {
 // MARK: - Dependency
 
 extension FavoritesClient: DependencyKey {
-    static let liveValue: FavoritesClient = live(container: .fuelMapShared)
+    /// Contenedor en disco; si falla, cae a memoria; si también falla, cliente no-op
+    /// (favoritos inoperantes pero la app arranca, sin `try!`).
+    static let liveValue: FavoritesClient = {
+        if let container = try? ModelContainer(for: FavoriteStation.self) {
+            return live(container: container)
+        }
+        let memoryConfig = ModelConfiguration(isStoredInMemoryOnly: true)
+        if let memory = try? ModelContainer(for: FavoriteStation.self, configurations: memoryConfig) {
+            return live(container: memory)
+        }
+        return .disabled
+    }()
+
     static var previewValue: FavoritesClient { inMemory() }
     static var testValue: FavoritesClient { inMemory() }
+
+    /// Cliente no-op (favoritos deshabilitados) para fallback de arranque.
+    static let disabled = FavoritesClient(
+        isFavorite: { _ in false },
+        toggle: { _ in false },
+        all: { [] }
+    )
 
     /// Cliente respaldado por un contenedor en memoria (tests/previews).
     static func inMemory() -> FavoritesClient {
@@ -110,18 +129,4 @@ extension DependencyValues {
         get { self[FavoritesClient.self] }
         set { self[FavoritesClient.self] = newValue }
     }
-}
-
-extension ModelContainer {
-    /// Contenedor persistente compartido de la app. Si falla en disco, cae a memoria
-    /// para no provocar un crash en arranque.
-    static let fuelMapShared: ModelContainer = {
-        do {
-            return try ModelContainer(for: FavoriteStation.self)
-        } catch {
-            let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
-            // swiftlint:disable:next force_try
-            return try! ModelContainer(for: FavoriteStation.self, configurations: configuration)
-        }
-    }()
 }

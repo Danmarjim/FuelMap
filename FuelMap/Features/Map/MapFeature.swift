@@ -55,6 +55,7 @@ struct MapFeature {
         case filters(FiltersFeature.Action)
         case sortOrderChanged(StationSort)
         case recenterOnStation(Station)
+        case recenterHandled
         case loadFavorites
         case favoritesResponse([FavoriteStationInfo])
         case favoriteSelected(FavoriteStationInfo)
@@ -117,6 +118,12 @@ struct MapFeature {
 
             case let .recenterOnStation(station):
                 state.recenter = station.coordinate
+                return .none
+
+            case .recenterHandled:
+                // La vista ya aplicó el recentrado; consumir el evento para que
+                // reseleccionar el mismo destino vuelva a disparar (nil → coord).
+                state.recenter = nil
                 return .none
 
             case .loadFavorites:

@@ -174,6 +174,25 @@ struct MapFeatureTests {
         #expect(byDistance == byDistance.sorted())
     }
 
+    @Test("recenter se consume y permite reseleccionar el mismo destino")
+    func map_recenter_isConsumable() async {
+        let station = StationFixtures.all[0]
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        }
+
+        await store.send(.recenterOnStation(station)) {
+            $0.recenter = station.coordinate
+        }
+        await store.send(.recenterHandled) {
+            $0.recenter = nil
+        }
+        // Reseleccionar el mismo destino vuelve a fijar recenter (nil → coord).
+        await store.send(.recenterOnStation(station)) {
+            $0.recenter = station.coordinate
+        }
+    }
+
     @Test("Tocar una estación presenta el detalle")
     func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]

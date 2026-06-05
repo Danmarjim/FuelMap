@@ -32,7 +32,9 @@ struct AppFeatureTests {
             )
         }
 
-        await store.send(.onAppear)
+        await store.send(.onAppear) {
+            $0.bannerAdUnitID = "test"
+        }
         await store.finish()
 
         #expect(calls.value == ["consent", "start"])

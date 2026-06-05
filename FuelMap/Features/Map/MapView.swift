@@ -99,6 +99,7 @@ struct MapView: View {
                     )
                 )
             }
+            store.send(.recenterHandled)
         }
     }
 
