@@ -66,6 +66,8 @@ targets:
         NSUserTrackingUsageDescription: "Usiamo un identificatore del dispositivo per mostrarti annunci più pertinenti."
         # ID de app de TEST de Google (sin cuenta AdMob real). Real → FM-14.
         GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
+        # Detección de apps de navegación instaladas (FM-17).
+        LSApplicationQueriesSchemes: [comgooglemaps, waze]
 
   FuelMapTests:
     type: bundle.unit-test

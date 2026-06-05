@@ -7,10 +7,21 @@
 
 import ComposableArchitecture
 import SwiftUI
+import UIKit
 
 /// Detalle de estación presentado en sheet (RFC §6.2).
 struct StationDetailView: View {
     let store: StoreOf<StationDetailFeature>
+
+    @State private var showingNavOptions = false
+
+    /// Apps de navegación instaladas (Apple Maps siempre).
+    private var availableNavApps: [NavApp] {
+        NavApp.allCases.filter { app in
+            guard let probe = app.probeURL else { return true }
+            return UIApplication.shared.canOpenURL(probe)
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -55,23 +66,41 @@ struct StationDetailView: View {
                 Text("Prezzi")
             } footer: {
                 if let updated = latestUpdate(for: station) {
-                    Text("Aggiornato il \(updated.formatted(date: .abbreviated, time: .shortened))")
+                    Text("Aggiornato \(updated, format: .relative(presentation: .named))")
+                        .foregroundStyle(isStale(updated) ? .orange : .secondary)
                 }
             }
 
             Section {
+                let brand = BrandStyle.from(station.brand)
+                HStack(spacing: 12) {
+                    BrandBadge(brand: brand, size: 32)
+                    Text(station.brand ?? brand.displayName)
+                        .fontWeight(.medium)
+                }
                 if let address = station.address {
                     Label(address, systemImage: "mappin.and.ellipse")
                 }
-                if let brand = station.brand {
-                    Label(brand, systemImage: "building.2")
-                }
                 Button {
-                    store.send(.directionsTapped)
+                    requestDirections()
                 } label: {
                     Label("Indicazioni", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
                 }
+                .confirmationDialog("Indicazioni", isPresented: $showingNavOptions, titleVisibility: .hidden) {
+                    ForEach(availableNavApps, id: \.self) { app in
+                        Button(app.label) { store.send(.navigate(app)) }
+                    }
+                }
             }
+        }
+    }
+
+    private func requestDirections() {
+        let apps = availableNavApps
+        if apps.count <= 1 {
+            store.send(.navigate(.appleMaps))
+        } else {
+            showingNavOptions = true
         }
     }
 
@@ -146,6 +175,11 @@ struct StationDetailView: View {
 
     private func latestUpdate(for station: Station) -> Date? {
         station.prices.compactMap(\.communicatedAt).max()
+    }
+
+    /// Precio obsoleto si la última comunicación tiene más de 2 días.
+    private func isStale(_ updated: Date) -> Bool {
+        updated < Date.now.addingTimeInterval(-2 * 24 * 3600)
     }
 }
 

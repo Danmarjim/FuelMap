@@ -1,0 +1,7 @@
+# SwiftLint config — FuelMap
+# Permite identificadores cortos legítimos (id, y marcas Q8/IP).
+identifier_name:
+  excluded:
+    - id
+    - q8
+    - ip

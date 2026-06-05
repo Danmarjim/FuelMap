@@ -11,6 +11,7 @@ import SwiftUI
 struct ClusterPin: View {
     let count: Int
     let cheapestPrice: Decimal?
+    var tier: PriceTier = .mid
 
     var body: some View {
         Text("\(count)")
@@ -19,7 +20,7 @@ struct ClusterPin: View {
             .foregroundStyle(.white)
             .frame(minWidth: 34, minHeight: 34)
             .padding(4)
-            .background(Color.blue.gradient, in: Circle())
+            .background(tier.color.gradient, in: Circle())
             .overlay(Circle().strokeBorder(.white, lineWidth: 2))
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Circle())

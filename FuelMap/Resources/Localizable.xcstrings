@@ -27,18 +27,18 @@
         }
       }
     },
-    "Aggiornato il %@" : {
+    "Aggiornato %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Updated on %@"
+            "value" : "Updated %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Actualizado el %@"
+            "value" : "Actualizado %@"
           }
         }
       }
@@ -108,6 +108,12 @@
             "value" : "Combustible"
           }
         }
+      }
+    },
+    "Mappe" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Maps" } },
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Mapas" } }
       }
     },
     "Caricamento…" : {

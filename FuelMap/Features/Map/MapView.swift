@@ -107,14 +107,20 @@ struct MapView: View {
                     name: station.name,
                     fuel: store.filters.fuel,
                     price: station.cheapest?.price,
+                    brand: BrandStyle.from(station.brand),
+                    tier: store.priceTiers.tier(for: station.cheapest?.price),
                     isCheapest: station.id == store.cheapestStationID
                 )
                 .onTapGesture { store.send(.stationTapped(station)) }
             }
         case let .cluster(cluster):
             Annotation("", coordinate: cluster.coordinate.clLocationCoordinate) {
-                ClusterPin(count: cluster.count, cheapestPrice: cluster.cheapestPrice)
-                    .onTapGesture { store.send(.clusterTapped(cluster)) }
+                ClusterPin(
+                    count: cluster.count,
+                    cheapestPrice: cluster.cheapestPrice,
+                    tier: store.priceTiers.tier(for: cluster.cheapestPrice)
+                )
+                .onTapGesture { store.send(.clusterTapped(cluster)) }
             }
         }
     }

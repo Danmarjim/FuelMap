@@ -28,7 +28,7 @@ struct StationDetailFeature {
         case stationResponse(Result<Station, APIError>)
         case favoriteStatus(Bool)
         case favoriteToggled
-        case directionsTapped
+        case navigate(NavApp)
         case closeTapped
     }
 
@@ -91,13 +91,9 @@ struct StationDetailFeature {
                     await send(.favoriteStatus(favoritesClient.toggle(input)))
                 }
 
-            case .directionsTapped:
-                guard let coordinate = state.station?.coordinate else { return .none }
-                let destination = "\(coordinate.latitude),\(coordinate.longitude)"
-                // Scheme nativo de Apple Maps (robusto, sin pasar por Safari).
-                guard let url = URL(string: "maps://?daddr=\(destination)") else {
-                    return .none
-                }
+            case let .navigate(app):
+                guard let coordinate = state.station?.coordinate,
+                      let url = app.directionsURL(to: coordinate) else { return .none }
                 return .run { _ in await openURL(url) }
 
             case .closeTapped:

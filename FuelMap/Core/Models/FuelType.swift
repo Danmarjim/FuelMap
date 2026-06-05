@@ -20,8 +20,8 @@ enum FuelType: String, Sendable, CaseIterable, Equatable {
     case hvo
     case altro
 
-    /// Tipos que el usuario puede seleccionar en el filtro (excluye `hvo`/`altro`).
-    static let selectable: [FuelType] = [.benzina, .gasolio, .gpl, .metano]
+    /// Tipos que el usuario puede seleccionar en el filtro (excluye solo `altro`).
+    static let selectable: [FuelType] = [.benzina, .gasolio, .gpl, .metano, .hvo]
 
     /// Nombre localizado para mostrar en UI.
     var label: String {

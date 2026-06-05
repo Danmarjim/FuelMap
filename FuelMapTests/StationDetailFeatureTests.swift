@@ -73,8 +73,8 @@ struct StationDetailFeatureTests {
         await store.receive(\.favoriteStatus) { $0.isFavorite = false }
     }
 
-    @Test("directionsTapped abre Apple Maps con el destino correcto")
-    func detail_directions_opensAppleMaps() async {
+    @Test("navigate(.googleMaps) abre Google Maps con el destino correcto")
+    func detail_navigate_opensChosenApp() async {
         let station = StationFixtures.all[0]
         let opened = LockIsolated<URL?>(nil)
         let store = TestStore(
@@ -88,12 +88,11 @@ struct StationDetailFeatureTests {
             }
         }
 
-        await store.send(.directionsTapped)
+        await store.send(.navigate(.googleMaps))
 
-        let url = opened.value
-        #expect(url != nil)
-        #expect(url?.absoluteString.contains("daddr=") == true)
+        let url = opened.value?.absoluteString
         let coordinate = station.coordinate
-        #expect(url?.absoluteString.contains("\(coordinate.latitude),\(coordinate.longitude)") == true)
+        #expect(url?.hasPrefix("comgooglemaps://") == true)
+        #expect(url?.contains("\(coordinate.latitude),\(coordinate.longitude)") == true)
     }
 }

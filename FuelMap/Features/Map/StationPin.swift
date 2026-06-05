@@ -14,18 +14,22 @@ struct StationPin: View {
     let name: String
     let fuel: FuelType
     let price: Decimal?
+    var brand: BrandStyle = .independent
+    var tier: PriceTier = .mid
     var isCheapest: Bool = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var tint: Color { isCheapest ? .green : .blue }
+    // Color por nivel de precio (verde/naranja/rojo) (FM-18).
+    private var tint: Color { tier.color }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 3) {
-                // Forma distintiva para la más barata (no solo color): estrella.
-                Image(systemName: isCheapest ? "star.fill" : "fuelpump.fill")
-                    .font(.caption2)
+                // Líder: estrella si es la más barata; si no, monograma de marca;
+                // y pumpa genérica para independientes/sin marca.
+                leadingGlyph
+                    .font(.caption2.weight(.heavy))
                 // En tamaños de accesibilidad ocultamos el texto para no desbordar
                 // el pin en el mapa; el precio sigue en el accessibilityLabel.
                 if !dynamicTypeSize.isAccessibilitySize {
@@ -52,24 +56,37 @@ struct StationPin: View {
         .accessibilityLabel(Text(accessibilityText))
     }
 
+    @ViewBuilder
+    private var leadingGlyph: some View {
+        if isCheapest {
+            Image(systemName: "star.fill")
+        } else if !brand.monogram.isEmpty {
+            Text(brand.monogram)
+        } else {
+            Image(systemName: "fuelpump.fill")
+        }
+    }
+
     private var priceText: String {
         price?.fuelPriceLabel ?? "—"
     }
 
     private var accessibilityText: String {
         var text = "\(name), \(fuel.label) \(priceText)"
-        if isCheapest {
-            text += ", " + String(localized: "il più economico")
-        }
+        if !brand.monogram.isEmpty { text += ", \(brand.displayName)" }
+        if isCheapest { text += ", " + String(localized: "il più economico") }
         return text
     }
 }
 
 #Preview {
     HStack(spacing: 20) {
-        StationPin(name: "Eni Roma Centro", fuel: .benzina, price: Decimal(string: "1.879"))
-        StationPin(name: "Tamoil Ostiense", fuel: .benzina, price: Decimal(string: "1.849"), isCheapest: true)
-        StationPin(name: "Sconosciuto", fuel: .benzina, price: nil)
+        StationPin(name: "Eni", fuel: .benzina, price: Decimal(string: "1.879"), brand: .eni, tier: .high)
+        StationPin(
+            name: "Tamoil", fuel: .benzina, price: Decimal(string: "1.849"),
+            brand: .tamoil, tier: .low, isCheapest: true
+        )
+        StationPin(name: "Q8", fuel: .benzina, price: Decimal(string: "1.86"), brand: .q8, tier: .mid)
     }
     .padding()
 }

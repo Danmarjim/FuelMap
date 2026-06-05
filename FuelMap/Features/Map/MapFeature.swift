@@ -34,6 +34,11 @@ struct MapFeature {
             MapClustering.items(stations: stations, span: span)
         }
 
+        /// Umbrales de color de precio (terciles) del set actual (FM-18).
+        var priceTiers: PriceTiers {
+            PriceTiers(prices: stations.compactMap { $0.cheapest?.price })
+        }
+
         /// Estaciones ordenadas según `sortOrder` (para la lista).
         var sortedStations: [Station] {
             switch sortOrder {
