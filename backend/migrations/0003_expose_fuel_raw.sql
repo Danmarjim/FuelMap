@@ -1,7 +1,16 @@
 -- FuelMap — exponer fuel_raw en las RPC (variante real del producto) — opción A
 -- El nombre original del MIMIT (p. ej. "Benzina Plus 98") ya está en prices.fuel_raw;
--- aquí lo devolvemos para mostrarlo en el detalle. Idempotente (create or replace).
--- No requiere re-sync. Aplicar en el SQL editor de Supabase.
+-- aquí lo devolvemos para mostrarlo en el detalle. No requiere re-sync.
+-- Aplicar en el SQL editor de Supabase.
+--
+-- Postgres no permite cambiar el tipo de retorno con `create or replace`
+-- (las RPC ganan una columna fuel_raw), así que primero hay que dropearlas.
+-- Idempotente gracias a `drop ... if exists`.
+
+drop function if exists public.nearby_stations(
+    double precision, double precision, double precision, text, boolean, integer
+);
+drop function if exists public.station_detail(bigint);
 
 create or replace function public.nearby_stations(
     in_lat double precision,
