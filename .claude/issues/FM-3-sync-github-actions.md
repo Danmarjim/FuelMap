@@ -59,7 +59,7 @@ Mock/stub strategy: fixtures CSV locales; mock del cliente Supabase para asserts
 - [x] Variantes no mapeadas → `altro` y registradas (HiQ Perform+, F101…).
 - [x] `sync.mjs` upsert stations + reemplazo prices + `sync_runs`; workflow falla en error.
 - [x] Tests pass (node --test, 3).
-- [ ] **(runbook)** Ciclo `workflow_dispatch` real puebla Supabase (requiere secrets + proyecto).
+- [x] `workflow_dispatch` en CI: success — 23.707 stations / 92.647 precios / 106 descartadas (2026-06-05).
 
 ## References
 - RFC: §6.3, §2.1

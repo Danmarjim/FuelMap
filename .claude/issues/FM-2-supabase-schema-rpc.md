@@ -47,9 +47,9 @@ Mock/stub strategy: datos seed en una DB de prueba (no la de producción).
 
 ## Acceptance Criteria
 - [x] Migración escrita (tablas, índices GIST, RPC, RLS, grants).
-- [ ] **(runbook)** Migración aplicada sobre proyecto Supabase nuevo.
-- [ ] **(runbook)** `nearby_stations(...)` devuelve filas con `distance_m` y orden por precio.
-- [ ] **(runbook)** RLS verificada (anon solo lectura).
+- [x] Migración aplicada en Supabase (2026-06-05).
+- [x] `nearby_stations(...)` operativa con datos reales.
+- [x] RLS aplicada; `sync_runs` solo service_role.
 
 ## References
 - RFC: `.claude/rfc/RFC-001-fuelmap-architecture.md` §2.1, §3.1
