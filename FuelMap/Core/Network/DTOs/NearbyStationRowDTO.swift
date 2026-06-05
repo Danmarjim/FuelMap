@@ -22,10 +22,10 @@ struct NearbyStationRowDTO: Decodable, Equatable, Sendable {
     let latitude: Double?
     let longitude: Double?
     let fuel: String
+    let fuelRaw: String?
     let price: Decimal
     let isSelf: Bool
     let communicatedAt: Date?
-    // Nota: la RPC también devuelve `distance_m` (PostGIS). Se decodificará y usará
-    // como distancia autoritativa cuando exista el backend real (FM-5), en lugar de
-    // recalcular haversine en cliente. Omitido ahora (mock no lo aporta).
+    // Nota: la RPC también devuelve `distance_m` (PostGIS); se usará como distancia
+    // autoritativa más adelante. Omitido ahora (distancia se calcula en cliente).
 }

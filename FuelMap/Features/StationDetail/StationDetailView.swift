@@ -106,8 +106,8 @@ struct StationDetailView: View {
 
     @ViewBuilder
     private func pricesContent(for station: Station) -> some View {
-        let groups = fuelGroups(for: station)
-        if groups.isEmpty {
+        let rows = variantRows(for: station)
+        if rows.isEmpty {
             if store.isLoading {
                 ProgressView()
             } else {
@@ -115,25 +115,25 @@ struct StationDetailView: View {
                     .foregroundStyle(.secondary)
             }
         } else {
-            ForEach(groups, id: \.fuel) { group in
-                fuelRow(group)
+            ForEach(rows) { row in
+                variantRow(row)
             }
         }
     }
 
-    private func fuelRow(_ group: FuelGroup) -> some View {
-        let isSelected = group.fuel == store.selectedFuel
+    private func variantRow(_ row: VariantRow) -> some View {
+        let isSelected = row.fuel == store.selectedFuel
         return HStack {
-            Text(group.fuel.label)
+            Text(row.name)
                 .fontWeight(isSelected ? .bold : .medium)
                 .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                if let selfPrice = group.selfPrice {
-                    priceLabel("Self", selfPrice.price)
+                if let selfPrice = row.selfPrice {
+                    priceLabel("Self", selfPrice)
                 }
-                if let servito = group.servito {
-                    priceLabel("Servito", servito.price)
+                if let servito = row.servitoPrice {
+                    priceLabel("Servito", servito)
                 }
             }
             .accessibilityElement(children: .combine)
@@ -161,23 +161,37 @@ struct StationDetailView: View {
 
     // MARK: - Data shaping
 
-    private struct FuelGroup {
+    /// Una fila por producto real (`fuelRaw`), con su self/servito.
+    private struct VariantRow: Identifiable {
+        let id: String
+        let name: String
         let fuel: FuelType
-        let selfPrice: FuelPrice?
-        let servito: FuelPrice?
+        let selfPrice: Decimal?
+        let servitoPrice: Decimal?
     }
 
-    private func fuelGroups(for station: Station) -> [FuelGroup] {
-        // El combustible filtrado va primero; el resto en orden canónico.
-        let order = [store.selectedFuel] + FuelType.allCases.filter { $0 != store.selectedFuel }
-        return order.compactMap { fuel in
-            let prices = station.prices.filter { $0.fuel == fuel }
-            guard !prices.isEmpty else { return nil }
-            return FuelGroup(
-                fuel: fuel,
-                selfPrice: prices.first { $0.isSelf },
-                servito: prices.first { !$0.isSelf }
+    private func variantRows(for station: Station) -> [VariantRow] {
+        var order: [String] = []
+        var byRaw: [String: [FuelPrice]] = [:]
+        for price in station.prices {
+            if byRaw[price.fuelRaw] == nil { order.append(price.fuelRaw) }
+            byRaw[price.fuelRaw, default: []].append(price)
+        }
+        let rows = order.compactMap { raw -> VariantRow? in
+            guard let prices = byRaw[raw], let first = prices.first else { return nil }
+            return VariantRow(
+                id: raw,
+                name: raw,
+                fuel: first.fuel,
+                selfPrice: prices.first { $0.isSelf }?.price,
+                servitoPrice: prices.first { !$0.isSelf }?.price
             )
+        }
+        // El combustible filtrado va primero; dentro, por nombre.
+        let selected = store.selectedFuel
+        return rows.sorted { lhs, rhs in
+            if (lhs.fuel == selected) != (rhs.fuel == selected) { return lhs.fuel == selected }
+            return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
         }
     }
 

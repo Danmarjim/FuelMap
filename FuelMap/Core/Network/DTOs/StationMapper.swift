@@ -31,6 +31,7 @@ enum StationMapper {
             let prices = group.map { row in
                 FuelPrice(
                     fuel: FuelType(rawValue: row.fuel) ?? .altro,
+                    fuelRaw: row.fuelRaw?.nilIfEmpty ?? row.fuel,
                     price: row.price.rounded(3),
                     isSelf: row.isSelf,
                     communicatedAt: row.communicatedAt

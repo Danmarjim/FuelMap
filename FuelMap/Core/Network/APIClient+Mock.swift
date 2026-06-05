@@ -115,18 +115,22 @@ enum StationFixtures {
         gplSelf: String? = nil, metanoSelf: String? = nil
     ) -> Station {
         var prices: [FuelPrice] = [
-            FuelPrice(fuel: .benzina, price: price(benzinaSelf), isSelf: true, communicatedAt: communicatedAt),
-            FuelPrice(fuel: .benzina, price: price(benzinaServ), isSelf: false, communicatedAt: communicatedAt),
-            FuelPrice(fuel: .gasolio, price: price(gasolioSelf), isSelf: true, communicatedAt: communicatedAt),
-            FuelPrice(fuel: .gasolio, price: price(gasolioServ), isSelf: false, communicatedAt: communicatedAt)
+            FuelPrice(fuel: .benzina, fuelRaw: "Benzina", price: price(benzinaSelf),
+                      isSelf: true, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .benzina, fuelRaw: "Benzina", price: price(benzinaServ),
+                      isSelf: false, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .gasolio, fuelRaw: "Gasolio", price: price(gasolioSelf),
+                      isSelf: true, communicatedAt: communicatedAt),
+            FuelPrice(fuel: .gasolio, fuelRaw: "Gasolio", price: price(gasolioServ),
+                      isSelf: false, communicatedAt: communicatedAt)
         ]
         if let gplSelf {
-            prices.append(FuelPrice(fuel: .gpl, price: price(gplSelf), isSelf: true, communicatedAt: communicatedAt))
+            prices.append(FuelPrice(fuel: .gpl, fuelRaw: "GPL", price: price(gplSelf),
+                                    isSelf: true, communicatedAt: communicatedAt))
         }
         if let metanoSelf {
-            prices.append(
-                FuelPrice(fuel: .metano, price: price(metanoSelf), isSelf: true, communicatedAt: communicatedAt)
-            )
+            prices.append(FuelPrice(fuel: .metano, fuelRaw: "Metano", price: price(metanoSelf),
+                                    isSelf: true, communicatedAt: communicatedAt))
         }
         return Station(
             id: id, name: name, brand: brand, address: address,

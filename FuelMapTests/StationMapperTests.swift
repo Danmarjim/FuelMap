@@ -116,12 +116,14 @@ struct StationMapperTests {
             prices: [
                 FuelPrice(
                     fuel: .benzina,
+                    fuelRaw: "Benzina",
                     price: try #require(Decimal(string: "1.999")),
                     isSelf: false,
                     communicatedAt: nil
                 ),
                 FuelPrice(
                     fuel: .benzina,
+                    fuelRaw: "Benzina",
                     price: try #require(Decimal(string: "1.899")),
                     isSelf: true,
                     communicatedAt: nil
