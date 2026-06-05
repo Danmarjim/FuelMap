@@ -197,6 +197,8 @@ struct MapFeature {
                 return .none
 
             case let .stationTapped(station):
+                // Centra el mapa en el pin pulsado (mejor UX) y abre el detalle.
+                state.recenter = station.coordinate
                 state.detail = StationDetailFeature.State(
                     stationId: station.id,
                     station: station,
