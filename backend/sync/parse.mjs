@@ -4,6 +4,11 @@
 
 import { normalizeFuel } from "./fuel-mapping.mjs";
 
+// Rango de precio plausible (€/L o €/kg). El MIMIT contiene precios basura/placeholder
+// (p. ej. 0.1 €, a veces de hace años); ningún carburante real cae fuera de [0.3, 6].
+const MIN_PRICE = 0.3;
+const MAX_PRICE = 6.0;
+
 export function extractionDate(text) {
   const first = text.split(/\r?\n/, 1)[0] ?? "";
   const match = first.match(/Estrazione del (\d{4}-\d{2}-\d{2})/);
@@ -84,7 +89,10 @@ export function parsePrezzo(text) {
     const stationId = parseInt(f[0], 10);
     const fuelRaw = clean(f[1]);
     const price = parseFloat(f[2]);
-    if (!Number.isFinite(stationId) || !fuelRaw || !Number.isFinite(price) || price <= 0) {
+    if (
+      !Number.isFinite(stationId) || !fuelRaw ||
+      !Number.isFinite(price) || price < MIN_PRICE || price > MAX_PRICE
+    ) {
       skipped++;
       continue;
     }

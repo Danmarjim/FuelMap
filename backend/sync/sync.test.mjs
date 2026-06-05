@@ -45,12 +45,12 @@ test("parsePrezzo normaliza, parsea self/precio y registra no-mapeadas", () => {
     "idImpianto|descCarburante|prezzo|isSelf|dtComu",
     "1|Benzina|1.879|1|03/06/2026 20:00:07",
     "1|Blue Diesel|1.959|0|03/06/2026 20:00:07",
-    "1|F101|9.999|1|03/06/2026 20:00:07",
-    "1|Benzina|0|1|03/06/2026 20:00:07",
+    "1|F101|1.999|1|03/06/2026 20:00:07",
+    "1|Benzina|0.1|1|03/06/2026 20:00:07",
   ].join("\n");
 
   const r = parsePrezzo(csv);
-  assert.equal(r.prices.length, 3);
+  assert.equal(r.prices.length, 3); // la de 0.1 € (basura) se descarta
 
   const benzina = r.prices.find((p) => p.fuelRaw === "Benzina");
   assert.equal(benzina.fuel, "benzina");
