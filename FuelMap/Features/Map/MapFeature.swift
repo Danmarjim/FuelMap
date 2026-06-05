@@ -156,8 +156,18 @@ struct MapFeature {
                 return .none
 
             case let .favoriteSelected(favorite):
+                // Mismo patrón que la lista: recentra ya y abre el detalle tras cerrarse
+                // el sheet de favoritos. Pre-rellena con lo que sabemos (nombre+coords);
+                // el detalle carga el resto (todos los combustibles) vía station_detail.
                 state.recenter = favorite.coordinate
-                return .none
+                let station = Station(
+                    id: favorite.id, name: favorite.name, brand: nil, address: nil,
+                    municipality: nil, province: nil, coordinate: favorite.coordinate, prices: []
+                )
+                return .run { send in
+                    try await clock.sleep(for: .milliseconds(350))
+                    await send(.stationTapped(station))
+                }
 
             case .reload:
                 return load(&state)

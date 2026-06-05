@@ -230,6 +230,27 @@ struct MapFeatureTests {
         #expect(store.state.detail?.selectedFuel == store.state.filters.fuel)
     }
 
+    @Test("Seleccionar un favorito recentra y abre el detalle")
+    func map_favoriteSelected_recentersThenOpensDetail() async {
+        let clock = TestClock()
+        let favorite = FavoriteStationInfo(
+            id: 7, name: "Mi gasolinera", coordinate: Coordinate(latitude: 45.0, longitude: 9.0)
+        )
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        } withDependencies: {
+            $0.continuousClock = clock
+        }
+        store.exhaustivity = .off
+
+        await store.send(.favoriteSelected(favorite))
+        #expect(store.state.recenter == favorite.coordinate)
+
+        await clock.advance(by: .milliseconds(350))
+        await store.receive(\.stationTapped)
+        #expect(store.state.detail?.stationId == favorite.id)
+    }
+
     @Test("Tocar una estación presenta el detalle")
     func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]

@@ -108,8 +108,12 @@ struct StationDetailView: View {
     private func pricesContent(for station: Station) -> some View {
         let groups = fuelGroups(for: station)
         if groups.isEmpty {
-            Text("Nessun prezzo disponibile")
-                .foregroundStyle(.secondary)
+            if store.isLoading {
+                ProgressView()
+            } else {
+                Text("Nessun prezzo disponibile")
+                    .foregroundStyle(.secondary)
+            }
         } else {
             ForEach(groups, id: \.fuel) { group in
                 fuelRow(group)
