@@ -15,10 +15,20 @@ struct BrandBadge: View {
 
     var body: some View {
         if let asset = brand.assetName, UIImage(named: asset) != nil {
+            // Logo sobre un chip de color de marca (opción 1): garantiza contraste
+            // para cualquier color de logo. Se ajusta por altura para respetar su
+            // proporción real (emblema cuadrado → cuadrado; wordmark → apaisado).
+            let radius = size * 0.22
+            let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
             Image(asset)
                 .resizable()
                 .scaledToFit()
-                .frame(width: size, height: size)
+                .frame(height: size * 0.64)
+                .padding(.vertical, size * 0.18)
+                .padding(.horizontal, size * 0.22)
+                .background(brand.logoBackground, in: shape)
+                .overlay(shape.strokeBorder(Color.primary.opacity(0.08)))
+                .accessibilityLabel(brand.displayName)
         } else {
             Text(brand.monogram.isEmpty ? "•" : brand.monogram)
                 .font(.system(size: size * 0.42, weight: .bold))

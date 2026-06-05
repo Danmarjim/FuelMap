@@ -16,6 +16,11 @@ struct BrandStyle: Equatable {
     let monogram: String
     let color: Color
     let assetName: String?
+    /// Fondo del chip detrás del logo (opción 1). Blanco para la mayoría; se
+    /// sobreescribe en marcas cuyo logo es claro (p. ej. Eni amarillo → navy)
+    /// para garantizar contraste en claro y oscuro. No es `color` (ese es el del
+    /// monograma): un logo amarillo sobre un chip amarillo desaparecería.
+    var logoBackground: Color = .white
 
     static func from(_ bandiera: String?) -> BrandStyle {
         let value = (bandiera ?? "").lowercased()
@@ -37,7 +42,8 @@ struct BrandStyle: Equatable {
 
     // Top marcas en Italia por nº de impianti (datos MIMIT).
     static let eni = BrandStyle(displayName: "Eni", monogram: "E",
-                                color: Color(red: 0.96, green: 0.78, blue: 0.08), assetName: "brand-eni")
+                                color: Color(red: 0.96, green: 0.78, blue: 0.08), assetName: "brand-eni",
+                                logoBackground: Color(red: 0.05, green: 0.18, blue: 0.38))
     static let q8 = BrandStyle(displayName: "Q8", monogram: "Q8",
                                color: Color(red: 0.82, green: 0.12, blue: 0.16), assetName: "brand-q8")
     static let esso = BrandStyle(displayName: "Esso", monogram: "E",
