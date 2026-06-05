@@ -306,15 +306,37 @@
 
 ---
 
+## Plan Iteration: Evaluación multi-agente + remediación — Completed
+**Date:** 2026-06-05
+
+### Architect (review)
+- Análisis Opus de docs (PRD/RFC/ADRs vs código) + 3 agentes (Opus corrección/concurrencia, Sonnet HIG/a11y, Sonnet calidad/consistencia). Informe en `.claude/reviews/2026-06-05-evaluacion-completa.md`.
+- Hallazgo crítico no previsto: `Store` raíz recreado en `body` (C1). Premisa falsa del RFC §5 (clustering nativo) → C2.
+
+### Developer (remediación, 3 tandas)
+- Tanda 1: C1 (Store @State), H4a (maps://), H4b (banner adaptativo), M7 (formatters cacheados), dedup /simplify (precio, userMessage, conversores coordenada, italyDefault), StationSort localizado.
+- Tanda 2: H1 (recenter consumible), M1 (adClient→State), M2 (favoritos no-op fallback sin try!), M6 (distanceM fuera del DTO).
+- Tanda 3: H2 (Dynamic Type pin/filtros/detalle), H3 (touch targets 44pt), M3 (VoiceOver), M4 (más barata con forma+color), estado vacío de precios, banner multilínea; 3 strings nuevas it/es/en.
+
+### QA (tests)
+- Nuevos: `map_recenter_isConsumable`; `AppFeatureTests` actualizado (bannerAdUnitID).
+- **40 tests passing**. SwiftLint 0. Dynamic Type confirmado aplicándose en simulador.
+
+### Review
+- Diferido a **FM-15** (clustering, bloqueante pre-datos reales). Desviaciones documentales → addendum RFC §11.
+- Pendientes menores anotados en plan (carga inicial supeditada a permiso; pulido a11y).
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
 **Date:** 2026-06-05
-- **App completa (mock) y monetizada:** mapa + filtros + lista + detalle + favoritos, localizada it/es/en, con **banner AdMob (test) + consentimiento UMP/ATT**. Verificada en simulador.
-- `Core/{Models,Network,Location,Persistence,Ads}` + `Features/{Map,Filters,StationDetail}`. 39 tests.
+- **App completa (mock), monetizada y revisada:** mapa + filtros + lista + detalle + favoritos; localizada it/es/en; banner AdMob (test) + UMP/ATT. Remediación de la evaluación multi-agente aplicada.
+- `Core/{Models,Network,Location,Persistence,Ads,Foundation}` + `Features/{Map,Filters,StationDetail}`. 40 tests, SwiftLint 0.
 - `APIClient.liveValue` = mock (TEMP hasta Supabase FM-2/FM-3).
 - XcodeGen; deps SPM: TCA + GoogleMobileAds + UMP. Info.plist explícito (gitignored).
-- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6, FM-7, FM-8, FM-9, FM-10, FM-11, FM-12, FM-13.
-- Deuda: clustering real (FM-7); APIClient real (FM-2/FM-3); FM-14 (ad unit real, SKAdNetworkItems, Info.plist l10n, privacy labels).
-- **Próximo paso:** backend real (FM-2 Supabase + FM-3 sync + FM-5 real) o FM-14 (App Store prep). Luego evaluación final con agentes.
+- Issues hechos: FM-1, FM-4, FM-5 (mock), FM-6…FM-13. Pendientes: FM-2/FM-3 (backend), FM-5 real, **FM-15 (clustering, 🔴 pre-datos reales)**, FM-14 (App Store prep).
+- **Próximo paso:** backend real (FM-2/FM-3/FM-5) o FM-15 (clustering) o FM-14.
 
 ---
 

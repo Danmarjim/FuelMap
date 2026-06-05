@@ -30,7 +30,7 @@ Canon listo:
 | ✅ FM-4 | Modelos + DTOs + mapeo | S | FM-1 |
 | 🟡 FM-5 | APIClient (mock; supabase-swift real en FM-2/FM-3) | M | FM-1,4 |
 | ✅ FM-6 | LocationClient + permisos | M | FM-1 |
-| ✅ FM-7 | MapFeature + MapView (clustering → deuda) | L | FM-4,5,6 |
+| ✅ FM-7 | MapFeature + MapView (clustering → FM-15) | L | FM-4,5,6 |
 | ✅ FM-8 | FiltersFeature | M | FM-7 |
 | ✅ FM-9 | StationDetail | M | FM-7 |
 | ✅ FM-10 | Más barata + orden | S | FM-7,8 |
@@ -38,15 +38,24 @@ Canon listo:
 | ✅ FM-12 | Favoritos (SwiftData) [nice] | M | FM-9 |
 | ✅ FM-13 | A11y + estados + l10n | M | FM-7,8,9 |
 | FM-14 | Privacy labels + App Store prep | S | FM-11,13 |
+| 🔴 FM-15 | Clustering de pins (bloqueante pre-datos reales) | L | FM-7 |
+
+## Evaluación multi-agente (2026-06-05) — hecha
+
+Review completa en `.claude/reviews/2026-06-05-evaluacion-completa.md`. Remediación aplicada en 3 tandas (commits `refactor/fix: review remediation batch 1-3`):
+- **Corregido**: C1 (Store estable), H1 (recenter consumible), H2 (Dynamic Type pin/filtros/detalle), H3 (touch targets 44pt), H4a (deep link maps://), H4b (banner adaptativo), M1 (adClient→State), M2 (favoritos no-op fallback), M3 (VoiceOver listas), M4 (más barata con forma+color), M6 (distanceM fuera del DTO), M7 (formatters cacheados) + dedup /simplify (precio, userMessage, conversores coordenada).
+- **Diferido**: C2 clustering → **FM-15**. Desviaciones docs → addendum RFC §11.
 
 ## Próximo paso inmediato
 
-- **FM-1, 4, 5(mock), 6, 7, 8, 9, 10, 11, 12, 13 hechos**: app completa (mock), localizada, accesible y monetizada (banner test + UMP/ATT). 39 tests passing. Verificado en simulador.
-- Siguiente: **backend real** (FM-2 Supabase + FM-3 sync + FM-5 real) o **FM-14** (App Store prep). Luego la **evaluación final con agentes**.
+- **FM-1, 4, 5(mock), 6–13 hechos + remediación de review aplicada**. 40 tests passing.
+- Siguiente: **backend real** (FM-2 Supabase + FM-3 sync + FM-5 real), **FM-15** (clustering, bloqueante pre-datos reales) o **FM-14** (App Store prep).
 
 ## Deuda registrada (no bloqueante)
 
-- **Clustering real (PRD F6)** — SwiftUI `Map` (iOS 17) no clusteriza annotations custom. Con ~22k estaciones reales hará falta `MKMapView`+`MKClusterAnnotation` (UIViewRepresentable) o clustering por grid en el reducer. No necesario con el mock (6 estaciones). Origen: FM-7.
+- **FM-15 Clustering (PRD F6, Must-have)** — 🔴 bloqueante antes de datos reales. Issue creado. Origen: review C2.
+- **Carga inicial supeditada al permiso de ubicación** (review N13) — las estaciones no cargan hasta responder el prompt; valorar cargar con centro por defecto en paralelo + timeout en `currentLocation`.
+- **Pulido a11y menor (review)** — contexto VoiceOver en dirección/marca del detalle; conservar zoom al recentrar; `MapView.camera` init desde `store.center/span`; extraer `topViewController()` a helper desacoplado.
 - **APIClient real (FM-5 → FM-2/FM-3)** — `liveValue` es un mock; sustituir por supabase-swift contra la RPC `nearby_stations` cuando exista el backend. No enviar el mock a producción (verificar en FM-14).
 - **Info.plist l10n (FM-13 → FM-14)** — la usage description de ubicación sigue en italiano; localizar es/en vía `InfoPlist.xcstrings` en FM-14.
 - **AdMob producción (FM-11 → FM-14)** — `GADApplicationIdentifier` y el ad unit del banner son IDs de TEST de Google; sustituir por los reales + añadir `SKAdNetworkItems` y privacy labels en FM-14. No publicar con IDs de test.

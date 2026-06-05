@@ -301,3 +301,17 @@ Onboarding: 1) Google UMP `requestConsentInfoUpdate` + form (GDPR, obligatorio U
 ---
 
 > **Workflow:** §4 → backlog de issues. Cada issue enlaza a su §6.x. Cambios a un RFC Accepted requieren nueva sección o RFC que lo supersede.
+
+---
+
+## §11 Addendum — Desviaciones de implementación (2026-06-05)
+
+> Registradas tras la evaluación multi-agente (`.claude/reviews/2026-06-05-evaluacion-completa.md`). El RFC sigue **Accepted**; estas notas reflejan la realidad del código sin reescribir lo aceptado.
+
+- **§2.2 `FuelType`** — el código añade un 6º caso `.altro` (fallback de normalización, ADR-003).
+- **§2.2 / §9 `country`** — el agnosticismo de país vive solo en el esquema Supabase (§2.1); el modelo de dominio Swift `Station` NO tiene `country` (v1 Italia). Surfacearlo será una decisión (ADR) al abrir otros países.
+- **§6.2 `MapFeature.State`** — `region` se implementó como `center: Coordinate` + `span: Double` (+ cámara local en la vista) para no acoplar el reducer a `MKCoordinateRegion`/MapKit.
+- **§6.2 deep link** — `maps://?daddr=` (scheme nativo; el RFC ya lo especificaba; el código se corrigió en la remediación 2026-06-05).
+- **§6.4 banner** — anchored adaptive (`GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth`), no fijo.
+- **§5 / §6.2 clustering** — SwiftUI `Map` no clusteriza annotations custom → diferido a **FM-15** (MKMapView/grid). **Bloqueante antes de datos reales** (PRD F6 Must-have).
+- **`FuelType.selectable`** excluye `hvo` (alineado con PRD F2; documentado inline).
