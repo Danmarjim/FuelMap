@@ -21,5 +21,14 @@ enum SupabaseConfig {
         "cm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTkzMDIsImV4cCI6MjA5NjIzNTMwMn0" +
         ".zUA_uDHAm7ZAvew0XmoBqzSeiH1TMMCK-KYeRHUo0Z8"
 
-    static let client = SupabaseClient(supabaseURL: url, supabaseKey: anonKey)
+    // Sin login de usuario: solo anon key (read-only por RLS). Desactivamos el
+    // auto-refresh de sesión de Auth para evitar trabajo y logs innecesarios
+    // (warning "Initial session emitted after attempting to refresh…").
+    static let client = SupabaseClient(
+        supabaseURL: url,
+        supabaseKey: anonKey,
+        options: SupabaseClientOptions(
+            auth: SupabaseClientOptions.AuthOptions(autoRefreshToken: false)
+        )
+    )
 }
