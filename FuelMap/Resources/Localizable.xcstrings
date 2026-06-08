@@ -358,6 +358,24 @@
         }
       }
     },
+    "Ibrida": {
+      "comment": "Tipo de mapa: híbrido",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hybrid"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Híbrido"
+          }
+        }
+      }
+    },
     "Indicazioni": {
       "extractionState": "stale",
       "localizations": {
@@ -610,6 +628,24 @@
         }
       }
     },
+    "Satellite": {
+      "comment": "Tipo de mapa: satélite",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satellite"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Satélite"
+          }
+        }
+      }
+    },
     "Self service": {
       "localizations": {
         "en": {
@@ -639,6 +675,42 @@
           "stringUnit": {
             "state": "translated",
             "value": "Atendido"
+          }
+        }
+      }
+    },
+    "Standard": {
+      "comment": "Tipo de mapa: estándar",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estándar"
+          }
+        }
+      }
+    },
+    "Tipo di mappa": {
+      "comment": "Selector de tipo de mapa",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Map type"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo de mapa"
           }
         }
       }

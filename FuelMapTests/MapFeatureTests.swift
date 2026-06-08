@@ -255,6 +255,20 @@ struct MapFeatureTests {
         #expect(store.state.detail?.stationId == favorite.id)
     }
 
+    @Test("Cambiar el tipo de mapa actualiza el estado")
+    func map_mapStyleChanged_updatesState() async {
+        let store = TestStore(initialState: MapFeature.State()) {
+            MapFeature()
+        }
+        #expect(store.state.mapStyle == .standard)
+        await store.send(.mapStyleChanged(.hybrid)) {
+            $0.mapStyle = .hybrid
+        }
+        await store.send(.mapStyleChanged(.imagery)) {
+            $0.mapStyle = .imagery
+        }
+    }
+
     @Test("Tocar una estación presenta el detalle")
     func map_stationTapped_presentsDetail() async {
         let station = StationFixtures.all[0]

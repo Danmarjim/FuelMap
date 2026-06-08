@@ -82,14 +82,14 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 - [x] Tests del mapeo de tier (forma+etiqueta distintas por nivel). 52 tests OK.
 - **Verificación:** ✅ tests verdes.
 
-### Fase R2 — Mapa: pins + chrome + capas
+### Fase R2 — Mapa: pins + chrome + capas ✅
 **Meta:** el mapa con el lenguaje visual nuevo, legible sobre cualquier tile.
-- [ ] `StationPin.swift`: cápsula (fill de tier) con badge 28pt (logo/monograma; ★ dorada si más barata; `fuelpump.fill` si bianca), **forma de tier**, precio tabular, cola + halo `tierStroke` + `ePin`. Estados: **seleccionado** (42pt, chip de combustible, `ePinSelected`), **más barata** (badge dorado + anillo `cheapestGold` + corona), **dot** (zoom out).
-- [ ] `ClusterPin.swift`: burbuja `surfaceElevated` con borde del tier del más barato + cápsula `da X €/L` del mismo tier; halo + sombra.
-- [ ] `BrandBadge.swift`: alinear al spec de chip (rounded rect `surfaceElevated`, hairline, alturas 30/44pt `lg`); conservar `logoBackground` por marca (navy Eni).
-- [ ] `MapView.swift` chrome: status banner (overlay) restyle (`surfaceElevated`/`e2`; variantes loading/error/empty con `errorSurface`); float controls 44pt (`floatctl`: locate, **layers**, favoritos); entrada a lista (`pillbtn`/`floatctl`).
-- [ ] **Control de capas (NUEVO):** `mapStyle` en `MapFeature.State` (standard/hybrid/imagery) + `.mapStyle(...)` en `MapView`; el `floatctl` de capas abre menú/cicla. Acción + reducer + test.
-- **Verificación:** build/lint; capturas mapa claro/oscuro (pins, cluster, seleccionado, más barata, banner, capas).
+- [x] `StationPin.swift`: cápsula (fill de tier) + badge (monograma tier / ★ dorada si más barata / `fuelpump.fill`), **forma de tier**, precio tabular, cola (`DownTriangle`) + halo `tierStroke` + `.elevation(.pin)`. Estados: **seleccionado** (más grande, etiqueta de tier, `pinSelected`), **más barata** (badge dorado + anillo `cheapestGold` + corona).
+- [x] `ClusterPin.swift`: burbuja `surfaceElevated` con borde del tier del más barato + cápsula `da X` del mismo tier; halo + sombra.
+- [x] `BrandBadge.swift`: spec de chip (rounded rect + hairline `separator`; logo sobre `logoBackground`, navy Eni; sin logo → monograma `textPrimary` / pompa `textSecondary` sobre `surfaceElevated`).
+- [x] `MapView.swift` chrome: status banner (overlay) restyle (`surfaceElevated`/`e2`; variante error `errorSurface`); float controls 44pt (`mapControlChrome`: lista, favoritos, **capas**).
+- [x] **Control de capas:** `mapStyle` en `MapFeature.State` (standard/hybrid/imagery) + `.mapStyle(...)` (vía `MapStyleModifier`); menú en el `floatctl`. Acción + reducer + test. Strings it/es/en.
+- **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de `StationPin`/`ClusterPin`/`BrandBadge` + app en simulador.
 
 ### Fase R3 — Barra de filtros
 **Meta:** filtros con el nuevo estilo, ≥44pt, sin truncar labels.

@@ -29,6 +29,7 @@ struct MapView: View {
                 annotation(for: item)
             }
         }
+        .modifier(MapStyleModifier(option: store.mapStyle))
         .mapControls {
             MapUserLocationButton()
             MapCompass()
@@ -40,12 +41,13 @@ struct MapView: View {
             ))
         }
         .overlay(alignment: .topLeading) {
-            VStack(spacing: 8) {
+            VStack(spacing: Spacing.s3) {
                 listButton
                 favoritesButton
+                layersButton
             }
-            .padding(.leading, 12)
-            .padding(.top, 6)
+            .padding(.leading, Spacing.s4)
+            .padding(.top, Spacing.s2)
         }
         .overlay(alignment: .top) { statusBar }
         .safeAreaInset(edge: .bottom) {
@@ -126,16 +128,13 @@ struct MapView: View {
         }
     }
 
+    // MARK: - Controles flotantes
+
     private var listButton: some View {
         Button {
             showingList = true
         } label: {
-            Image(systemName: "list.bullet")
-                .font(.headline)
-                .padding(10)
-                .background(.regularMaterial, in: Circle())
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
+            Image(systemName: "list.bullet").font(.fmHeadline).mapControlChrome()
         }
         .accessibilityLabel("Elenco distributori")
     }
@@ -144,36 +143,85 @@ struct MapView: View {
         Button {
             showingFavorites = true
         } label: {
-            Image(systemName: "star")
-                .font(.headline)
-                .padding(10)
-                .background(.regularMaterial, in: Circle())
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
+            Image(systemName: "star").font(.fmHeadline).mapControlChrome()
         }
         .accessibilityLabel("Preferiti")
+    }
+
+    private var layersButton: some View {
+        Menu {
+            Picker("Tipo di mappa", selection: Binding(
+                get: { store.mapStyle },
+                set: { store.send(.mapStyleChanged($0)) }
+            )) {
+                ForEach(MapStyleOption.allCases, id: \.self) { option in
+                    Label(option.label, systemImage: option.symbol).tag(option)
+                }
+            }
+        } label: {
+            Image(systemName: store.mapStyle.symbol).font(.fmHeadline).mapControlChrome()
+        }
+        .accessibilityLabel("Tipo di mappa")
     }
 
     @ViewBuilder
     private var statusBar: some View {
         if store.isLoading {
-            banner(Text("Caricamento…"), systemImage: "arrow.triangle.2.circlepath")
+            banner(Text("Caricamento…"), systemImage: "arrow.triangle.2.circlepath", kind: .loading)
         } else if let error = store.errorMessage {
-            banner(Text(error), systemImage: "exclamationmark.triangle.fill")
+            banner(Text(error), systemImage: "exclamationmark.triangle.fill", kind: .error)
         } else if store.stations.isEmpty {
-            banner(Text("Nessun distributore in zona"), systemImage: "mappin.slash")
+            banner(Text("Nessun distributore in zona"), systemImage: "mappin.slash", kind: .info)
         }
     }
 
-    private func banner(_ title: Text, systemImage: String) -> some View {
-        Label { title } icon: { Image(systemName: systemImage) }
-            .font(.footnote)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(.regularMaterial, in: Capsule())
-            .padding(.top, 6)
+    private func banner(_ title: Text, systemImage: String, kind: BannerKind) -> some View {
+        HStack(spacing: Spacing.s3) {
+            Image(systemName: systemImage)
+                .foregroundStyle(kind == .error ? Color(.error) : Color(.brandTint))
+            title
+                .font(.fmFootnote.weight(.semibold))
+                .foregroundStyle(kind == .error ? Color(.error) : Color(.textPrimary))
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+        }
+        .padding(.horizontal, Spacing.s4)
+        .padding(.vertical, Spacing.s3)
+        .background(
+            kind == .error ? Color(.errorSurface) : Color(.surfaceElevated),
+            in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
+        )
+        .elevation(.e2)
+        .padding(.top, Spacing.s2)
+    }
+}
+
+private enum BannerKind { case info, loading, error }
+
+/// Aplica el `MapStyle` de MapKit según la opción de capas (tipos concretos distintos
+/// por rama → se resuelve con un `ViewModifier`).
+private struct MapStyleModifier: ViewModifier {
+    let option: MapStyleOption
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        switch option {
+        case .standard: content.mapStyle(.standard)
+        case .hybrid: content.mapStyle(.hybrid)
+        case .imagery: content.mapStyle(.imagery)
+        }
+    }
+}
+
+private extension View {
+    /// Estilo de control flotante del mapa (44pt, `surfaceElevated`, `e2`, icono `brandTint`).
+    func mapControlChrome() -> some View {
+        self
+            .foregroundStyle(Color(.brandTint))
+            .frame(width: 44, height: 44)
+            .background(Color(.surfaceElevated), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .elevation(.e2)
+            .contentShape(Rectangle())
     }
 }
 

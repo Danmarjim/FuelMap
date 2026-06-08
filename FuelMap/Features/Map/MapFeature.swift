@@ -27,6 +27,8 @@ struct MapFeature {
         var recenter: Coordinate?
         var didRequestLocation = false
         var sortOrder: StationSort = .price
+        /// Tipo de mapa (estándar / híbrido / satélite) — control de capas.
+        var mapStyle: MapStyleOption = .standard
         /// Estación más barata del conjunto actual (para destacarla en el mapa).
         var cheapestStationID: Int?
         var favorites: [FavoriteStationInfo] = []
@@ -71,6 +73,7 @@ struct MapFeature {
         case detail(PresentationAction<StationDetailFeature.Action>)
         case filters(FiltersFeature.Action)
         case sortOrderChanged(StationSort)
+        case mapStyleChanged(MapStyleOption)
         case recenterOnStation(Station)
         case clusterTapped(StationCluster)
         case recenterHandled
@@ -135,6 +138,10 @@ struct MapFeature {
 
             case let .sortOrderChanged(order):
                 state.sortOrder = order
+                return .none
+
+            case let .mapStyleChanged(style):
+                state.mapStyle = style
                 return .none
 
             case let .recenterOnStation(station):
@@ -253,6 +260,29 @@ struct MapFeature {
 }
 
 // MARK: - Helpers
+
+/// Tipo de mapa para el control de capas (RESTYLE-001 R2).
+enum MapStyleOption: String, CaseIterable, Sendable, Equatable {
+    case standard
+    case hybrid
+    case imagery
+
+    var label: String {
+        switch self {
+        case .standard: return String(localized: "Standard", comment: "Tipo de mapa: estándar")
+        case .hybrid: return String(localized: "Ibrida", comment: "Tipo de mapa: híbrido")
+        case .imagery: return String(localized: "Satellite", comment: "Tipo de mapa: satélite")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .standard: return "map"
+        case .hybrid: return "map.fill"
+        case .imagery: return "globe.americas.fill"
+        }
+    }
+}
 
 /// Criterio de orden de la lista de estaciones (RFC §4 FM-10).
 enum StationSort: String, CaseIterable, Sendable, Equatable {

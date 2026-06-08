@@ -8,8 +8,10 @@
 import Foundation
 import SwiftUI
 
-/// Pin de mapa que muestra el precio del combustible seleccionado.
-/// `isCheapest` se usará en FM-10 para destacar la estación más barata.
+/// Pin de mapa: cápsula con badge de marca, forma de tier, precio y cola.
+/// Legible sobre cualquier tile (relleno opaco de tier + halo `tierStroke` + sombra).
+/// Estados: por defecto · seleccionado (más grande, con etiqueta de tier) · más barata
+/// (badge dorado + anillo + corona). Design system, ver `.claude/design/`.
 struct StationPin: View {
     let name: String
     let fuel: FuelType
@@ -21,55 +23,106 @@ struct StationPin: View {
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    // Color por nivel de precio (verde/naranja/rojo) (FM-18).
-    private var tint: Color { tier.color }
+    private var badgeSize: CGFloat { isSelected ? 34 : 28 }
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 3) {
-                // Líder: estrella si es la más barata; si no, monograma de marca;
-                // y pumpa genérica para independientes/sin marca.
-                leadingGlyph
-                    .font(.caption2.weight(.heavy))
-                // En tamaños de accesibilidad ocultamos el texto para no desbordar
-                // el pin en el mapa; el precio sigue en el accessibilityLabel.
-                if !dynamicTypeSize.isAccessibilitySize {
-                    Text(priceText)
-                        .font(.caption2.weight(.bold))
-                        .monospacedDigit()
-                }
-            }
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
-            .foregroundStyle(.white)
-            .background(tint, in: Capsule())
-            .overlay(Capsule().strokeBorder(.white, lineWidth: 1))
-
-            Image(systemName: "arrowtriangle.down.fill")
-                .font(.system(size: 9))
-                .foregroundStyle(tint)
-                .offset(y: -3)
+            capsule
+                .overlay(alignment: .top) { crown }
+            tail
         }
-        .shadow(radius: isSelected ? 4 : 1.5)
-        .scaleEffect(isSelected ? 1.35 : 1.0)
-        .zIndex(isSelected ? 1 : 0)
-        .animation(.spring(duration: 0.25), value: isSelected)
         .frame(minWidth: 44, minHeight: 44)
         .contentShape(Rectangle())
+        .zIndex(isSelected ? 1 : 0)
+        .animation(.spring(duration: 0.25), value: isSelected)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityText))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
+    // MARK: - Cápsula
+
+    private var capsule: some View {
+        HStack(spacing: isSelected ? 8 : 6) {
+            badge
+            Image(systemName: tier.symbolName)
+                .font(.system(size: isSelected ? 12 : 11, weight: .bold))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.18), radius: 0, y: 1)
+            if !dynamicTypeSize.isAccessibilitySize {
+                Text(priceText)
+                    .font(.fmPinPrice)
+                    .foregroundStyle(.white)
+                if isSelected {
+                    Text(tier.label)
+                        .font(.system(size: 9, weight: .bold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(.white.opacity(0.22), in: RoundedRectangle(cornerRadius: 5))
+                }
+            }
+        }
+        .padding(isSelected ? 4 : 3)
+        .padding(.trailing, isSelected ? 11 : 8)
+        .background(tier.fill, in: Capsule())
+        .overlay(Capsule().strokeBorder(Color(.tierStroke), lineWidth: isSelected ? 2.5 : 2))
+        .overlay { if isCheapest { goldRing } }
+        .elevation(isSelected ? .pinSelected : .pin)
+    }
+
+    private var badge: some View {
+        ZStack {
+            Circle().fill(isCheapest ? Color(.cheapestGold) : .white)
+            badgeContent
+        }
+        .frame(width: badgeSize, height: badgeSize)
+        .overlay(Circle().strokeBorder(.black.opacity(0.06), lineWidth: 1))
+    }
+
     @ViewBuilder
-    private var leadingGlyph: some View {
+    private var badgeContent: some View {
         if isCheapest {
             Image(systemName: "star.fill")
+                .font(.system(size: badgeSize * 0.46, weight: .bold))
+                .foregroundStyle(Color(red: 0.23, green: 0.16, blue: 0))
         } else if !brand.monogram.isEmpty {
             Text(brand.monogram)
+                .font(.system(size: badgeSize * 0.36, weight: .heavy))
+                .foregroundStyle(tier.fill)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
         } else {
             Image(systemName: "fuelpump.fill")
+                .font(.system(size: badgeSize * 0.44))
+                .foregroundStyle(tier.fill)
         }
+    }
+
+    private var goldRing: some View {
+        Capsule()
+            .strokeBorder(Color(.cheapestGold), lineWidth: isSelected ? 2.5 : 2)
+            .padding(isSelected ? -3 : -2.5)
+    }
+
+    @ViewBuilder
+    private var crown: some View {
+        if isCheapest {
+            Image(systemName: "crown.fill")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color(.cheapestGold))
+                .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
+                .offset(y: -13)
+        }
+    }
+
+    private var tail: some View {
+        ZStack {
+            DownTriangle().fill(Color(.tierStroke)).frame(width: 16, height: 10)
+            DownTriangle().fill(tier.fill).frame(width: 12, height: 7)
+        }
+        .offset(y: -1)
     }
 
     private var priceText: String {
@@ -79,19 +132,42 @@ struct StationPin: View {
     private var accessibilityText: String {
         var text = "\(name), \(fuel.label) \(priceText)"
         if !brand.monogram.isEmpty { text += ", \(brand.displayName)" }
+        text += ", \(tier.label)"
         if isCheapest { text += ", " + String(localized: "il più economico") }
         return text
     }
 }
 
-#Preview {
-    HStack(spacing: 20) {
-        StationPin(name: "Eni", fuel: .benzina, price: Decimal(string: "1.879"), brand: .eni, tier: .high)
-        StationPin(
-            name: "Tamoil", fuel: .benzina, price: Decimal(string: "1.849"),
-            brand: .tamoil, tier: .low, isCheapest: true
-        )
-        StationPin(name: "Q8", fuel: .benzina, price: Decimal(string: "1.86"), brand: .q8, tier: .mid)
+/// Triángulo apuntando hacia abajo (cola del pin).
+struct DownTriangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+        path.closeSubpath()
+        return path
     }
-    .padding()
+}
+
+#Preview {
+    VStack(spacing: 28) {
+        HStack(spacing: 20) {
+            StationPin(name: "Q8", fuel: .benzina, price: Decimal(string: "1.799"), brand: .q8, tier: .low)
+            StationPin(name: "IP", fuel: .benzina, price: Decimal(string: "1.879"), brand: .ip, tier: .mid)
+            StationPin(name: "Esso", fuel: .benzina, price: Decimal(string: "2.014"), brand: .esso, tier: .high)
+        }
+        HStack(spacing: 20) {
+            StationPin(
+                name: "Tamoil", fuel: .benzina, price: Decimal(string: "1.789"),
+                brand: .tamoil, tier: .low, isCheapest: true
+            )
+            StationPin(
+                name: "Eni", fuel: .benzina, price: Decimal(string: "1.872"),
+                brand: .eni, tier: .mid, isSelected: true
+            )
+        }
+    }
+    .padding(40)
+    .background(Color(.surfaceSecondary))
 }
