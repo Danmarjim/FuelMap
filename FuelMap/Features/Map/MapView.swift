@@ -62,6 +62,7 @@ struct MapView: View {
         .sheet(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
             StationDetailView(store: detailStore)
                 .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingList) {
             StationListView(
@@ -79,6 +80,7 @@ struct MapView: View {
                 onClose: { showingList = false }
             )
             .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingFavorites) {
             FavoritesView(
@@ -90,6 +92,7 @@ struct MapView: View {
                 onClose: { showingFavorites = false }
             )
             .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
         .onAppear { store.send(.onAppear) }
         .onChange(of: store.recenter) { _, target in

@@ -9,7 +9,7 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-/// Detalle de estación presentado en sheet (RFC §6.2).
+/// Detalle de estación presentado en sheet (RFC §6.2), reestilizado al design system (R4).
 struct StationDetailView: View {
     let store: StoreOf<StationDetailFeature>
 
@@ -24,75 +24,214 @@ struct StationDetailView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let station = store.station {
-                    content(for: station)
-                } else if store.isLoading {
-                    ProgressView("Caricamento…")
-                } else if let error = store.errorMessage {
-                    ContentUnavailableView("Errore", systemImage: "exclamationmark.triangle", description: Text(error))
-                }
+        Group {
+            if let station = store.station {
+                content(for: station)
+            } else if let error = store.errorMessage {
+                SheetEmptyState(
+                    systemImage: "exclamationmark.triangle.fill",
+                    title: "Errore",
+                    message: "\(error)",
+                    tint: Color(.error),
+                    tintSurface: Color(.errorSurface)
+                )
+                .frame(maxHeight: .infinity)
+            } else {
+                ProgressView("Caricamento…").frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle(store.station?.name ?? String(localized: "Distributore"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        store.send(.favoriteToggled)
-                    } label: {
-                        Image(systemName: store.isFavorite ? "star.fill" : "star")
-                    }
-                    .accessibilityLabel(
-                        store.isFavorite
-                            ? Text("Rimuovi dai preferiti")
-                            : Text("Aggiungi ai preferiti")
-                    )
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Chiudi") { store.send(.closeTapped) }
-                }
-            }
-            .onAppear { store.send(.onAppear) }
         }
+        .background(Color(.surfaceElevated))
+        .onAppear { store.send(.onAppear) }
     }
 
     @ViewBuilder
     private func content(for station: Station) -> some View {
-        List {
-            Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                hero(station)
+                sectionHeader(station)
                 pricesContent(for: station)
-            } header: {
-                Text("Prezzi")
-            } footer: {
-                if let updated = latestUpdate(for: station) {
-                    Text("Aggiornato \(updated, format: .relative(presentation: .named))")
-                        .foregroundStyle(isStale(updated) ? .orange : .secondary)
-                }
-            }
-
-            Section {
-                let brand = BrandStyle.from(station.brand)
-                HStack(spacing: 12) {
-                    BrandBadge(brand: brand, size: 32)
-                    Text(station.brand ?? brand.displayName)
-                        .fontWeight(.medium)
-                }
-                if let address = station.address {
-                    Label(address, systemImage: "mappin.and.ellipse")
-                }
-                Button {
-                    requestDirections()
-                } label: {
-                    Label("Indicazioni", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
-                }
-                .confirmationDialog("Indicazioni", isPresented: $showingNavOptions, titleVisibility: .hidden) {
-                    ForEach(availableNavApps, id: \.self) { app in
-                        Button(app.label) { store.send(.navigate(app)) }
-                    }
-                }
+                addressRow(station)
+                cta
             }
         }
+        .confirmationDialog("Indicazioni", isPresented: $showingNavOptions, titleVisibility: .hidden) {
+            ForEach(availableNavApps, id: \.self) { app in
+                Button(app.label) { store.send(.navigate(app)) }
+            }
+        }
+    }
+
+    // MARK: - Hero
+
+    private func hero(_ station: Station) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s4) {
+            BrandBadge(brand: BrandStyle.from(station.brand), size: 44)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(station.name)
+                    .font(.fmTitle2)
+                    .foregroundStyle(Color(.textPrimary))
+                    .fixedSize(horizontal: false, vertical: true)
+                if let address = station.address {
+                    Text(address).font(.fmSubheadline).foregroundStyle(Color(.textSecondary))
+                }
+            }
+            Spacer(minLength: Spacing.s3)
+            favoriteButton
+        }
+        .padding(.horizontal, Spacing.s5)
+        .padding(.top, Spacing.s5)
+        .padding(.bottom, Spacing.s4)
+    }
+
+    private var favoriteButton: some View {
+        Button {
+            store.send(.favoriteToggled)
+        } label: {
+            Image(systemName: store.isFavorite ? "star.fill" : "star")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(store.isFavorite ? Color(.goldInk) : Color(.textSecondary))
+                .frame(width: 40, height: 40)
+                .background(Color(.surfaceTertiary), in: Circle())
+        }
+        .accessibilityLabel(
+            store.isFavorite ? Text("Rimuovi dai preferiti") : Text("Aggiungi ai preferiti")
+        )
+    }
+
+    // MARK: - Precios
+
+    private func sectionHeader(_ station: Station) -> some View {
+        HStack {
+            Text("Prezzi · €/L")
+                .font(.fmFootnote.weight(.bold))
+                .textCase(.uppercase)
+                .tracking(0.5)
+                .foregroundStyle(Color(.textTertiary))
+            Spacer()
+            if let updated = latestUpdate(for: station) {
+                FreshnessPill(date: updated)
+            }
+        }
+        .padding(.horizontal, Spacing.s5)
+        .padding(.vertical, Spacing.s3)
+    }
+
+    @ViewBuilder
+    private func pricesContent(for station: Station) -> some View {
+        let rows = variantRows(for: station)
+        if rows.isEmpty {
+            if store.isLoading {
+                ProgressView().frame(maxWidth: .infinity).padding(.vertical, Spacing.s7)
+            } else {
+                Text("Nessun prezzo disponibile")
+                    .font(.fmSubheadline)
+                    .foregroundStyle(Color(.textSecondary))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.s7)
+            }
+        } else {
+            ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                if index > 0 {
+                    Rectangle().fill(Color(.separator)).frame(height: 1).padding(.horizontal, Spacing.s5)
+                }
+                priceRow(row)
+            }
+        }
+    }
+
+    private func priceRow(_ row: VariantRow) -> some View {
+        let selected = row.fuel == store.selectedFuel
+        let best = [row.selfPrice, row.servitoPrice].compactMap { $0 }.min()
+        return HStack(alignment: .center, spacing: Spacing.s4) {
+            HStack(spacing: Spacing.s3) {
+                Text(row.name)
+                    .font(.fmBody.weight(.semibold))
+                    .foregroundStyle(Color(.textPrimary))
+                    .lineLimit(1)
+                if selected {
+                    Text("Filtro")
+                        .font(.system(size: 9.5, weight: .bold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(Color(.brandPrimary))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color(.brandSurface), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                }
+            }
+            Spacer(minLength: Spacing.s3)
+            HStack(spacing: Spacing.s6) {
+                priceColumn("Self", row.selfPrice, isBest: row.selfPrice != nil && row.selfPrice == best)
+                priceColumn("Servito", row.servitoPrice, isBest: row.servitoPrice != nil && row.servitoPrice == best)
+            }
+        }
+        .padding(.horizontal, Spacing.s5)
+        .padding(.vertical, Spacing.s4)
+        .frame(minHeight: 60)
+        .background(selected ? Color(.brandSurface) : Color.clear)
+        .overlay(alignment: .leading) {
+            if selected { Rectangle().fill(Color(.brandPrimary)).frame(width: 4) }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func priceColumn(_ label: LocalizedStringKey, _ price: Decimal?, isBest: Bool) -> some View {
+        VStack(alignment: .trailing, spacing: 1) {
+            Text(label)
+                .font(.system(size: 10, weight: .semibold))
+                .textCase(.uppercase)
+                .foregroundStyle(Color(.textTertiary))
+            Text(price.map { $0.fuelPriceLabel } ?? "—")
+                .font(.fmPriceDetail)
+                .foregroundStyle(isBest ? Color(.priceCheapInk) : Color(.textPrimary))
+        }
+    }
+
+    // MARK: - Dirección + CTA
+
+    @ViewBuilder
+    private func addressRow(_ station: Station) -> some View {
+        if let address = station.address {
+            Rectangle().fill(Color(.separator)).frame(height: 1).padding(.horizontal, Spacing.s5)
+            Button {
+                requestDirections()
+            } label: {
+                HStack(spacing: Spacing.s4) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundStyle(Color(.brandTint))
+                        .frame(width: 22)
+                    Text(address)
+                        .font(.fmCallout)
+                        .foregroundStyle(Color(.textPrimary))
+                        .multilineTextAlignment(.leading)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(.textTertiary))
+                }
+                .padding(.horizontal, Spacing.s5)
+                .padding(.vertical, Spacing.s4)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var cta: some View {
+        Button {
+            requestDirections()
+        } label: {
+            HStack(spacing: Spacing.s3) {
+                Image(systemName: "arrow.triangle.turn.up.right.diamond.fill")
+                Text("Indicazioni")
+            }
+            .font(.fmHeadline)
+            .foregroundStyle(Color(.onBrand))
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(Color(.brandPrimaryFill), in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous))
+        }
+        .padding(Spacing.s5)
     }
 
     private func requestDirections() {
@@ -102,61 +241,6 @@ struct StationDetailView: View {
         } else {
             showingNavOptions = true
         }
-    }
-
-    @ViewBuilder
-    private func pricesContent(for station: Station) -> some View {
-        let rows = variantRows(for: station)
-        if rows.isEmpty {
-            if store.isLoading {
-                ProgressView()
-            } else {
-                Text("Nessun prezzo disponibile")
-                    .foregroundStyle(.secondary)
-            }
-        } else {
-            ForEach(rows) { row in
-                variantRow(row)
-            }
-        }
-    }
-
-    private func variantRow(_ row: VariantRow) -> some View {
-        let isSelected = row.fuel == store.selectedFuel
-        return HStack {
-            Text(row.name)
-                .fontWeight(isSelected ? .bold : .medium)
-                .foregroundStyle(isSelected ? Color.accentColor : Color.primary)
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                if let selfPrice = row.selfPrice {
-                    priceLabel("Self", selfPrice)
-                }
-                if let servito = row.servitoPrice {
-                    priceLabel("Servito", servito)
-                }
-            }
-            .accessibilityElement(children: .combine)
-        }
-        .listRowBackground(isSelected ? Color.accentColor.opacity(0.1) : nil)
-    }
-
-    private func priceLabel(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
-        // Adapta a VStack si en horizontal no cabe (Dynamic Type grande).
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 6) { priceLabelContent(kind, price) }
-            VStack(alignment: .trailing, spacing: 0) { priceLabelContent(kind, price) }
-        }
-    }
-
-    @ViewBuilder
-    private func priceLabelContent(_ kind: LocalizedStringKey, _ price: Decimal) -> some View {
-        Text(kind)
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-        Text(price.fuelPriceLabel)
-            .font(.subheadline.weight(.semibold))
-            .monospacedDigit()
     }
 
     // MARK: - Data shaping
@@ -197,11 +281,6 @@ struct StationDetailView: View {
 
     private func latestUpdate(for station: Station) -> Date? {
         station.prices.compactMap(\.communicatedAt).max()
-    }
-
-    /// Precio obsoleto si la última comunicación tiene más de 2 días.
-    private func isStale(_ updated: Date) -> Bool {
-        updated < Date.now.addingTimeInterval(-2 * 24 * 3600)
     }
 }
 

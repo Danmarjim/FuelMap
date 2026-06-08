@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// Lista de estaciones del radio actual, ordenable por precio o distancia (FM-10).
-/// Vista de presentación pura de datos del mapa (sin reducer propio).
+/// Vista de presentación pura (sin reducer propio), reestilizada al design system (R4).
 struct StationListView: View {
     let stations: [Station]
     /// Referencia para la distancia (ubicación del usuario; si no, centro del mapa).
@@ -18,58 +18,65 @@ struct StationListView: View {
     let onSelect: (Station) -> Void
     let onClose: () -> Void
 
-    var body: some View {
-        NavigationStack {
-            List {
-                Picker("Ordina per", selection: $sort) {
-                    ForEach(StationSort.allCases, id: \.self) { Text($0.label).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .listRowSeparator(.hidden)
-
-                ForEach(stations) { station in
-                    Button { onSelect(station) } label: { row(station) }
-                        .buttonStyle(.plain)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(Text(voiceOverLabel(for: station)))
-                        .accessibilityHint(Text("Centra la mappa qui"))
-                }
-            }
-            .listStyle(.plain)
-            .navigationTitle("Distributori")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Chiudi") { onClose() }
-                }
-            }
-            .overlay {
-                if stations.isEmpty {
-                    ContentUnavailableView("Nessun distributore", systemImage: "mappin.slash")
-                }
-            }
-        }
+    private var tiers: PriceTiers {
+        PriceTiers(prices: stations.compactMap { $0.cheapest?.price })
     }
 
-    @ViewBuilder
-    private func row(_ station: Station) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: station.id == cheapestStationID ? "fuelpump.fill" : "fuelpump")
-                .foregroundStyle(station.id == cheapestStationID ? .green : .blue)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(station.name).fontWeight(.medium)
-                Text(distanceText(to: station)).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if let price = station.cheapest?.price {
-                Text(price.fuelPriceLabel)
-                    .font(.subheadline.weight(.semibold))
-                    .monospacedDigit()
-                    .foregroundStyle(station.id == cheapestStationID ? .green : .primary)
+    var body: some View {
+        VStack(spacing: 0) {
+            SheetHeader(title: "Stazioni vicine", count: stations.isEmpty ? nil : stations.count, onClose: onClose)
+            sortBar
+            if stations.isEmpty {
+                Spacer()
+                SheetEmptyState(
+                    systemImage: "mappin.slash",
+                    title: "Nessun distributore",
+                    message: "Nessun distributore in zona. Allarga il raggio o sposta la mappa."
+                )
+                Spacer()
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(stations.enumerated()), id: \.element.id) { index, station in
+                            if index > 0 { separator }
+                            rowButton(station)
+                        }
+                    }
+                }
             }
         }
-        .padding(.vertical, 6)
-        .frame(minHeight: 44)
+        .background(Color(.surfaceElevated))
+    }
+
+    private var sortBar: some View {
+        HStack(spacing: Spacing.s3) {
+            SortPill(option: .price, isActive: sort == .price) { sort = .price }
+            SortPill(option: .distance, isActive: sort == .distance) { sort = .distance }
+            Spacer()
+        }
+        .padding(.horizontal, Spacing.s5)
+        .padding(.bottom, Spacing.s3)
+    }
+
+    private var separator: some View {
+        Rectangle().fill(Color(.separator)).frame(height: 1).padding(.leading, 60)
+    }
+
+    private func rowButton(_ station: Station) -> some View {
+        Button { onSelect(station) } label: {
+            StationRow(
+                brand: BrandStyle.from(station.brand),
+                name: station.name,
+                distance: distanceText(to: station),
+                price: station.cheapest?.price,
+                tier: tiers.tier(for: station.cheapest?.price),
+                isCheapest: station.id == cheapestStationID
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(voiceOverLabel(for: station)))
+        .accessibilityHint(Text("Centra la mappa qui"))
     }
 
     private func distanceText(to station: Station) -> String {
@@ -83,6 +90,7 @@ struct StationListView: View {
     private func voiceOverLabel(for station: Station) -> String {
         var parts = [station.name, distanceText(to: station)]
         if let price = station.cheapest?.price { parts.append(price.fuelPriceLabel) }
+        parts.append(tiers.tier(for: station.cheapest?.price).label)
         if station.id == cheapestStationID { parts.append(String(localized: "il più economico")) }
         return parts.joined(separator: ", ")
     }

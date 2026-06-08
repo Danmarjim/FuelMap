@@ -97,13 +97,13 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 - [x] `sort` inyectado como binding desde `MapView` (vive en `MapFeature`).
 - **Verificación:** ✅ build/lint; 53 tests. Validación visual: preview de `FiltersView` + app.
 
-### Fase R4 — Sheets: lista, favoritos, detalle
+### Fase R4 — Sheets: lista, favoritos, detalle ✅
 **Meta:** las 3 hojas con el vocabulario de filas/precios nuevo.
-- [ ] Chrome de sheet: grab, head (título + count + `iconbtn` cerrar), `sortbar` con `sortpill`.
-- [ ] `StationListView.swift`: fila `lrow` (chip, nombre, meta con `best-flag` + distancia, precio tabular + unidad, `tier-tag` forma+palabra+bg tintado); separador con sangría.
-- [ ] `FavoritesView.swift`: misma fila + `star-toggle` (oro).
-- [ ] `StationDetailView.swift`: hero (chip `lg`, nombre, dirección, `star-toggle` `iconbtn`), section header + `fresh-pill` (ok/stale con `warningSurface`), filas `prow` (combustible + badge **Filtro** en el seleccionado, Self/Servito, mejor precio en `priceCheapInk`, fila activa `brandSurface` + barra de acento izq.), `detail__rowline` dirección, **CTA `Indicazioni`** (`brandPrimaryFill`, 52pt) → selector de navegación.
-- **Verificación:** build/lint; capturas de lista/favoritos/detalle claro/oscuro.
+- [x] Componentes compartidos (`SheetComponents.swift`): `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow`. Color `goldInk` adaptativo. Grab vía `presentationDragIndicator`.
+- [x] `StationListView.swift`: header (título+count+cerrar) + `sortBar` (pills) + `StationRow` (chip, nombre, `best-flag`+distancia, precio tabular+unidad, `tier-tag`); separador con sangría; estado vacío.
+- [x] `FavoritesView.swift`: misma cabecera + fila con chip (marca inferida del nombre) + estrella oro; estado vacío. (Sin precio/distancia: el modelo de favorito no los lleva — mejora futura.)
+- [x] `StationDetailView.swift`: hero (chip `lg`, nombre, dirección, estrella `iconbtn` oro), section header + `FreshnessPill` (ok/stale), filas `prow` (badge **Filtro** en el filtrado, Self/Servito, mejor precio en `priceCheapInk`, fila activa `brandSurface` + barra de acento), fila dirección, **CTA `Indicazioni`** (`brandPrimaryFill`, 52pt) → selector de navegación.
+- **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de las 3 hojas.
 
 ### Fase R5 — Estados, movimiento y accesibilidad
 **Meta:** loading/empty/error consistentes + a11y.
