@@ -58,6 +58,7 @@ struct StationDetailView: View {
                 pricesContent(for: station)
                 addressRow(station)
                 cta
+                adSection
             }
         }
         .confirmationDialog("Indicazioni", isPresented: $showingNavOptions, titleVisibility: .hidden) {
@@ -237,6 +238,26 @@ struct StationDetailView: View {
             .background(Color(.brandPrimaryFill), in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous))
         }
         .padding(Spacing.s5)
+    }
+
+    /// Banner de la card (monetización). Separado del CTA y etiquetado "Annuncio"
+    /// para cumplir política AdMob (sin clics accidentales).
+    @ViewBuilder
+    private var adSection: some View {
+        if !store.adUnitID.isEmpty {
+            VStack(spacing: Spacing.s2) {
+                Text("Annuncio")
+                    .font(.fmCaption2)
+                    .foregroundStyle(Color(.textTertiary))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                BannerAdView(adUnitID: store.adUnitID)
+                    .frame(height: 50)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, Spacing.s5)
+            .padding(.top, Spacing.s2)
+            .padding(.bottom, Spacing.s6)
+        }
     }
 
     private func requestDirections() {

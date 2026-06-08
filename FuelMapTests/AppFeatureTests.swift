@@ -28,7 +28,8 @@ struct AppFeatureTests {
             $0.adClient = AdClient(
                 start: { calls.withValue { $0.append("start") } },
                 requestConsent: { calls.withValue { $0.append("consent") } },
-                bannerAdUnitID: { "test" }
+                bannerAdUnitID: { "test" },
+                detailAdUnitID: { "test" }
             )
         }
 

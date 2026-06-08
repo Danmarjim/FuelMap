@@ -21,6 +21,8 @@ struct StationDetailFeature {
         var isLoading = false
         var errorMessage: String?
         var isFavorite = false
+        /// Ad unit del banner de la card (vacío = sin anuncio). Se fija en `onAppear`.
+        var adUnitID = ""
 
         var id: Int { stationId }
     }
@@ -36,6 +38,7 @@ struct StationDetailFeature {
 
     @Dependency(\.apiClient) var apiClient
     @Dependency(\.favoritesClient) var favoritesClient
+    @Dependency(\.adClient) var adClient
     @Dependency(\.openURL) var openURL
     @Dependency(\.dismiss) var dismiss
 
@@ -44,6 +47,7 @@ struct StationDetailFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
+                if state.adUnitID.isEmpty { state.adUnitID = adClient.detailAdUnitID() }
                 let id = state.stationId
                 return .merge(
                     .run { send in

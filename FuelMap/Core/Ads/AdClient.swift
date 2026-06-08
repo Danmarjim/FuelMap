@@ -17,8 +17,10 @@ struct AdClient: Sendable {
     var start: @Sendable () async -> Void
     /// Flujo de consentimiento: UMP (GDPR, obligatorio UE) y luego ATT.
     var requestConsent: @Sendable () async -> Void
-    /// Ad unit del banner (TEST por ahora; el real llega en FM-14).
+    /// Ad unit del banner del mapa (TEST por ahora; el real llega en FM-14).
     var bannerAdUnitID: @Sendable () -> String
+    /// Ad unit del banner de la card de detalle (unidad propia para reporting).
+    var detailAdUnitID: @Sendable () -> String
 }
 
 extension AdClient {
@@ -32,14 +34,17 @@ extension AdClient: DependencyKey {
     static let liveValue = AdClient(
         start: { await AdSDK.start() },
         requestConsent: { await AdConsentCoordinator.requestConsentThenTracking() },
-        // Pendiente (FM-14): ad unit real en release; TEST en debug.
-        bannerAdUnitID: { AdClient.testBannerUnitID }
+        // Pendiente (FM-14): ad units reales en release; TEST en debug. Una unidad
+        // distinta por placement (mapa / detalle) para separar el reporting.
+        bannerAdUnitID: { AdClient.testBannerUnitID },
+        detailAdUnitID: { AdClient.testBannerUnitID }
     )
 
     static let testValue = AdClient(
         start: {},
         requestConsent: {},
-        bannerAdUnitID: { "" }
+        bannerAdUnitID: { "" },
+        detailAdUnitID: { "" }
     )
 
     static let previewValue = testValue
