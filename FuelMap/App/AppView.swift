@@ -19,6 +19,10 @@ struct AppView: View {
                 BannerAdView(adUnitID: store.bannerAdUnitID)
                     .frame(height: 50)
                     .frame(maxWidth: .infinity)
+                    .background(Color(.surfaceSecondary))
+                    .overlay(alignment: .top) {
+                        Rectangle().fill(Color(.separator)).frame(height: 1)
+                    }
             }
         }
         .onAppear { store.send(.onAppear) }

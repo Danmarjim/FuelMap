@@ -22,6 +22,7 @@ struct StationPin: View {
     var isSelected: Bool = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var badgeSize: CGFloat { isSelected ? 34 : 28 }
 
@@ -31,10 +32,13 @@ struct StationPin: View {
                 .overlay(alignment: .top) { crown }
             tail
         }
+        // El precio del pin se capa a Large para no desbordar sobre el mapa;
+        // VoiceOver anuncia el detalle completo vía accessibilityLabel.
+        .dynamicTypeSize(...DynamicTypeSize.large)
         .frame(minWidth: 44, minHeight: 44)
         .contentShape(Rectangle())
         .zIndex(isSelected ? 1 : 0)
-        .animation(.spring(duration: 0.25), value: isSelected)
+        .animation(reduceMotion ? nil : .spring(duration: 0.25), value: isSelected)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(accessibilityText))
         .accessibilityAddTraits(isSelected ? .isSelected : [])

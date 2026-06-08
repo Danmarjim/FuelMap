@@ -21,6 +21,7 @@ struct MapView: View {
     )
     @State private var showingList = false
     @State private var showingFavorites = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Map(position: $camera) {
@@ -69,6 +70,7 @@ struct MapView: View {
                 stations: store.sortedStations,
                 origin: store.distanceOrigin,
                 cheapestStationID: store.cheapestStationID,
+                isLoading: store.isLoading,
                 sort: Binding(
                     get: { store.sortOrder },
                     set: { store.send(.sortOrderChanged($0)) }
@@ -97,13 +99,14 @@ struct MapView: View {
         .onAppear { store.send(.onAppear) }
         .onChange(of: store.recenter) { _, target in
             guard let target else { return }
-            withAnimation {
-                camera = .region(
-                    MKCoordinateRegion(
-                        center: target.clLocationCoordinate,
-                        span: MKCoordinateSpan(latitudeDelta: store.span, longitudeDelta: store.span)
-                    )
-                )
+            let region = MKCoordinateRegion(
+                center: target.clLocationCoordinate,
+                span: MKCoordinateSpan(latitudeDelta: store.span, longitudeDelta: store.span)
+            )
+            if reduceMotion {
+                camera = .region(region)
+            } else {
+                withAnimation { camera = .region(region) }
             }
             store.send(.recenterHandled)
         }

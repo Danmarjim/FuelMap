@@ -135,6 +135,73 @@ struct FreshnessPill: View {
     }
 }
 
+/// Barrido de carga (shimmer) sobre formas placeholder. Respeta Reduce Motion.
+private struct Shimmer: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var move = false
+
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                if !reduceMotion {
+                    LinearGradient(
+                        colors: [.white.opacity(0), .white.opacity(0.5), .white.opacity(0)],
+                        startPoint: .leading, endPoint: .trailing
+                    )
+                    .rotationEffect(.degrees(18))
+                    .offset(x: move ? 260 : -260)
+                    .blendMode(.overlay)
+                }
+            }
+            .mask(content)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.linear(duration: 1.3).repeatForever(autoreverses: false)) { move = true }
+            }
+    }
+}
+
+extension View {
+    /// Aplica un barrido de carga; estático si el usuario pidió Reduce Motion.
+    func shimmer() -> some View { modifier(Shimmer()) }
+}
+
+/// Fila placeholder de carga (design system `sk`).
+struct SkeletonRow: View {
+    private var bar: Color { Color(.surfaceTertiary) }
+
+    var body: some View {
+        HStack(spacing: Spacing.s4) {
+            RoundedRectangle(cornerRadius: 9, style: .continuous).fill(bar).frame(width: 34, height: 34)
+            VStack(alignment: .leading, spacing: Spacing.s2) {
+                Capsule().fill(bar).frame(width: 150, height: 14)
+                Capsule().fill(bar).frame(width: 84, height: 11)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: Spacing.s2) {
+                Capsule().fill(bar).frame(width: 58, height: 16)
+                Capsule().fill(bar).frame(width: 44, height: 16)
+            }
+        }
+        .padding(.horizontal, Spacing.s5)
+        .padding(.vertical, Spacing.s4)
+        .frame(minHeight: 64)
+    }
+}
+
+/// Lista de filas placeholder con barrido (carga de la hoja de lista).
+struct SkeletonList: View {
+    var rows = 6
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<rows, id: \.self) { _ in SkeletonRow() }
+        }
+        .shimmer()
+        .accessibilityHidden(true)
+    }
+}
+
 /// Fila de estación para lista/favoritos (design system `lrow`).
 struct StationRow: View {
     let brand: BrandStyle

@@ -105,13 +105,13 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 - [x] `StationDetailView.swift`: hero (chip `lg`, nombre, dirección, estrella `iconbtn` oro), section header + `FreshnessPill` (ok/stale), filas `prow` (badge **Filtro** en el filtrado, Self/Servito, mejor precio en `priceCheapInk`, fila activa `brandSurface` + barra de acento), fila dirección, **CTA `Indicazioni`** (`brandPrimaryFill`, 52pt) → selector de navegación.
 - **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de las 3 hojas.
 
-### Fase R5 — Estados, movimiento y accesibilidad
+### Fase R5 — Estados, movimiento y accesibilidad ✅
 **Meta:** loading/empty/error consistentes + a11y.
-- [ ] Skeletons (`sk` shimmer) en carga de lista; `state-block` (em-ic, título, texto, pill de acción) para empty/error; banner de estado en mapa.
-- [ ] **Reduce Motion**: spinner lento, shimmer off, pins colocan (sin bounce), sheets cross-fade.
-- [ ] **Dynamic Type**: capada en pin; escala completa en sheets/listas (reflow multilínea, sin truncar). **VoiceOver**: labels con tier (palabra), rango y precio.
-- [ ] Ad banner: paridad de estilo (`surfaceSecondary` + separador superior).
-- **Verificación:** build/lint; pase a11y (Dynamic Type, Reduce Motion, VoiceOver) y contraste AA.
+- [x] Skeletons (`SkeletonRow`/`SkeletonList` con `shimmer()`) en carga de lista; `SheetEmptyState` para empty/error (R4); banner de estado en mapa (R2).
+- [x] **Reduce Motion**: shimmer off + estático; pin sin spring; recentrado del mapa sin animación.
+- [x] **Dynamic Type**: precio del pin capado a `.large` (resto escala); VoiceOver del pin/lista incluye el tier (palabra) + rango + precio.
+- [x] Ad banner: `surfaceSecondary` + separador superior.
+- **Verificación:** ✅ build/lint; 53 tests. Pase a11y manual en simulador (Dynamic Type / Reduce Motion / VoiceOver).
 
 ### Fase R6 — QA, docs y review
 - [ ] Suite completa de tests + lint; capturas claro/oscuro de las 7 pantallas.

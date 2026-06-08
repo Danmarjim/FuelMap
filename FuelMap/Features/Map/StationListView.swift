@@ -14,6 +14,7 @@ struct StationListView: View {
     /// Referencia para la distancia (ubicación del usuario; si no, centro del mapa).
     let origin: Coordinate
     let cheapestStationID: Int?
+    var isLoading: Bool = false
     @Binding var sort: StationSort
     let onSelect: (Station) -> Void
     let onClose: () -> Void
@@ -26,7 +27,10 @@ struct StationListView: View {
         VStack(spacing: 0) {
             SheetHeader(title: "Stazioni vicine", count: stations.isEmpty ? nil : stations.count, onClose: onClose)
             sortBar
-            if stations.isEmpty {
+            if isLoading && stations.isEmpty {
+                SkeletonList()
+                Spacer()
+            } else if stations.isEmpty {
                 Spacer()
                 SheetEmptyState(
                     systemImage: "mappin.slash",
