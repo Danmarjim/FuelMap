@@ -91,10 +91,11 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 - [x] **Control de capas:** `mapStyle` en `MapFeature.State` (standard/hybrid/imagery) + `.mapStyle(...)` (vía `MapStyleModifier`); menú en el `floatctl`. Acción + reducer + test. Strings it/es/en.
 - **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de `StationPin`/`ClusterPin`/`BrandBadge` + app en simulador.
 
-### Fase R3 — Barra de filtros
+### Fase R3 — Barra de filtros ✅
 **Meta:** filtros con el nuevo estilo, ≥44pt, sin truncar labels.
-- [ ] `FiltersView.swift`: segmented scrollable de combustible (`seg`/`seg__item`, activo `surfaceElevated`+`brandPrimary`), toggle Self (switch `success`), stepper de radio, sort pills (Prezzo/Distanza). Fondo de barra con degradado a `surface`.
-- **Verificación:** build/lint; capturas filtros claro/oscuro; Dynamic Type grande sin romper.
+- [x] `FiltersView.swift`: segmentado scrollable de combustible (activo `surfaceElevated`+`brandPrimary` sobre track `surfaceTertiary`), toggle Self custom (switch `success`), stepper de radio (recorre `RadiusOption.all`), sort pills Prezzo/Distanza. Fondo con degradado a `surface`. Fila inferior en scroll horizontal (sin truncar). A11y básica en cada control.
+- [x] `sort` inyectado como binding desde `MapView` (vive en `MapFeature`).
+- **Verificación:** ✅ build/lint; 53 tests. Validación visual: preview de `FiltersView` + app.
 
 ### Fase R4 — Sheets: lista, favoritos, detalle
 **Meta:** las 3 hojas con el vocabulario de filas/precios nuevo.

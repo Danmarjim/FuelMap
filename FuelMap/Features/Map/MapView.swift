@@ -51,7 +51,13 @@ struct MapView: View {
         }
         .overlay(alignment: .top) { statusBar }
         .safeAreaInset(edge: .bottom) {
-            FiltersView(store: store.scope(state: \.filters, action: \.filters))
+            FiltersView(
+                store: store.scope(state: \.filters, action: \.filters),
+                sort: Binding(
+                    get: { store.sortOrder },
+                    set: { store.send(.sortOrderChanged($0)) }
+                )
+            )
         }
         .sheet(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
             StationDetailView(store: detailStore)
