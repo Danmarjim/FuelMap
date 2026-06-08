@@ -28,6 +28,16 @@ struct PriceTiersTests {
         let same = Array(repeating: dec("1.8"), count: 5)
         #expect(PriceTiers(prices: same).tier(for: dec("1.8")) == .mid)
     }
+
+    @Test("Cada tier tiene forma y etiqueta propias (redundancia daltónica)")
+    func tier_shapeAndLabel() {
+        let shapes = Set([PriceTier.low, .mid, .high].map(\.symbolName))
+        #expect(shapes.count == 3)
+        #expect(PriceTier.low.symbolName == "arrowtriangle.up.fill")
+        #expect(PriceTier.high.symbolName == "arrowtriangle.down.fill")
+        let labels = Set([PriceTier.low, .mid, .high].map(\.label))
+        #expect(labels.count == 3)
+    }
 }
 
 struct BrandStyleTests {

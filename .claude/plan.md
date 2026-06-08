@@ -67,20 +67,20 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 
 ## Fases de ejecución
 
-### Fase R0 — Fundación (no destructiva)
+### Fase R0 — Fundación (no destructiva) ✅
 **Meta:** tokens disponibles sin tocar ninguna vista; build verde, app idéntica.
-- [ ] Reubicar `Design_System/` → `.claude/design/` (referencia versionada fuera del árbol de fuentes).
-- [ ] Crear todos los **Color sets** del mapa anterior en `Assets.xcassets` (claro/oscuro; tiers fill = valor único). Verificar generación de símbolos `Color(.brandPrimary)`.
-- [ ] `DesignSystem/Spacing.swift`, `Radius.swift`, `Elevation.swift` (modifiers), `Typography.swift` (Font roles + helpers de precio).
-- [ ] Build + lint verdes.
-- **Verificación:** compila; capturas claro/oscuro sin cambios (aún no migrado).
+- [x] Reubicar `Design_System/` → `.claude/design/` (referencia versionada fuera del árbol de fuentes).
+- [x] Crear los 34 **Color sets** en `Assets.xcassets/Colors` (claro/oscuro; tiers fill = valor único). Símbolos `Color(.brandPrimary)` confirmados (35 generados).
+- [x] `DesignSystem/Spacing.swift`, `Radius.swift`, `Elevation.swift` (modifier `.elevation(_:)`), `Typography.swift` (Font roles + helpers de precio) + `TokenGallery` (#Preview).
+- [x] Build + lint verdes; 51 tests OK. `.swiftlint.yml` permite tokens cortos.
+- **Verificación:** ✅ compila, app idéntica (aún no migrado).
 
-### Fase R1 — Sistema de tiers (modelo base del resto)
+### Fase R1 — Sistema de tiers (modelo base del resto) ✅
 **Meta:** `PriceTier` expone color+forma+etiqueta; cimiento de pin/filas/detalle.
-- [ ] Extender `PriceTiers.swift`/`PriceTier`: `fill`, `ink`, `surface` (Color), `shape` (SF Symbol: `arrowtriangle.up.fill` / `circle.fill` / `arrowtriangle.down.fill`), `label` localizada.
-- [ ] Strings de tier (`BASSO/MEDIO/ALTO`) en `Localizable.xcstrings` (it/es/en).
-- [ ] Tests unitarios del mapeo de tier (incluida separación por luminancia/greyscale).
-- **Verificación:** tests verdes.
+- [x] `PriceTier`: `fill`, `ink`, `surface` (tokens), `symbolName` (▲ `arrowtriangle.up.fill` / ● `circle.fill` / ▼ `arrowtriangle.down.fill`), `label` localizada + alias `color`.
+- [x] Strings de tier (Basso/Medio/Alto) en `Localizable.xcstrings` (it/es/en).
+- [x] Tests del mapeo de tier (forma+etiqueta distintas por nivel). 52 tests OK.
+- **Verificación:** ✅ tests verdes.
 
 ### Fase R2 — Mapa: pins + chrome + capas
 **Meta:** el mapa con el lenguaje visual nuevo, legible sobre cualquier tile.
