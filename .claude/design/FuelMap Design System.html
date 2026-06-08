@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FuelMap — iOS Design System</title>
+<link rel="stylesheet" href="assets/tokens.css" />
+<link rel="stylesheet" href="assets/doc.css" />
+<link rel="stylesheet" href="assets/app.css" />
+</head>
+<body>
+
+<!-- ============ SVG SPRITE (icons + schematic map) ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-stroke" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></g>
+
+    <symbol id="ic-fuel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M4 21h12"/>
+      <path d="M8 8h6"/><path d="M15 9l3 3v6a2 2 0 0 0 2 2 2 2 0 0 0 2-2v-7l-3-3"/>
+    </symbol>
+    <symbol id="ic-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/>
+    </symbol>
+    <symbol id="ic-star-fill" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round">
+      <path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8L3.5 9.7l5.9-.9z"/>
+    </symbol>
+    <symbol id="ic-locate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M22 12h-3M5 12H2"/>
+    </symbol>
+    <symbol id="ic-nav" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l7 16-7-4-7 4z"/></symbol>
+    <symbol id="ic-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>
+    </symbol>
+    <symbol id="ic-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+    </symbol>
+    <symbol id="ic-filter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+      <path d="M5 7h6M16 7h3M5 12h3M13 12h6M5 17h9M19 17h0"/>
+      <circle cx="13.5" cy="7" r="2"/><circle cx="10.5" cy="12" r="2"/><circle cx="16.5" cy="17" r="2"/>
+    </symbol>
+    <symbol id="ic-directions" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 18v-4a3 3 0 0 1 3-3h6"/><path d="M14 8l3 3-3 3"/>
+    </symbol>
+    <symbol id="ic-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+    </symbol>
+    <symbol id="ic-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3.5L22 20H2z"/><path d="M12 10v4.5M12 17.6h.01"/>
+    </symbol>
+    <symbol id="ic-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="ic-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l7 7 7-7"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="ic-minus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></symbol>
+    <symbol id="ic-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="ic-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>
+    </symbol>
+    <symbol id="ic-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 4v16M7 20l-3-3M7 4l3 3M17 20V4M17 4l-3 3M17 4l3 3" transform="translate(0,0)"/>
+    </symbol>
+    <symbol id="ic-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="ic-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2 6"/><path d="M20 5v6h-6"/></symbol>
+    <symbol id="ic-mappin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+    <symbol id="ic-bolt" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></symbol>
+
+    <!-- status bar -->
+    <symbol id="ic-cellular" viewBox="0 0 20 14" fill="currentColor"><rect x="0" y="9" width="3" height="5" rx="1"/><rect x="5" y="6" width="3" height="8" rx="1"/><rect x="10" y="3" width="3" height="11" rx="1"/><rect x="15" y="0" width="3" height="14" rx="1"/></symbol>
+    <symbol id="ic-wifi" viewBox="0 0 18 14" fill="currentColor"><path d="M9 2.5c3 0 5.7 1.2 7.6 3.1l-1.4 1.5A8.6 8.6 0 0 0 9 5.6 8.6 8.6 0 0 0 2.8 7.1L1.4 5.6C3.3 3.7 6 2.5 9 2.5z"/><path d="M9 7.2c1.7 0 3.2.7 4.3 1.8l-1.5 1.5A4 4 0 0 0 9 10.3a4 4 0 0 0-2.8 1.2L4.7 9A6 6 0 0 1 9 7.2z"/><circle cx="9" cy="12.2" r="1.4"/></symbol>
+    <symbol id="ic-battery" viewBox="0 0 28 14" fill="none"><rect x="1" y="2.5" width="22" height="9" rx="2.6" stroke="currentColor" stroke-width="1" opacity="0.5"/><rect x="2.6" y="4.1" width="17" height="5.8" rx="1.4" fill="currentColor"/><rect x="24.4" y="5" width="1.8" height="4" rx="0.9" fill="currentColor" opacity="0.5"/></symbol>
+
+    <!-- ============ schematic city map ============ -->
+    <symbol id="citymap" viewBox="0 0 390 844">
+      <rect width="390" height="844" fill="var(--map-land)"/>
+      <!-- water -->
+      <path d="M-20 560 L160 470 L250 540 L410 470 L410 700 L-20 740 Z" fill="var(--map-water)"/>
+      <path d="M255 -20 L320 120 L300 230 L360 320 L410 300 L410 -20 Z" fill="var(--map-water)" opacity="0.9"/>
+      <!-- park -->
+      <rect x="36" y="250" width="120" height="120" rx="14" fill="var(--map-park)"/>
+      <rect x="250" y="600" width="120" height="110" rx="14" fill="var(--map-park)"/>
+      <!-- blocks texture -->
+      <g fill="var(--map-block)">
+        <rect x="40" y="110" width="70" height="48" rx="6"/><rect x="130" y="110" width="56" height="48" rx="6"/>
+        <rect x="210" y="120" width="60" height="40" rx="6"/><rect x="290" y="110" width="64" height="50" rx="6"/>
+        <rect x="40" y="410" width="64" height="46" rx="6"/><rect x="130" y="410" width="58" height="46" rx="6"/>
+        <rect x="210" y="760" width="70" height="44" rx="6"/><rect x="300" y="760" width="56" height="44" rx="6"/>
+        <rect x="40" y="760" width="62" height="44" rx="6"/>
+      </g>
+      <!-- roads: arterials -->
+      <g stroke="var(--map-road)" stroke-linecap="round">
+        <line x1="0" y1="92" x2="390" y2="92" stroke-width="11"/>
+        <line x1="0" y1="392" x2="390" y2="392" stroke-width="11"/>
+        <line x1="0" y1="742" x2="390" y2="742" stroke-width="9"/>
+        <line x1="116" y1="0" x2="116" y2="844" stroke-width="10"/>
+        <line x1="282" y1="0" x2="282" y2="844" stroke-width="9"/>
+      </g>
+      <!-- yellow highway (diagonal) -->
+      <line x1="-20" y1="200" x2="410" y2="560" stroke="var(--map-road-2)" stroke-width="13" stroke-linecap="round"/>
+      <line x1="-20" y1="200" x2="410" y2="560" stroke="var(--map-road)" stroke-width="2" stroke-dasharray="2 10" opacity="0.6"/>
+      <!-- thin streets grid -->
+      <g stroke="var(--map-road)" stroke-width="4" opacity="0.85">
+        <line x1="0" y1="200" x2="390" y2="200"/><line x1="0" y1="300" x2="390" y2="300"/>
+        <line x1="0" y1="500" x2="390" y2="500"/><line x1="0" y1="600" x2="390" y2="600"/>
+        <line x1="0" y1="660" x2="390" y2="660"/>
+        <line x1="60" y1="0" x2="60" y2="844"/><line x1="195" y1="0" x2="195" y2="844"/>
+        <line x1="340" y1="0" x2="340" y2="844"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ thumbnail for bundler ============ -->
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#0091FF"/><g transform="translate(20,16)"><path d="M12 32V6a3 3 0 0 1 3-3" fill="none"/><path d="M5 5h14v26H5z" fill="#fff"/><circle cx="12" cy="13" r="4" fill="#0091FF"/></g></svg>
+</template>
+
+<div class="layout">
+
+  <!-- ============ SIDE NAV ============ -->
+  <nav class="sidenav">
+    <div class="brand">
+      <span class="glyph"><svg viewBox="0 0 24 24"><use href="#ic-mappin" fill="none" stroke="#fff"/></svg></span>
+      <b>FuelMap</b>
+    </div>
+    <div class="ver">Design System · iOS · v1.0</div>
+
+    <div class="nav-group">
+      <div class="lbl">Overview</div>
+      <a href="#overview">Intent &amp; principles</a>
+      <a href="#system">The visual system</a>
+    </div>
+    <div class="nav-group">
+      <div class="lbl">Foundations</div>
+      <a href="#color">Color tokens</a>
+      <a href="#type">Typography</a>
+      <a href="#spacing">Spacing &amp; radius</a>
+      <a href="#elevation">Elevation</a>
+      <a href="#icons">Iconography</a>
+    </div>
+    <div class="nav-group">
+      <div class="lbl">Components</div>
+      <a href="#pins">Price pin</a>
+      <a href="#cluster">Cluster pin</a>
+      <a href="#chip">Brand chip</a>
+      <a href="#filters">Filter controls</a>
+      <a href="#rows">List &amp; price rows</a>
+      <a href="#banners">Banners &amp; controls</a>
+    </div>
+    <div class="nav-group">
+      <div class="lbl">Mockups</div>
+      <a href="#map-screen">Map screen</a>
+      <a href="#detail-screen">Station detail</a>
+      <a href="#list-screen">Station list</a>
+      <a href="#favorites-screen">Favorites</a>
+      <a href="#states">Universal states</a>
+    </div>
+    <div class="nav-group">
+      <div class="lbl">Reference</div>
+      <a href="#a11y">Accessibility</a>
+      <a href="#tokens-json">Token JSON</a>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <!-- ============ HERO ============ -->
+    <header class="hero">
+      <span class="eyebrow">FuelMap · iOS · Visual restyle</span>
+      <h1>Find the cheapest fuel, at a glance.</h1>
+      <p class="lead">A bold, energetic restyle for FuelMap — Italy's MIMIT-powered fuel-price map. Built entirely from native SwiftUI components and a semantic token set, engineered for a glanceable, in-the-car context. Blue leads; price still speaks in green / orange / red — never by color alone.</p>
+      <div class="hero-tags">
+        <span class="hero-tag">SwiftUI-native</span>
+        <span class="hero-tag">Light + Dark parity</span>
+        <span class="hero-tag">WCAG AA</span>
+        <span class="hero-tag">Colorblind-safe tiers</span>
+        <span class="hero-tag">Dynamic Type</span>
+        <span class="hero-tag">SF Pro · monospaced prices</span>
+      </div>
+    </header>
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="section" id="overview">
+      <span class="eyebrow">Overview</span>
+      <h2>Intent &amp; principles</h2>
+      <p class="lead">This is a restyle of the visual layer of an app that already works. Every decision below maps to a SwiftUI semantic <code class="mono">Color</code> asset, an SF Symbol, or a standard component — nothing here requires re-architecture or custom rendering.</p>
+
+      <div class="grid cols-3" style="margin-top:24px">
+        <div class="panel">
+          <h4 style="margin-top:0">Glance, don't read</h4>
+          <p style="margin:0">Primary context is in or before the car. The cheapest option must resolve in a single look: color tier + shape + position all point the same way.</p>
+        </div>
+        <div class="panel">
+          <h4 style="margin-top:0">Solid over live tiles</h4>
+          <p style="margin:0">Everything floats over an arbitrary MapKit map. Pins, banners and controls use opaque fills, a contrasting stroke and a shadow — contrast never depends on the map.</p>
+        </div>
+        <div class="panel">
+          <h4 style="margin-top:0">Blue is the brand</h4>
+          <p style="margin:0">Azure carries navigation, controls, selection and CTAs — trust, maps, data. The three price tiers are deliberately tuned to stay distinct from it.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:20px">
+        <b>Reading this doc.</b> Every swatch and contrast ratio is read live from <code class="mono">tokens.css</code> and computed in the browser, so the documentation can't drift from the implementation. The phone mockups are the same components you see in the spec, themed by a single <code class="mono">data-theme</code> attribute.
+      </div>
+    </section>
+
+    <!-- ============ SYSTEM ============ -->
+    <section class="section" id="system">
+      <span class="eyebrow">The system</span>
+      <h2>How the price tier survives a restyle</h2>
+      <p class="lead">The non-negotiable constraint: cheap / mid / expensive must be instantly separable from each other, from brand blue, and for colorblind users. We never lean on hue alone — four redundant signals always agree.</p>
+
+      <div class="grid cols-4" style="margin-top:24px">
+        <div class="panel" style="text-align:center">
+          <div style="font-size:26px;margin-bottom:6px">①</div>
+          <h4 style="margin:0 0 6px">Hue</h4>
+          <p style="margin:0;font-size:13px">Green · burnt-orange · red, tuned away from blue.</p>
+        </div>
+        <div class="panel" style="text-align:center">
+          <div style="font-size:26px;margin-bottom:6px">②</div>
+          <h4 style="margin:0 0 6px">Shape</h4>
+          <p style="margin:0;font-size:13px">▲ low · ● mid · ▼ high — the same glyph on pins, rows and detail.</p>
+        </div>
+        <div class="panel" style="text-align:center">
+          <div style="font-size:26px;margin-bottom:6px">③</div>
+          <h4 style="margin:0 0 6px">Label</h4>
+          <p style="margin:0;font-size:13px">A text tag (BASSO / MEDIO / ALTO) wherever space allows.</p>
+        </div>
+        <div class="panel" style="text-align:center">
+          <div style="font-size:26px;margin-bottom:6px">④</div>
+          <h4 style="margin:0 0 6px">Position</h4>
+          <p style="margin:0;font-size:13px">Cheapest is ranked first &amp; crowned; lists sort by price.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"><hr /></div>
+
+    <!-- ============ COLOR ============ -->
+    <section class="section" id="color">
+      <span class="eyebrow">Foundations</span>
+      <h2>Color tokens</h2>
+      <p class="lead">Semantic names first, raw hex alongside — each pair shows its Light and Dark value and, where it carries text, the live-computed contrast ratio and WCAG grade.</p>
+
+      <h3>Brand ramp — azure</h3>
+      <p>The anchor is <code class="mono">brand-500 #0091FF</code>. Tints come from the upper ramp; solid CTAs use <code class="mono">brand-600</code> so a white label clears AA.</p>
+      <div class="grid cols-4" id="ramp" style="margin-top:14px"></div>
+
+      <h3>Semantic — brand</h3>
+      <div class="grid cols-4" id="sw-brand" style="margin-top:6px"></div>
+      <p class="muted" style="font-size:12.5px;margin-top:10px">Each card shows <b>Light · Dark</b>. Ratio badge = label vs. fill.</p>
+
+      <h3>Surfaces &amp; lines</h3>
+      <div class="grid cols-4" id="sw-surface" style="margin-top:6px"></div>
+
+      <h3>Text</h3>
+      <div class="grid cols-4" id="sw-text" style="margin-top:6px"></div>
+
+      <h3>Price tiers <span class="muted" style="font-size:14px;font-weight:400">— fills are identical in both modes</span></h3>
+      <p>Tier fills don't flip between modes: white pin text keeps its contrast and a green pin stays "green" whichever theme you're in. Only the <i>ink</i> (tier color used as text on a surface) brightens for dark. Ratios below are white-on-fill (pin price is bold ≈ large text → 3:1 floor, all clear it comfortably).</p>
+      <div class="grid cols-3" id="sw-tier" style="margin-top:14px"></div>
+
+      <h3>Functional</h3>
+      <div class="grid cols-3" id="sw-func" style="margin-top:6px"></div>
+    </section>
+
+    <!-- ============ TYPE ============ -->
+    <section class="section" id="type">
+      <span class="eyebrow">Foundations</span>
+      <h2>Typography</h2>
+      <p class="lead">One typeface: <b>SF Pro</b> (system). It ships with the OS, scales with Dynamic Type for free, and renders crisply at a glance. Numbers — prices and distances — use <b>monospaced / tabular digits</b> so columns align and values don't jitter as they update.</p>
+
+      <div class="panel" style="margin-top:22px">
+        <div class="specimen"><div class="demo t-largeTitle">Stazioni vicine</div><div class="tag">largeTitle · 34 / Bold · .largeTitle</div></div>
+        <div class="specimen"><div class="demo t-title1">Eni Station</div><div class="tag">title1 · 28 / Bold · .title</div></div>
+        <div class="specimen"><div class="demo t-title2">Stazioni vicine</div><div class="tag">title2 · 22 / Bold · .title2</div></div>
+        <div class="specimen"><div class="demo t-title3">Self vs Servito</div><div class="tag">title3 · 20 / Semibold · .title3</div></div>
+        <div class="specimen"><div class="demo t-headline">Get directions</div><div class="tag">headline · 17 / Semibold · .headline</div></div>
+        <div class="specimen"><div class="demo t-body">Via Roma 42, Milano. Aggiornato 4 ore fa.</div><div class="tag">body · 17 / Regular · .body</div></div>
+        <div class="specimen"><div class="demo t-subhead">Benzina · Self-service · entro 5 km</div><div class="tag">subheadline · 15 / Regular · .subheadline</div></div>
+        <div class="specimen"><div class="demo t-footnote">Prezzi MIMIT · dati ufficiali</div><div class="tag">footnote · 13 / Regular · .footnote</div></div>
+        <div class="specimen"><div class="demo t-caption2">AGGIORNATO 4H FA</div><div class="tag">caption2 · 11 / Medium · .caption2</div></div>
+      </div>
+
+      <h3>Numbers &amp; prices</h3>
+      <div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap">
+        <div style="display:flex;align-items:baseline;gap:18px">
+          <span class="price-hero num" style="color:var(--doc-ink)">1.842</span>
+          <span class="num" style="font:700 22px var(--font-sans);color:var(--doc-ink-2)">1.879</span>
+          <span class="num" style="font:600 17px var(--font-sans);color:var(--doc-ink-2)">2.014 €/L</span>
+          <span class="num" style="font:600 15px var(--font-sans);color:var(--doc-ink-3)">1,2 km</span>
+        </div>
+        <div class="tag" style="font:500 12px var(--font-num);color:var(--doc-ink-3);text-align:right">
+          font-variant-numeric: tabular-nums<br/>SwiftUI: .monospacedDigit()<br/>€/L · 3 decimals · always
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:18px"><b>Dynamic Type.</b> Every role maps to a built-in iOS text style, so the whole UI scales when the user changes text size. Prices and the pin price use a capped style (won't grow past Large) to protect the pin's footprint over the map; everything in sheets and lists scales fully, and rows reflow to multi-line rather than truncate.</div>
+    </section>
+
+    <!-- ============ SPACING ============ -->
+    <section class="section" id="spacing">
+      <span class="eyebrow">Foundations</span>
+      <h2>Spacing &amp; radius</h2>
+      <p class="lead">A 4-pt grid keeps rhythm consistent and SwiftUI-friendly. Corner radii step from controls to sheets; pins and tags are full capsules.</p>
+
+      <h4>Spacing scale (pt)</h4>
+      <div class="panel">
+        <div class="scale-row" id="space-scale">
+          <div class="scale-item"><div class="bar" style="width:2px;height:34px"></div><div class="lab">2</div></div>
+          <div class="scale-item"><div class="bar" style="width:4px;height:40px"></div><div class="lab">4</div></div>
+          <div class="scale-item"><div class="bar" style="width:8px;height:46px"></div><div class="lab">8</div></div>
+          <div class="scale-item"><div class="bar" style="width:12px;height:52px"></div><div class="lab">12</div></div>
+          <div class="scale-item"><div class="bar" style="width:16px;height:58px"></div><div class="lab">16</div></div>
+          <div class="scale-item"><div class="bar" style="width:20px;height:64px"></div><div class="lab">20</div></div>
+          <div class="scale-item"><div class="bar" style="width:24px;height:70px"></div><div class="lab">24</div></div>
+          <div class="scale-item"><div class="bar" style="width:32px;height:78px"></div><div class="lab">32</div></div>
+          <div class="scale-item"><div class="bar" style="width:40px;height:86px"></div><div class="lab">40</div></div>
+          <div class="scale-item"><div class="bar" style="width:48px;height:94px"></div><div class="lab">48</div></div>
+        </div>
+      </div>
+
+      <h4>Corner radius</h4>
+      <div class="panel">
+        <div class="scale-row" style="gap:22px">
+          <div class="scale-item"><div class="box" style="width:60px;height:46px;border-radius:8px"></div><div class="lab">8 · sm · controls</div></div>
+          <div class="scale-item"><div class="box" style="width:60px;height:46px;border-radius:12px"></div><div class="lab">12 · md · cards/chips</div></div>
+          <div class="scale-item"><div class="box" style="width:60px;height:46px;border-radius:16px"></div><div class="lab">16 · lg · sheets</div></div>
+          <div class="scale-item"><div class="box" style="width:60px;height:46px;border-radius:20px"></div><div class="lab">20 · xl</div></div>
+          <div class="scale-item"><div class="box" style="width:60px;height:46px;border-radius:999px"></div><div class="lab">pill · pins/tags</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ELEVATION ============ -->
+    <section class="section" id="elevation">
+      <span class="eyebrow">Foundations</span>
+      <h2>Elevation</h2>
+      <p class="lead">Shadows do real work here — they lift floating UI off the map. Each level pairs a soft drop shadow with a faint hairline so edges hold over busy tiles. Dark mode deepens the shadow and adds a 1px light ring instead of relying on a glow.</p>
+      <div class="grid cols-4" style="margin-top:18px">
+        <div class="panel" style="padding:18px"><div class="elev-demo" style="box-shadow:var(--e1)">e1 · controls</div><div class="lab" style="font:500 11px var(--font-num);color:var(--doc-ink-3);margin-top:10px;text-align:center">pills · chips</div></div>
+        <div class="panel" style="padding:18px"><div class="elev-demo" style="box-shadow:var(--e2)">e2 · floating</div><div class="lab" style="font:500 11px var(--font-num);color:var(--doc-ink-3);margin-top:10px;text-align:center">FAB · banner</div></div>
+        <div class="panel" style="padding:18px"><div class="elev-demo" style="box-shadow:var(--e-pin)">pin</div><div class="lab" style="font:500 11px var(--font-num);color:var(--doc-ink-3);margin-top:10px;text-align:center">map pins</div></div>
+        <div class="panel" style="padding:18px"><div class="elev-demo" style="box-shadow:var(--e3)">e3 · sheet</div><div class="lab" style="font:500 11px var(--font-num);color:var(--doc-ink-3);margin-top:10px;text-align:center">sheets · selected</div></div>
+      </div>
+    </section>
+
+    <!-- ============ ICONS ============ -->
+    <section class="section" id="icons">
+      <span class="eyebrow">Foundations</span>
+      <h2>Iconography</h2>
+      <p class="lead">SF Symbols throughout — they inherit weight and scale from adjacent text and ship in every locale. Controls use <b>Semibold / Medium</b> scale; inline glyphs match their text weight. Below are the system's working symbols (drawn here as stand-ins for the real SF Symbol names).</p>
+      <div class="panel" style="margin-top:18px">
+        <div class="grid cols-4" style="gap:10px" id="icon-grid"></div>
+      </div>
+    </section>
+
+    <div class="rule"><hr /></div>
+
+    <!-- ============ PRICE PIN ============ -->
+    <section class="section" id="pins">
+      <span class="eyebrow">Components</span>
+      <h2>Price pin</h2>
+      <p class="lead">The atom of the map. A capsule that reads instantly over any tile: a white-framed <b>brand badge</b>, a <b>tier shape</b> (▲ ● ▼), the <b>price</b> in tabular digits, and a pointer tail — all on an opaque tier fill with a contrasting halo and shadow.</p>
+
+      <div class="grid cols-2" style="margin-top:22px;align-items:start">
+        <div class="panel">
+          <h4 style="margin-top:0">Anatomy</h4>
+          <ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.9;color:var(--doc-ink-2)">
+            <li><b>Badge (28pt)</b> — white circle framing the brand logo / monogram, a ★ if cheapest, or a fuel-pump glyph for pompe bianche.</li>
+            <li><b>Tier shape</b> — ▲ low · ● mid · ▼ high. The colorblind-safe redundancy; never optional.</li>
+            <li><b>Price</b> — 15pt Semibold, tabular digits, €/L 3-decimal, white.</li>
+            <li><b>Halo + tail</b> — 2pt stroke (white in light, near-black in dark) + drop shadow lift it off the map.</li>
+            <li><b>Touch target</b> — visual height 34pt; tappable area padded to ≥44×44pt.</li>
+          </ul>
+        </div>
+        <div class="demoboard" data-theme="light" style="background:var(--map-land)">
+          <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+          <span class="lbl-abs">Single pin · light</span>
+          <div class="pin cheap selected" style="position:relative;z-index:1">
+            <span class="pin__badge mono">Q8</span><span class="pin__shape">▲</span><span class="pin__price num">1.799</span>
+            <span class="pin__tag">Self</span><span class="pin__tail"></span>
+          </div>
+        </div>
+      </div>
+
+      <h3>States</h3>
+      <div class="grid cols-2" style="align-items:start">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="demoboard" data-theme="light" style="background:var(--map-land);min-height:230px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div class="state-row" style="position:relative;z-index:1">
+              <div class="state-cell"><div class="pin cheap"><span class="pin__badge mono">Q8</span><span class="pin__shape">▲</span><span class="pin__price num">1.799</span><span class="pin__tail"></span></div><div class="st">cheap · default</div></div>
+              <div class="state-cell"><div class="pin mid"><span class="pin__badge mono">IP</span><span class="pin__shape">●</span><span class="pin__price num">1.879</span><span class="pin__tail"></span></div><div class="st">mid · default</div></div>
+              <div class="state-cell"><div class="pin high"><span class="pin__badge mono">ES</span><span class="pin__shape">▼</span><span class="pin__price num">2.014</span><span class="pin__tail"></span></div><div class="st">high · default</div></div>
+            </div>
+            <div class="state-row" style="position:relative;z-index:1">
+              <div class="state-cell"><div class="pin cheap cheapest"><span class="pin__badge"><svg viewBox="0 0 24 24" style="color:#7a5a00"><use href="#ic-star-fill"/></svg></span><span class="pin__shape">▲</span><span class="pin__price num">1.789</span><span class="pin__tail"></span></div><div class="st">cheapest highlight</div></div>
+              <div class="state-cell"><div class="pin mid selected"><span class="pin__badge mono">ENI</span><span class="pin__shape">●</span><span class="pin__price num">1.872</span><span class="pin__tag">Sel</span><span class="pin__tail"></span></div><div class="st">selected · enlarged</div></div>
+              <div class="state-cell"><div style="display:flex;gap:8px"><span class="pin-dot cheap" style="--tier:var(--priceCheap)"></span><span class="pin-dot mid" style="--tier:var(--priceMid)"></span><span class="pin-dot high" style="--tier:var(--priceHigh)"></span></div><div class="st">zoomed-out dots</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="demoboard" data-theme="dark" style="background:var(--map-land);min-height:230px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div class="state-row" style="position:relative;z-index:1">
+              <div class="state-cell"><div class="pin cheap"><span class="pin__badge mono">Q8</span><span class="pin__shape">▲</span><span class="pin__price num">1.799</span><span class="pin__tail"></span></div><div class="st">cheap · default</div></div>
+              <div class="state-cell"><div class="pin mid"><span class="pin__badge mono">IP</span><span class="pin__shape">●</span><span class="pin__price num">1.879</span><span class="pin__tail"></span></div><div class="st">mid · default</div></div>
+              <div class="state-cell"><div class="pin high"><span class="pin__badge mono">ES</span><span class="pin__shape">▼</span><span class="pin__price num">2.014</span><span class="pin__tail"></span></div><div class="st">high · default</div></div>
+            </div>
+            <div class="state-row" style="position:relative;z-index:1">
+              <div class="state-cell"><div class="pin cheap cheapest"><span class="pin__badge"><svg viewBox="0 0 24 24" style="color:#7a5a00"><use href="#ic-star-fill"/></svg></span><span class="pin__shape">▲</span><span class="pin__price num">1.789</span><span class="pin__tail"></span></div><div class="st">cheapest highlight</div></div>
+              <div class="state-cell"><div class="pin mid selected"><span class="pin__badge mono">ENI</span><span class="pin__shape">●</span><span class="pin__price num">1.872</span><span class="pin__tag">Sel</span><span class="pin__tail"></span></div><div class="st">selected · enlarged</div></div>
+              <div class="state-cell"><div style="display:flex;gap:8px"><span class="pin-dot" style="--tier:var(--priceCheap)"></span><span class="pin-dot" style="--tier:var(--priceMid)"></span><span class="pin-dot" style="--tier:var(--priceHigh)"></span></div><div class="st">zoomed-out dots</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <table class="spec" style="margin-top:24px">
+        <tr><th>Property</th><th>Default</th><th>Selected</th><th>Cheapest</th></tr>
+        <tr><td><b>Height</b></td><td>34 pt</td><td>42 pt (≈1.25×)</td><td>34 pt</td></tr>
+        <tr><td><b>Badge</b></td><td>28 pt · brand</td><td>34 pt · brand</td><td>28 pt · ★ gold</td></tr>
+        <tr><td><b>Fill</b></td><td>tier color</td><td>tier color</td><td>tier color</td></tr>
+        <tr><td><b>Stroke / lift</b></td><td>2 pt halo + <code>pin</code></td><td>2.5 pt halo + <code>pin-selected</code>, z above all</td><td>+ 2 pt gold ring</td></tr>
+        <tr><td><b>Extras</b></td><td>—</td><td>fuel tag chip</td><td>floating rank, sorts first</td></tr>
+        <tr><td><b>Touch</b></td><td colspan="3">Hit area expands to ≥44×44 pt regardless of visual size.</td></tr>
+      </table>
+    </section>
+
+    <!-- ============ CLUSTER ============ -->
+    <section class="section" id="cluster">
+      <span class="eyebrow">Components</span>
+      <h2>Cluster pin</h2>
+      <p class="lead">When pins overlap, they collapse into a count bubble with the cheapest price beneath. The bubble border and the <code class="mono">da&nbsp;…</code> capsule take the tier color of the <i>cheapest station inside</i> — so a cluster hiding a bargain still glows green.</p>
+      <div class="grid cols-2" style="margin-top:20px">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="demoboard" data-theme="light" style="background:var(--map-land);min-height:180px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div class="state-row" style="position:relative;z-index:1;gap:34px">
+              <div class="cluster"><div class="cluster__bubble"><span class="cluster__count num">12</span></div><div class="cluster__from num">da 1.79<small> €/L</small></div></div>
+              <div class="cluster"><div class="cluster__bubble" style="border-color:var(--priceMid)"><span class="cluster__count num">5</span></div><div class="cluster__from num" style="background:var(--priceMid)">da 1.88<small> €/L</small></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="demoboard" data-theme="dark" style="background:var(--map-land);min-height:180px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div class="state-row" style="position:relative;z-index:1;gap:34px">
+              <div class="cluster"><div class="cluster__bubble"><span class="cluster__count num">12</span></div><div class="cluster__from num">da 1.79<small> €/L</small></div></div>
+              <div class="cluster"><div class="cluster__bubble" style="border-color:var(--priceMid)"><span class="cluster__count num">5</span></div><div class="cluster__from num" style="background:var(--priceMid)">da 1.88<small> €/L</small></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BRAND CHIP ============ -->
+    <section class="section" id="chip">
+      <span class="eyebrow">Components</span>
+      <h2>Brand chip</h2>
+      <p class="lead">A neutral frame that makes <i>any</i> brand logo legible on map or sheet: a surface-colored rounded rect with a hairline, fixed height, generous padding. Logos drop in at their native colors; unknown brands (pompe bianche) get a monogram or a generic pump glyph. In these mockups the monogram stands in for the real trademarked logo.</p>
+      <div class="grid cols-2" style="margin-top:20px">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="panel" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--surface)" data-theme="light">
+            <span class="chip">ENI</span><span class="chip">Q8</span><span class="chip">IP</span><span class="chip">ESSO</span><span class="chip">Shell</span><span class="chip">Tamoil</span>
+            <span class="chip bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span>
+            <span class="chip lg">ENI</span>
+            <span class="chip lg bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg>Pompa bianca</span>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="panel" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--surfaceElevated);border-color:var(--separator)" data-theme="dark">
+            <span class="chip">ENI</span><span class="chip">Q8</span><span class="chip">IP</span><span class="chip">ESSO</span><span class="chip">Shell</span><span class="chip">Tamoil</span>
+            <span class="chip bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span>
+            <span class="chip lg">ENI</span>
+            <span class="chip lg bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg>Pompa bianca</span>
+          </div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px"><b>Why a chip, not bare logos.</b> Multi-color vector logos clash with colored pins and map tiles. The chip gives every brand the same legible container — consistent height for alignment in rows, a hairline so light logos don't dissolve, and an optional per-brand background only if a logo needs it.</div>
+    </section>
+
+    <!-- ============ FILTER CONTROLS ============ -->
+    <section class="section" id="filters">
+      <span class="eyebrow">Components</span>
+      <h2>Filter controls</h2>
+      <p class="lead">The bottom filter bar: a scrolling fuel-type segmented control, a self-service toggle, a search-radius stepper and a sort selector. Every control is ≥44pt tall and survives long localized labels by scrolling or wrapping — never truncating.</p>
+      <div class="grid cols-2" style="margin-top:20px;align-items:start">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="panel" data-theme="light" style="background:var(--surface);display:flex;flex-direction:column;gap:12px">
+            <div class="seg"><button class="seg__item active">Benzina</button><button class="seg__item">Gasolio</button><button class="seg__item">GPL</button><button class="seg__item">Metano</button><button class="seg__item">HVO</button></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="toggle on"><span class="sw"></span>Self</span>
+              <span class="stepper"><button><svg viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button><span class="val num">5 km</span><button><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button></span>
+              <span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span>
+              <span class="sortpill"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg>Distanza</span>
+            </div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="panel" data-theme="dark" style="background:var(--surface);border-color:var(--separator);display:flex;flex-direction:column;gap:12px">
+            <div class="seg"><button class="seg__item active">Benzina</button><button class="seg__item">Gasolio</button><button class="seg__item">GPL</button><button class="seg__item">Metano</button><button class="seg__item">HVO</button></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="toggle on"><span class="sw"></span>Self</span>
+              <span class="stepper"><button><svg viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button><span class="val num">5 km</span><button><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button></span>
+              <span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span>
+              <span class="sortpill"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg>Distanza</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ROWS ============ -->
+    <section class="section" id="rows">
+      <span class="eyebrow">Components</span>
+      <h2>List &amp; price rows</h2>
+      <p class="lead">The list row carries a brand chip, name, distance, the filtered price and a tier tag; the detail price row pairs Self vs Servito for one fuel variant, emphasising the user's selected fuel. Tier color always travels with a shape glyph and a word.</p>
+
+      <h4>List row</h4>
+      <div class="grid cols-2" style="align-items:start">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="panel" data-theme="light" style="background:var(--surfaceElevated);padding:0;overflow:hidden">
+            <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Via Tortona</div><div class="lrow__meta"><span class="best-flag"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg>Più basso</span><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,8 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.789<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div></div>
+            <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Stazione Romana</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,2 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+            <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Corso Italia</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>2,0 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.014<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div></div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="panel" data-theme="dark" style="background:var(--surfaceElevated);border-color:var(--separator);padding:0;overflow:hidden">
+            <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Via Tortona</div><div class="lrow__meta"><span class="best-flag"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg>Più basso</span><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,8 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.789<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div></div>
+            <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Stazione Romana</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,2 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+            <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Corso Italia</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>2,0 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.014<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin-top:26px">Detail price row</h4>
+      <div class="grid cols-2" style="align-items:start">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="panel" data-theme="light" style="background:var(--surfaceElevated);padding:0;overflow:hidden">
+            <div class="prow active"><div class="prow__fuel"><span class="nm">Benzina</span><span class="em">Filtro</span></div><div class="prow__prices"><div class="prow__pc best"><div class="lab">Self</div><div class="v num">1.789</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.929</div></div></div></div>
+            <div class="prow"><div class="prow__fuel"><span class="nm">Gasolio</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">1.712</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.854</div></div></div></div>
+            <div class="prow"><div class="prow__fuel"><span class="nm">GPL</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">0.719</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">—</div></div></div></div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="panel" data-theme="dark" style="background:var(--surfaceElevated);border-color:var(--separator);padding:0;overflow:hidden">
+            <div class="prow active"><div class="prow__fuel"><span class="nm">Benzina</span><span class="em">Filtro</span></div><div class="prow__prices"><div class="prow__pc best"><div class="lab">Self</div><div class="v num">1.789</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.929</div></div></div></div>
+            <div class="prow"><div class="prow__fuel"><span class="nm">Gasolio</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">1.712</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.854</div></div></div></div>
+            <div class="prow"><div class="prow__fuel"><span class="nm">GPL</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">0.719</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">—</div></div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BANNERS & CONTROLS ============ -->
+    <section class="section" id="banners">
+      <span class="eyebrow">Components</span>
+      <h2>Banners, controls &amp; freshness</h2>
+      <p class="lead">Floating chrome over the map: a top status banner (loading / error / count), the locate &amp; layers controls, the list / favorites entry pills, and the price-freshness indicator with its stale warning.</p>
+
+      <div class="grid cols-2" style="margin-top:20px;align-items:start">
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="demoboard" data-theme="light" style="background:var(--map-land);min-height:300px;align-content:start;gap:14px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px">
+              <div class="statusbanner loading"><span class="ic"><span class="spinner"></span></span>Aggiorno i prezzi…<span class="sub" style="margin-left:auto">MIMIT</span></div>
+              <div class="statusbanner"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span>34 stazioni · entro 5 km<span class="act">Lista</span></div>
+              <div class="statusbanner error"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg></span>Nessuna rete<span class="act">Riprova</span></div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-layers"/></svg></span>
+                <span class="pillbtn"><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg>Lista</span>
+                <span class="pillbtn"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg></span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="fresh-pill ok"><svg viewBox="0 0 24 24"><use href="#ic-clock"/></svg>Agg. 4 ore fa</span>
+                <span class="fresh-pill stale"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg>Prezzo vecchio · 3 gg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="demoboard" data-theme="dark" style="background:var(--map-land);min-height:300px;align-content:start;gap:14px">
+            <div class="map"><svg class="mapsvg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><use href="#citymap"/></svg></div>
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px">
+              <div class="statusbanner loading"><span class="ic"><span class="spinner"></span></span>Aggiorno i prezzi…<span class="sub" style="margin-left:auto">MIMIT</span></div>
+              <div class="statusbanner"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span>34 stazioni · entro 5 km<span class="act">Lista</span></div>
+              <div class="statusbanner error"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg></span>Nessuna rete<span class="act">Riprova</span></div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-layers"/></svg></span>
+                <span class="pillbtn"><svg viewBox="0 0 24 24"><use href="#ic-list"/></svg>Lista</span>
+                <span class="pillbtn"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg></span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center">
+                <span class="fresh-pill ok"><svg viewBox="0 0 24 24"><use href="#ic-clock"/></svg>Agg. 4 ore fa</span>
+                <span class="fresh-pill stale"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg>Prezzo vecchio · 3 gg</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"><hr /></div>
+
+    <!-- COMPONENTS_MARKER -->
+
+    <!-- ============ MAP SCREEN ============ -->
+    <section class="section" id="map-screen">
+      <span class="eyebrow">Mockups</span>
+      <h2>Map screen</h2>
+      <p class="lead">The home surface: a full-bleed map under a floating status banner and controls, price pins tiered by color + shape, the bottom filter bar, and the persistent ad banner. The cheapest station is crowned in gold; the user's tapped pin is enlarged and lifted above the rest.</p>
+
+      <div class="stage full" style="margin-top:26px">
+
+        <!-- ---- MAP · LIGHT ---- -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <!-- top status banner -->
+              <div style="position:absolute;top:60px;left:14px;right:14px;z-index:20;display:flex;flex-direction:column;gap:10px">
+                <div class="statusbanner"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span>34 stazioni · Benzina<span class="act">Lista</span></div>
+              </div>
+              <!-- right controls -->
+              <div style="position:absolute;top:128px;right:14px;z-index:20;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-layers"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg></span>
+              </div>
+              <!-- pins -->
+              <div class="pin cheap cheapest" style="position:absolute;top:300px;left:38px;z-index:14"><span class="pin__badge"><svg viewBox="0 0 24 24" style="color:#7a5a00"><use href="#ic-star-fill"/></svg></span><span class="pin__shape">▲</span><span class="pin__price num">1.789</span><span class="pin__tail"></span></div>
+              <div class="pin mid selected" style="position:absolute;top:372px;left:150px;z-index:18"><span class="pin__badge mono">ENI</span><span class="pin__shape">●</span><span class="pin__price num">1.872</span><span class="pin__tag">Self</span><span class="pin__tail"></span></div>
+              <div class="pin high" style="position:absolute;top:250px;left:236px;z-index:13"><span class="pin__badge mono">ES</span><span class="pin__shape">▼</span><span class="pin__price num">2.014</span><span class="pin__tail"></span></div>
+              <div class="pin cheap" style="position:absolute;top:476px;left:60px;z-index:12"><span class="pin__badge mono">Q8</span><span class="pin__shape">▲</span><span class="pin__price num">1.799</span><span class="pin__tail"></span></div>
+              <div class="cluster" style="position:absolute;top:208px;left:120px;z-index:11"><div class="cluster__bubble"><span class="cluster__count num">8</span></div><div class="cluster__from num">da 1.81<small> €</small></div></div>
+              <div class="pin mid" style="position:absolute;top:470px;left:240px;z-index:12"><span class="pin__badge mono">IP</span><span class="pin__shape">●</span><span class="pin__price num">1.884</span><span class="pin__tail"></span></div>
+
+              <!-- bottom: filter bar above ad -->
+              <div class="filterbar" style="bottom:62px">
+                <div class="row"><div class="seg"><button class="seg__item active">Benzina</button><button class="seg__item">Gasolio</button><button class="seg__item">GPL</button><button class="seg__item">Metano</button><button class="seg__item">HVO</button></div></div>
+                <div class="row"><span class="toggle on"><span class="sw"></span>Self</span><span class="stepper"><button><svg viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button><span class="val num">5 km</span><button><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button></span><span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span></div>
+              </div>
+              <!-- ad -->
+              <div class="adbanner"><span class="adtag">ANNUNCIO</span><div class="adbody">AdMob · 320×50</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- MAP · DARK ---- -->
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="device" data-theme="dark" data-map>
+            <div class="screen">
+              <div style="position:absolute;top:60px;left:14px;right:14px;z-index:20;display:flex;flex-direction:column;gap:10px">
+                <div class="statusbanner loading"><span class="ic"><span class="spinner"></span></span>Aggiorno i prezzi…<span class="sub" style="margin-left:auto">MIMIT</span></div>
+              </div>
+              <div style="position:absolute;top:128px;right:14px;z-index:20;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-layers"/></svg></span>
+                <span class="floatctl"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg></span>
+              </div>
+              <div class="pin cheap cheapest" style="position:absolute;top:300px;left:38px;z-index:14"><span class="pin__badge"><svg viewBox="0 0 24 24" style="color:#7a5a00"><use href="#ic-star-fill"/></svg></span><span class="pin__shape">▲</span><span class="pin__price num">1.789</span><span class="pin__tail"></span></div>
+              <div class="pin mid selected" style="position:absolute;top:372px;left:150px;z-index:18"><span class="pin__badge mono">ENI</span><span class="pin__shape">●</span><span class="pin__price num">1.872</span><span class="pin__tag">Self</span><span class="pin__tail"></span></div>
+              <div class="pin high" style="position:absolute;top:250px;left:236px;z-index:13"><span class="pin__badge mono">ES</span><span class="pin__shape">▼</span><span class="pin__price num">2.014</span><span class="pin__tail"></span></div>
+              <div class="pin cheap" style="position:absolute;top:476px;left:60px;z-index:12"><span class="pin__badge mono">Q8</span><span class="pin__shape">▲</span><span class="pin__price num">1.799</span><span class="pin__tail"></span></div>
+              <div class="cluster" style="position:absolute;top:208px;left:120px;z-index:11"><div class="cluster__bubble"><span class="cluster__count num">8</span></div><div class="cluster__from num">da 1.81<small> €</small></div></div>
+              <div class="pin mid" style="position:absolute;top:470px;left:240px;z-index:12"><span class="pin__badge mono">IP</span><span class="pin__shape">●</span><span class="pin__price num">1.884</span><span class="pin__tail"></span></div>
+              <div class="filterbar" style="bottom:62px">
+                <div class="row"><div class="seg"><button class="seg__item active">Benzina</button><button class="seg__item">Gasolio</button><button class="seg__item">GPL</button><button class="seg__item">Metano</button><button class="seg__item">HVO</button></div></div>
+                <div class="row"><span class="toggle on"><span class="sw"></span>Self</span><span class="stepper"><button><svg viewBox="0 0 24 24"><use href="#ic-minus"/></svg></button><span class="val num">5 km</span><button><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg></button></span><span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span></div>
+              </div>
+              <div class="adbanner"><span class="adtag">ANNUNCIO</span><div class="adbody">AdMob · 320×50</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ DETAIL SCREEN ============ -->
+    <section class="section" id="detail-screen">
+      <span class="eyebrow">Mockups</span>
+      <h2>Station detail</h2>
+      <p class="lead">A bottom sheet at the large detent. The header frames the brand chip, name and a favorite toggle; the price section lists every real fuel variant as Self vs Servito, emphasising the user's filtered fuel; freshness sits inline, and a single blue CTA opens the directions chooser.</p>
+
+      <div class="stage full" style="margin-top:26px">
+
+        <!-- ---- DETAIL · LIGHT ---- -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:660px;z-index:10;padding-bottom:30px">
+                <div class="sheet__grab"></div>
+                <div class="detail__hero">
+                  <span class="chip lg">ENI</span>
+                  <div class="tt">
+                    <h2>Eni Stazione Romana</h2>
+                    <div class="addr">Via Tortona 28, Milano</div>
+                  </div>
+                  <button class="iconbtn star-toggle on" style="width:40px;height:40px;background:var(--surfaceTertiary)"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></button>
+                </div>
+                <div class="detail__section-h"><span class="h">Prezzi · €/L</span><span class="fresh-pill ok"><svg viewBox="0 0 24 24"><use href="#ic-clock"/></svg>Agg. 4 ore fa</span></div>
+                <div class="prow active"><div class="prow__fuel"><span class="nm">Benzina</span><span class="em">Filtro</span></div><div class="prow__prices"><div class="prow__pc best"><div class="lab">Self ▲</div><div class="v num">1.789</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.929</div></div></div></div>
+                <div class="prow"><div class="prow__fuel"><span class="nm">Gasolio</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">1.712</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.854</div></div></div></div>
+                <div class="prow"><div class="prow__fuel"><span class="nm">GPL</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">0.719</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">—</div></div></div></div>
+                <div class="detail__rowline bt" style="margin-top:4px"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-mappin"/></svg></span>Via Tortona 28, 20144 Milano<span class="chev"><svg viewBox="0 0 24 24" width="18"><use href="#ic-chevron"/></svg></span></div>
+                <button class="cta"><svg viewBox="0 0 24 24"><use href="#ic-directions"/></svg>Indicazioni</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---- DETAIL · DARK ---- -->
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="device" data-theme="dark" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:660px;z-index:10;padding-bottom:30px">
+                <div class="sheet__grab"></div>
+                <div class="detail__hero">
+                  <span class="chip lg">Q8</span>
+                  <div class="tt">
+                    <h2>Q8 Via Tortona</h2>
+                    <div class="addr">Via Tortona 12, Milano</div>
+                  </div>
+                  <button class="iconbtn star-toggle" style="width:40px;height:40px;background:var(--surfaceTertiary)"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg></button>
+                </div>
+                <div class="detail__section-h"><span class="h">Prezzi · €/L</span><span class="fresh-pill stale"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg>Vecchio · 3 gg</span></div>
+                <div class="prow active"><div class="prow__fuel"><span class="nm">Benzina</span><span class="em">Filtro</span></div><div class="prow__prices"><div class="prow__pc best"><div class="lab">Self ▲</div><div class="v num">1.789</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.939</div></div></div></div>
+                <div class="prow"><div class="prow__fuel"><span class="nm">Gasolio</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">Self</div><div class="v num">1.722</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">1.860</div></div></div></div>
+                <div class="prow"><div class="prow__fuel"><span class="nm">Metano</span></div><div class="prow__prices"><div class="prow__pc"><div class="lab">kg</div><div class="v num">1.499</div></div><div class="prow__pc"><div class="lab">Servito</div><div class="v num">—</div></div></div></div>
+                <div class="detail__rowline bt" style="margin-top:4px"><span class="ic"><svg viewBox="0 0 24 24"><use href="#ic-mappin"/></svg></span>Via Tortona 12, 20144 Milano<span class="chev"><svg viewBox="0 0 24 24" width="18"><use href="#ic-chevron"/></svg></span></div>
+                <button class="cta"><svg viewBox="0 0 24 24"><use href="#ic-directions"/></svg>Indicazioni</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="callout" style="margin-top:18px"><b>Directions chooser.</b> The CTA presents a native action sheet — Apple Maps · Google Maps · Waze — only listing apps installed on the device. The favorite star in the header mirrors the one in list rows.</div>
+    </section>
+
+    <!-- ============ LIST SCREEN ============ -->
+    <section class="section" id="list-screen">
+      <span class="eyebrow">Mockups</span>
+      <h2>Station list</h2>
+      <p class="lead">The list sheet at a medium/large detent over the map. Rows reuse the list-row component; a sort control switches between price and distance. The cheapest row is flagged and floats to the top under price-sort.</p>
+
+      <div class="stage full" style="margin-top:26px">
+        <!-- LIST · LIGHT -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:640px;z-index:10;padding-bottom:24px">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Stazioni vicine</h3><span class="count">34</span><button class="iconbtn"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="sheet__sortbar"><span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span><span class="sortpill"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg>Distanza</span><span style="margin-left:auto;font:600 12px var(--font-sans);color:var(--textTertiary)">Benzina · Self</span></div>
+                <div class="sheet__list">
+                  <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Via Tortona</div><div class="lrow__meta"><span class="best-flag"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg>Più basso</span><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,8 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.789<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div></div>
+                  <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Stazione Romana</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,2 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip">IP</span><div class="lrow__main"><div class="lrow__name">IP Porta Genova</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,5 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.884<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span><div class="lrow__main"><div class="lrow__name">Pompa Bianca Navigli</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,9 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.949<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Corso Italia</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>2,0 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.014<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- LIST · DARK -->
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="device" data-theme="dark" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:640px;z-index:10;padding-bottom:24px">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Stazioni vicine</h3><span class="count">34</span><button class="iconbtn"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="sheet__sortbar"><span class="sortpill active"><svg viewBox="0 0 24 24"><use href="#ic-sort"/></svg>Prezzo</span><span class="sortpill"><svg viewBox="0 0 24 24"><use href="#ic-locate"/></svg>Distanza</span><span style="margin-left:auto;font:600 12px var(--font-sans);color:var(--textTertiary)">Benzina · Self</span></div>
+                <div class="sheet__list">
+                  <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Via Tortona</div><div class="lrow__meta"><span class="best-flag"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg>Più basso</span><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,8 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.789<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div></div>
+                  <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Stazione Romana</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,2 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip">IP</span><div class="lrow__main"><div class="lrow__name">IP Porta Genova</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,5 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.884<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip bianca"><svg viewBox="0 0 24 24"><use href="#ic-fuel"/></svg></span><div class="lrow__main"><div class="lrow__name">Pompa Bianca Navigli</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>1,9 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.949<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div></div>
+                  <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Corso Italia</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>2,0 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.014<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FAVORITES SCREEN ============ -->
+    <section class="section" id="favorites-screen">
+      <span class="eyebrow">Mockups</span>
+      <h2>Favorites</h2>
+      <p class="lead">Same sheet and row vocabulary as the list — saved stations, each still showing live price, tier and distance, with the star pre-filled. One tap re-centres the map on that station.</p>
+
+      <div class="stage full" style="margin-top:26px">
+        <!-- FAV · LIGHT -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:560px;z-index:10;padding-bottom:24px">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Preferiti</h3><span class="count">3</span><button class="iconbtn"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="sheet__list" style="margin-top:6px">
+                  <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Casa</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,4 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.819<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                  <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Ufficio</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>3,1 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                  <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Autostrada A1</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>12 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.041<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- FAV · DARK -->
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Dark</div>
+          <div class="device" data-theme="dark" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:560px;z-index:10;padding-bottom:24px">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Preferiti</h3><span class="count">3</span><button class="iconbtn"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="sheet__list" style="margin-top:6px">
+                  <div class="lrow"><span class="chip">ENI</span><div class="lrow__main"><div class="lrow__name">Eni Casa</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>0,4 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.819<span class="unit">€/L</span></div><span class="tier-tag cheap"><span class="sh">▲</span>Basso</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                  <div class="lrow"><span class="chip">Q8</span><div class="lrow__main"><div class="lrow__name">Q8 Ufficio</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>3,1 km</span></div></div><div class="lrow__right"><div class="lrow__price num">1.872<span class="unit">€/L</span></div><span class="tier-tag mid"><span class="sh">●</span>Medio</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                  <div class="lrow"><span class="chip">ES</span><div class="lrow__main"><div class="lrow__name">Esso Autostrada A1</div><div class="lrow__meta"><span class="dist"><svg viewBox="0 0 24 24"><use href="#ic-nav"/></svg>12 km</span></div></div><div class="lrow__right"><div class="lrow__price num">2.041<span class="unit">€/L</span></div><span class="tier-tag high"><span class="sh">▼</span>Alto</span></div><span class="star-toggle on" style="margin-left:8px"><svg viewBox="0 0 24 24"><use href="#ic-star-fill"/></svg></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ STATES ============ -->
+    <section class="section" id="states">
+      <span class="eyebrow">Mockups</span>
+      <h2>Universal states</h2>
+      <p class="lead">Every data surface designs for loading, empty and error. Shown here on the list sheet; the same patterns apply to the map (banner) and detail. All three have full light/dark parity from the tokens.</p>
+
+      <div class="stage full" style="margin-top:26px">
+        <!-- LOADING -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Loading · light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:560px;z-index:10">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Stazioni vicine</h3><button class="iconbtn" style="margin-left:auto"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="sheet__list">
+                  <div class="lrow"><span class="sk" style="width:36px;height:30px"></span><div class="lrow__main"><span class="sk" style="display:block;width:62%;height:15px"></span><span class="sk" style="display:block;width:34%;height:11px;margin-top:8px"></span></div><div class="lrow__right"><span class="sk" style="width:58px;height:18px"></span><span class="sk" style="width:42px;height:16px;margin-top:6px"></span></div></div>
+                  <div class="lrow"><span class="sk" style="width:36px;height:30px"></span><div class="lrow__main"><span class="sk" style="display:block;width:54%;height:15px"></span><span class="sk" style="display:block;width:30%;height:11px;margin-top:8px"></span></div><div class="lrow__right"><span class="sk" style="width:58px;height:18px"></span><span class="sk" style="width:42px;height:16px;margin-top:6px"></span></div></div>
+                  <div class="lrow"><span class="sk" style="width:36px;height:30px"></span><div class="lrow__main"><span class="sk" style="display:block;width:60%;height:15px"></span><span class="sk" style="display:block;width:28%;height:11px;margin-top:8px"></span></div><div class="lrow__right"><span class="sk" style="width:58px;height:18px"></span><span class="sk" style="width:42px;height:16px;margin-top:6px"></span></div></div>
+                  <div class="lrow"><span class="sk" style="width:36px;height:30px"></span><div class="lrow__main"><span class="sk" style="display:block;width:48%;height:15px"></span><span class="sk" style="display:block;width:32%;height:11px;margin-top:8px"></span></div><div class="lrow__right"><span class="sk" style="width:58px;height:18px"></span><span class="sk" style="width:42px;height:16px;margin-top:6px"></span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- EMPTY -->
+        <div class="mock"><div class="cap"><span class="dot dark"></span>Empty · dark</div>
+          <div class="device" data-theme="dark" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:560px;z-index:10">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Stazioni vicine</h3><button class="iconbtn" style="margin-left:auto"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="state-block">
+                  <div class="em-ic"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg></div>
+                  <h4>Nessuna stazione</h4>
+                  <p>Nessun distributore entro 5 km. Allarga il raggio di ricerca o sposta la mappa.</p>
+                  <span class="pillbtn brand" style="margin-top:14px;height:44px"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg>Amplia a 10 km</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ERROR -->
+        <div class="mock"><div class="cap"><span class="dot light"></span>Error · light</div>
+          <div class="device" data-theme="light" data-map>
+            <div class="screen">
+              <div class="scrim" style="position:absolute;inset:0;background:var(--surfaceScrim);z-index:5"></div>
+              <div class="sheet" style="height:560px;z-index:10">
+                <div class="sheet__grab"></div>
+                <div class="sheet__head"><h3>Stazioni vicine</h3><button class="iconbtn" style="margin-left:auto"><svg viewBox="0 0 24 24"><use href="#ic-x"/></svg></button></div>
+                <div class="state-block">
+                  <div class="em-ic" style="background:var(--errorSurface);color:var(--error)"><svg viewBox="0 0 24 24"><use href="#ic-warn"/></svg></div>
+                  <h4>Impossibile caricare i prezzi</h4>
+                  <p>Controlla la connessione. I dati MIMIT non sono raggiungibili al momento.</p>
+                  <span class="pillbtn brand" style="margin-top:14px;height:44px"><svg viewBox="0 0 24 24"><use href="#ic-refresh"/></svg>Riprova</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule"><hr /></div>
+
+    <!-- MOCKUPS_MARKER -->
+
+    <!-- ============ ACCESSIBILITY ============ -->
+    <section class="section" id="a11y">
+      <span class="eyebrow">Reference</span>
+      <h2>Accessibility</h2>
+      <p class="lead">Accessibility is a functional requirement here, not a polish pass — the app is used at a glance, often in motion. Every ratio below is computed live in your browser from the real tokens.</p>
+
+      <h3>Contrast results</h3>
+      <table class="spec" style="margin-top:8px">
+        <thead><tr><th>Pair</th><th>Light</th><th>Dark</th><th>Min</th></tr></thead>
+        <tbody id="contrast-table"></tbody>
+      </table>
+      <p class="muted" style="font-size:12.5px;margin-top:8px">AA = 4.5:1 (normal text) / 3:1 (large or UI). Pin prices are bold and treated as large text; all tier fills clear the large-text floor with margin.</p>
+
+      <h3>Colorblind strategy for the price tiers</h3>
+      <div class="grid cols-2" style="align-items:start">
+        <div class="panel">
+          <p style="margin:0 0 10px"><b>The problem:</b> green vs red is exactly the deuteranopia / protanopia confusion axis. <b>The rule:</b> hue is never the only signal — three more always agree.</p>
+          <table class="spec">
+            <tr><th>Tier</th><th>Hue</th><th>Shape</th><th>Label</th></tr>
+            <tr><td><b>Cheap</b></td><td><span style="color:var(--priceCheapInk);font-weight:700">green</span></td><td>▲ up</td><td>BASSO</td></tr>
+            <tr><td><b>Mid</b></td><td><span style="color:var(--priceMidInk);font-weight:700">orange</span></td><td>● dot</td><td>MEDIO</td></tr>
+            <tr><td><b>High</b></td><td><span style="color:var(--priceHighInk);font-weight:700">red</span></td><td>▼ down</td><td>ALTO</td></tr>
+          </table>
+        </div>
+        <div class="panel">
+          <h4 style="margin-top:0">Why it holds under CVD</h4>
+          <ul style="margin:0;padding-left:18px;font-size:13.5px;line-height:1.85;color:var(--doc-ink-2)">
+            <li>The <b>shape</b> (▲ ● ▼) is unambiguous without any color and points the way value moves.</li>
+            <li>The <b>word</b> appears on every row, in the detail sheet, and on the selected pin.</li>
+            <li><b>Position</b> reinforces it — price-sort puts cheap on top; the single cheapest is crowned with a gold ★.</li>
+            <li>Tiers are also tuned for <b>luminance separation</b>, so they differ in greyscale, not just hue.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Dynamic Type &amp; motion</h3>
+      <div class="grid cols-3">
+        <div class="panel"><h4 style="margin-top:0">Dynamic Type</h4><p style="margin:0">Every role maps to a built-in iOS text style and scales with the user's setting. Sheet and list text scale fully and reflow to multiple lines instead of truncating; the pin price uses a capped style so a pin can't outgrow its footprint over the map.</p></div>
+        <div class="panel"><h4 style="margin-top:0">Reduce Motion</h4><p style="margin:0">Honors <code class="mono">prefers-reduced-motion</code>: the loading spinner slows and the skeleton shimmer stops, pins place instead of bouncing, and sheet transitions cross-fade rather than spring.</p></div>
+        <div class="panel"><h4 style="margin-top:0">Targets &amp; VoiceOver</h4><p style="margin:0">All interactive elements are ≥44×44pt. Pins announce the full picture — "Q8, benzina self 1,789 € al litro, più economica, 0,8 km" — so tier, rank and price never depend on sight of color.</p></div>
+      </div>
+    </section>
+
+    <!-- ============ TOKEN JSON ============ -->
+    <section class="section" id="tokens-json">
+      <span class="eyebrow">Reference</span>
+      <h2>Token JSON</h2>
+      <p class="lead">A copy-friendly export of the semantic color tokens for both modes — generated live from <code class="mono">tokens.css</code>. Drop these into a SwiftUI semantic <code class="mono">Color</code> asset catalog (Any / Dark appearances) and a tokens file; the CSS custom-property names map 1:1 to asset names.</p>
+      <div class="panel" style="background:var(--doc-code-bg);border:none;padding:0;margin-top:18px;overflow:hidden">
+        <pre id="json-appendix" style="margin:0;padding:22px;color:#D6E2F5;font:500 12.5px/1.65 var(--font-num);overflow-x:auto;white-space:pre">loading…</pre>
+      </div>
+      <p class="muted" style="font-size:12.5px;margin-top:10px">Spacing (4-pt grid), radius (8/12/16/20/pill) and elevation tokens live in <code class="mono">tokens.css</code> alongside these; type roles map to SF Pro text styles with tabular digits for all numerics.</p>
+    </section>
+
+    <footer style="max-width:var(--doc-maxw);margin:64px auto 0;padding:28px 40px;border-top:1px solid var(--doc-line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+      <div style="display:flex;align-items:center;gap:10px"><span class="sidenav-glyph" style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#0091FF,#0066E0);display:grid;place-items:center"><svg viewBox="0 0 24 24" width="15"><use href="#ic-mappin" fill="none" stroke="#fff"/></svg></span><b style="font-size:14px;color:var(--doc-ink)">FuelMap Design System</b></div>
+      <div class="muted" style="font-size:12.5px">iOS · SwiftUI-native · v1.0 · Light + Dark · WCAG AA</div>
+    </footer>
+
+    <!-- REFERENCE_MARKER -->
+
+  </main>
+</div>
+
+<script src="assets/data.js"></script>
+<script>
+/* render the icon grid from the sprite */
+(function(){
+  var icons = [
+    ["ic-fuel","fuelpump.fill"],["ic-mappin","mappin.circle"],["ic-star","star"],["ic-star-fill","star.fill"],
+    ["ic-locate","location.fill"],["ic-nav","location.north.fill"],["ic-list","list.bullet"],["ic-search","magnifyingglass"],
+    ["ic-filter","slider.horizontal.3"],["ic-sort","arrow.up.arrow.down"],["ic-directions","arrow.triangle.turn.up.right.diamond.fill"],["ic-clock","clock"],
+    ["ic-warn","exclamationmark.triangle.fill"],["ic-info","info.circle"],["ic-refresh","arrow.clockwise"],["ic-layers","square.3.layers.3d"],
+    ["ic-chevron","chevron.right"],["ic-chevron-down","chevron.down"],["ic-plus","plus"],["ic-x","xmark"]
+  ];
+  var host = document.getElementById("icon-grid");
+  if(host){
+    icons.forEach(function(ic){
+      var d=document.createElement("div");
+      d.style.cssText="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--doc-line);border-radius:10px;background:#fff";
+      d.innerHTML='<span style="width:24px;height:24px;color:var(--doc-accent);display:grid;place-items:center"><svg width="22" height="22"><use href="#'+ic[0]+'"/></svg></span><code style="font:500 11.5px var(--font-num);color:var(--doc-ink-2)">'+ic[1]+'</code>';
+      host.appendChild(d);
+    });
+  }
+})();
+</script>
+<script>
+/* live contrast results table — reuses helpers exposed by data.js */
+(function(){
+  function run(){
+    if(!window.FMToken || !window.FMContrast){ return setTimeout(run, 60); }
+    var pairs = [
+      ["textPrimary on surface", "--textPrimary", "--surface", false],
+      ["textSecondary on surface", "--textSecondary", "--surface", false],
+      ["textTertiary on surface", "--textTertiary", "--surface", true],
+      ["CTA label (white) on brandFill", "#FFFFFF", "--brandPrimaryFill", false],
+      ["brandPrimary tint on surfaceElevated", "--brandPrimary", "--surfaceElevated", true],
+      ["white on priceCheap", "#FFFFFF", "--priceCheap", true],
+      ["white on priceMid", "#FFFFFF", "--priceMid", true],
+      ["white on priceHigh", "#FFFFFF", "--priceHigh", true],
+      ["white on warning", "#FFFFFF", "--warning", true],
+      ["separator on surface", "--separator", "--surface", true]
+    ];
+    function val(t, theme){ return t[0]==="#" ? t : window.FMToken(t, theme); }
+    function cell(r, large){
+      var min = large ? 3 : 4.5;
+      var grade = r>=7 ? "AAA" : r>= (large?4.5:4.5) ? "AA" : r>=3 ? "AA·lg" : "fail";
+      if(large){ grade = r>=4.5 ? "AAA" : r>=3 ? "AA" : "fail"; }
+      var cls = (r>=min) ? "ok" : "meh";
+      return '<span class="'+cls+'">'+r.toFixed(2)+'</span> <span class="muted" style="font-size:11px">'+grade+'</span>';
+    }
+    var tb = document.getElementById("contrast-table");
+    if(!tb) return;
+    pairs.forEach(function(p){
+      var rl = window.FMContrast(val(p[1],"light"), val(p[2],"light"));
+      var rd = window.FMContrast(val(p[1],"dark"), val(p[2],"dark"));
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td><b>"+p[0]+"</b></td><td>"+cell(rl,p[3])+"</td><td>"+cell(rd,p[3])+"</td><td>"+(p[3]?"3:1":"4.5:1")+"</td>";
+      tb.appendChild(tr);
+    });
+  }
+  run();
+})();
+</script>
+</body>
+</html>
