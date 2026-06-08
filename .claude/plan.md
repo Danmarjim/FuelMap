@@ -113,11 +113,19 @@ Apariencias **Any + Dark** salvo donde se indique *valor único*.
 - [x] Ad banner: `surfaceSecondary` + separador superior.
 - **Verificación:** ✅ build/lint; 53 tests. Pase a11y manual en simulador (Dynamic Type / Reduce Motion / VoiceOver).
 
-### Fase R6 — QA, docs y review
-- [ ] Suite completa de tests + lint; capturas claro/oscuro de las 7 pantallas.
-- [ ] Actualizar `SYSTEM_MAP.md` (nuevos `DesignSystem/*`, color sets) y `PHASE_LOG.md`.
-- [ ] **Evaluación multi-agente** del restyle (architect/developer/qa/reviewer) — funde aquí la "valoración final" acordada.
-- [ ] ADR del design system (tokens semánticos, tiers daltónico-seguros, fills mode-independent).
+### Fase R6 — QA, docs y review ✅
+- [x] Suite completa: **57 tests**, SwiftLint 0, build verde.
+- [x] `SYSTEM_MAP.md` (capa Design System + cambios) y `PHASE_LOG.md` actualizados.
+- [x] **Evaluación multi-agente**: ios-reviewer (`reviews/2026-06-08-restyle-review.md`) + ios-qa (`reviews/2026-06-08-restyle-qa.md`). Veredicto reviewer: CHANGES REQUESTED → **APPROVED** tras remediación.
+- [x] Remediación: A-1 (doble € en fila → `fuelPriceValue`), M-2 (tiers del store), M-3 (nav apps cacheadas), dedup `SortPill`, extracción `FuelVariantBuilder`/`PriceFreshness` + tests.
+- [x] `ADR-005-design-system.md`.
+- **Deuda menor diferida:** ring de elevación en oscuro (M-4), dedup `separator`, nits; favoritos sin precio/tier en vivo.
+
+---
+
+## RESTYLE-001 — COMPLETADO (2026-06-08)
+
+Las 7 fases (R0–R6) cerradas. Restyle visual completo aplicado y evaluado. Listo para `/close-phase`.
 
 ---
 

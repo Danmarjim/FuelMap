@@ -22,8 +22,12 @@ struct FiltersView: View {
                 HStack(spacing: Spacing.s3) {
                     selfToggle
                     radiusStepper
-                    sortPill(.price)
-                    sortPill(.distance)
+                    SortPill(option: .price, isActive: sort.wrappedValue == .price, height: 44) {
+                        sort.wrappedValue = .price
+                    }
+                    SortPill(option: .distance, isActive: sort.wrappedValue == .distance, height: 44) {
+                        sort.wrappedValue = .distance
+                    }
                 }
                 .padding(.horizontal, 2)
             }
@@ -134,30 +138,6 @@ struct FiltersView: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-    }
-
-    // MARK: - Orden (pills)
-
-    private func sortPill(_ option: StationSort) -> some View {
-        let active = sort.wrappedValue == option
-        return Button {
-            sort.wrappedValue = option
-        } label: {
-            HStack(spacing: Spacing.s2) {
-                Image(systemName: option == .price ? "arrow.up.arrow.down" : "location.fill")
-                    .font(.system(size: 12, weight: .semibold))
-                Text(option.label).font(.fmFootnote.weight(.semibold))
-            }
-            .foregroundStyle(active ? Color(.brandPrimary) : Color(.textPrimary))
-            .padding(.horizontal, Spacing.s4)
-            .frame(height: 44)
-            .background(active ? Color(.brandSurface) : Color(.surfaceTertiary), in: Capsule())
-            .overlay {
-                if active { Capsule().strokeBorder(Color(.brandPrimary).opacity(0.3)) }
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(active ? [.isSelected] : [])
     }
 
     // MARK: - Helpers de radio

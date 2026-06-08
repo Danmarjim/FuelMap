@@ -70,6 +70,7 @@ struct MapView: View {
                 stations: store.sortedStations,
                 origin: store.distanceOrigin,
                 cheapestStationID: store.cheapestStationID,
+                tiers: store.priceTiers,
                 isLoading: store.isLoading,
                 sort: Binding(
                     get: { store.sortOrder },

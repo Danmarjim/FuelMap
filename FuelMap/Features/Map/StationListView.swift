@@ -14,14 +14,12 @@ struct StationListView: View {
     /// Referencia para la distancia (ubicación del usuario; si no, centro del mapa).
     let origin: Coordinate
     let cheapestStationID: Int?
+    /// Terciles de precio del conjunto, calculados en el store (no recomputar aquí).
+    let tiers: PriceTiers
     var isLoading: Bool = false
     @Binding var sort: StationSort
     let onSelect: (Station) -> Void
     let onClose: () -> Void
-
-    private var tiers: PriceTiers {
-        PriceTiers(prices: stations.compactMap { $0.cheapest?.price })
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -105,6 +103,7 @@ struct StationListView: View {
         stations: StationFixtures.all,
         origin: .italyDefault,
         cheapestStationID: 4,
+        tiers: PriceTiers(prices: StationFixtures.all.compactMap { $0.cheapest?.price }),
         sort: .constant(.price),
         onSelect: { _ in },
         onClose: {}

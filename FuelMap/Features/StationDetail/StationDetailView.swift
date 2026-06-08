@@ -14,9 +14,11 @@ struct StationDetailView: View {
     let store: StoreOf<StationDetailFeature>
 
     @State private var showingNavOptions = false
+    /// Apps de navegación instaladas (Apple Maps siempre). Se calcula una vez al
+    /// aparecer (evita `canOpenURL` —I/O UIKit— en cada render del body).
+    @State private var availableNavApps: [NavApp] = []
 
-    /// Apps de navegación instaladas (Apple Maps siempre).
-    private var availableNavApps: [NavApp] {
+    private static func detectNavApps() -> [NavApp] {
         NavApp.allCases.filter { app in
             guard let probe = app.probeURL else { return true }
             return UIApplication.shared.canOpenURL(probe)
@@ -41,7 +43,10 @@ struct StationDetailView: View {
             }
         }
         .background(Color(.surfaceElevated))
-        .onAppear { store.send(.onAppear) }
+        .onAppear {
+            store.send(.onAppear)
+            if availableNavApps.isEmpty { availableNavApps = Self.detectNavApps() }
+        }
     }
 
     @ViewBuilder
@@ -140,7 +145,7 @@ struct StationDetailView: View {
         }
     }
 
-    private func priceRow(_ row: VariantRow) -> some View {
+    private func priceRow(_ row: FuelVariant) -> some View {
         let selected = row.fuel == store.selectedFuel
         let best = [row.selfPrice, row.servitoPrice].compactMap { $0 }.min()
         return HStack(alignment: .center, spacing: Spacing.s4) {
@@ -181,7 +186,7 @@ struct StationDetailView: View {
                 .font(.system(size: 10, weight: .semibold))
                 .textCase(.uppercase)
                 .foregroundStyle(Color(.textTertiary))
-            Text(price.map { $0.fuelPriceLabel } ?? "—")
+            Text(price.map { $0.fuelPriceValue } ?? "—")
                 .font(.fmPriceDetail)
                 .foregroundStyle(isBest ? Color(.priceCheapInk) : Color(.textPrimary))
         }
@@ -243,27 +248,39 @@ struct StationDetailView: View {
         }
     }
 
-    // MARK: - Data shaping
-
-    /// Una fila por producto real (`fuelRaw`), con su self/servito.
-    private struct VariantRow: Identifiable {
-        let id: String
-        let name: String
-        let fuel: FuelType
-        let selfPrice: Decimal?
-        let servitoPrice: Decimal?
+    private func variantRows(for station: Station) -> [FuelVariant] {
+        FuelVariantBuilder.variants(for: station, selected: store.selectedFuel)
     }
 
-    private func variantRows(for station: Station) -> [VariantRow] {
+    private func latestUpdate(for station: Station) -> Date? {
+        station.prices.compactMap(\.communicatedAt).max()
+    }
+}
+
+// MARK: - Data shaping
+
+/// Una fila por producto real (`fuelRaw`), con su self/servito.
+struct FuelVariant: Identifiable, Equatable {
+    let id: String
+    let name: String
+    let fuel: FuelType
+    let selfPrice: Decimal?
+    let servitoPrice: Decimal?
+}
+
+/// Agrupa los precios de una estación por producto real (`fuelRaw`) y ordena el
+/// combustible filtrado primero. Función pura (testeable).
+enum FuelVariantBuilder {
+    static func variants(for station: Station, selected: FuelType) -> [FuelVariant] {
         var order: [String] = []
         var byRaw: [String: [FuelPrice]] = [:]
         for price in station.prices {
             if byRaw[price.fuelRaw] == nil { order.append(price.fuelRaw) }
             byRaw[price.fuelRaw, default: []].append(price)
         }
-        let rows = order.compactMap { raw -> VariantRow? in
+        let rows = order.compactMap { raw -> FuelVariant? in
             guard let prices = byRaw[raw], let first = prices.first else { return nil }
-            return VariantRow(
+            return FuelVariant(
                 id: raw,
                 name: raw,
                 fuel: first.fuel,
@@ -272,15 +289,10 @@ struct StationDetailView: View {
             )
         }
         // El combustible filtrado va primero; dentro, por nombre.
-        let selected = store.selectedFuel
         return rows.sorted { lhs, rhs in
             if (lhs.fuel == selected) != (rhs.fuel == selected) { return lhs.fuel == selected }
             return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
         }
-    }
-
-    private func latestUpdate(for station: Station) -> Date? {
-        station.prices.compactMap(\.communicatedAt).max()
     }
 }
 

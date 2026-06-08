@@ -1,7 +1,21 @@
 # System Map — FuelMap
 
 > Module map and key file reference. Agents read from here to navigate the codebase without loading the entire repo.
-> Last updated: 2026-06-04 (FM-1 completado)
+> Last updated: 2026-06-08 (RESTYLE-001 — design system aplicado R0–R6)
+
+## Design System layer
+
+**Path:** `FuelMap/DesignSystem/` + `FuelMap/Assets.xcassets/Colors/` (tokens) · fuente de verdad en `.claude/design/`.
+
+| File | Type | Responsibility |
+|---|---|---|
+| `Assets.xcassets/Colors/*.colorset` | tokens | 35 Color sets semánticos claro/oscuro (brand, surfaces, text, lines, price tiers, functional, `goldInk`). Tiers *fill* = valor único (mode-independent). `Color(.brandPrimary)`. |
+| `DesignSystem/Spacing.swift` | enum | Escala 4pt (`s1`…`s10`). |
+| `DesignSystem/Radius.swift` | enum | Radios sm/md/lg/xl/pill. |
+| `DesignSystem/Elevation.swift` | modifier | `.elevation(.e1/.e2/.e3/.pin/.pinSelected/.sheet)`; profundiza en oscuro. |
+| `DesignSystem/Typography.swift` | ext Font | Roles SF Pro mapeados a text styles (Dynamic Type) + fuentes de precio tabulares. |
+| `DesignSystem/TokenGallery.swift` | View (#Preview) | Galería de validación de la paleta claro/oscuro. |
+| `Features/Map/SheetComponents.swift` | Views | `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow`, `SkeletonRow/List` + `shimmer()`. |
 
 > **En construcción.** Esqueleto TCA en marcha (FM-1). Las tablas marcadas `<!-- VERIFY -->` se rellenan conforme se implementan sus issues.
 
@@ -45,20 +59,20 @@ Core/
 | `App/AppView.swift` | View | Raíz; `MapView` + `BannerAdView` debajo (fuera del mapa) (FM-7/FM-11). |
 | `Core/Ads/AdClient.swift` | `@Dependency` | `start`/`requestConsent` (UMP→ATT)/`bannerAdUnitID` (TEST); `AdConsentCoordinator` (FM-11). |
 | `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
-| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error (FM-7/FM-9). |
-| `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado, status bar (FM-7). |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). `MapStyleOption`/`StationSort`. |
+| `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado (Reduce Motion), `.mapStyle`, status banner flotante + float controls (lista/favoritos/capas) (R2). |
 | `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
-| `Map/ClusterPin.swift` | View | Pin de cluster (círculo + conteo); tap→zoom (FM-15). |
-| `Map/PriceTiers.swift` | lógica | Terciles de precio → `PriceTier` (verde/naranja/rojo) (FM-18). |
-| `Map/BrandStyle.swift` | lógica | Normaliza `Bandiera`→marca (color+monograma+asset opcional) (FM-16). |
-| `Map/BrandBadge.swift` | View | Badge de marca (logo si hay asset, si no círculo+monograma) (FM-16). |
-| `Map/StationPin.swift` | View | Pin de precio: color por tier (FM-18) + monograma de marca (FM-16) + estrella si más barata. |
-| `Map/StationListView.swift` | View | Lista ordenable (precio/distancia) de estaciones; fila→recentrar; destaca la más barata (FM-10). |
-| `Map/FavoritesView.swift` | View | Lista de favoritos (sheet); fila→recentrar; estado vacío (FM-12). |
-| `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm` (movido desde MapFeature). `RadiusOption` (FM-8). |
-| `Filters/FiltersView.swift` | View | Segmented combustible + toggle self + menú radio; panel inferior del mapa (FM-8). |
+| `Map/ClusterPin.swift` | View | Cluster: burbuja `surfaceElevated` + cápsula `da X` con tier de la más barata (R2). |
+| `Map/PriceTiers.swift` | lógica | Terciles → `PriceTier` con `fill`/`ink`/`surface` + `symbolName` (▲●▼) + `label` localizada (daltónico-seguro, R1). |
+| `Map/BrandStyle.swift` | lógica | Normaliza `Bandiera`→marca (color+monograma+asset+`logoBackground`) (FM-16). |
+| `Map/BrandBadge.swift` | View | Chip de marca: logo sobre `logoBackground` o monograma/pompa neutro (R2). |
+| `Map/StationPin.swift` | View | Pin: cápsula de tier + badge + forma de tier + precio + cola + halo; seleccionado/más barata; Reduce Motion + Dynamic Type capada (R2/R5). |
+| `Map/StationListView.swift` | View | Hoja: header + sort pills + `StationRow` (chip, best-flag, precio, tier-tag); skeleton de carga; estado vacío (R4/R5). |
+| `Map/FavoritesView.swift` | View | Hoja de favoritos: header + fila con chip + estrella; estado vacío (R4). |
+| `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm`. `RadiusOption` (FM-8). |
+| `Filters/FiltersView.swift` | View | Barra: segmentado combustible + toggle Self + stepper radio + sort pills; fondo degradado (R3). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
-| `StationDetail/StationDetailView.swift` | View | Sheet: precios, frescura relativa (FM-19), badge de marca (FM-16), "Indicazioni"→selector de navegación (FM-17). |
+| `StationDetail/StationDetailView.swift` | View | Hoja: hero + precios por variante (Self/Servito, filtrado destacado), `FreshnessPill`, CTA Indicazioni→selector de navegación (R4). |
 | `StationDetail/NavApp.swift` | enum | Apple/Google/Waze: deep links de indicaciones + probe de instalación (FM-17). |
 
 ---

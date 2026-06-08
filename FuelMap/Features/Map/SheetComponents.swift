@@ -39,6 +39,7 @@ struct BestFlag: View {
 struct SortPill: View {
     let option: StationSort
     let isActive: Bool
+    var height: CGFloat = 34
     let action: () -> Void
 
     var body: some View {
@@ -50,7 +51,7 @@ struct SortPill: View {
             }
             .foregroundStyle(isActive ? Color(.brandPrimary) : Color(.textPrimary))
             .padding(.horizontal, Spacing.s4)
-            .frame(height: 34)
+            .frame(height: height)
             .background(isActive ? Color(.brandSurface) : Color(.surfaceTertiary), in: Capsule())
             .overlay { if isActive { Capsule().strokeBorder(Color(.brandPrimary).opacity(0.3)) } }
         }
@@ -118,7 +119,7 @@ struct SheetEmptyState: View {
 struct FreshnessPill: View {
     let date: Date
 
-    private var stale: Bool { date < Date.now.addingTimeInterval(-2 * 24 * 3600) }
+    private var stale: Bool { PriceFreshness.isStale(date) }
 
     var body: some View {
         HStack(spacing: Spacing.s2) {
@@ -239,7 +240,7 @@ struct StationRow: View {
             if let price {
                 VStack(alignment: .trailing, spacing: 3) {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(price.fuelPriceLabel).font(.fmPriceRow).foregroundStyle(Color(.textPrimary))
+                        Text(price.fuelPriceValue).font(.fmPriceRow).foregroundStyle(Color(.textPrimary))
                         Text("€/L").font(.fmCaption2).foregroundStyle(Color(.textTertiary))
                     }
                     if let tier { TierTag(tier: tier) }

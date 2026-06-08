@@ -52,7 +52,7 @@ struct ClusterPin: View {
     private func fromPill(_ price: Decimal) -> some View {
         HStack(spacing: 2) {
             Text("da").font(.system(size: 9, weight: .semibold)).opacity(0.85)
-            Text(price.fuelPriceLabel).font(.system(size: 11, weight: .bold)).monospacedDigit()
+            Text(price.fuelPriceValue).font(.system(size: 11, weight: .bold)).monospacedDigit()
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 8)

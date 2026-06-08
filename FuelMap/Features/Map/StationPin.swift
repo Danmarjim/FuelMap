@@ -130,11 +130,12 @@ struct StationPin: View {
     }
 
     private var priceText: String {
-        price?.fuelPriceLabel ?? "—"
+        price?.fuelPriceValue ?? "—"
     }
 
     private var accessibilityText: String {
-        var text = "\(name), \(fuel.label) \(priceText)"
+        let spokenPrice = price?.fuelPriceLabel ?? "—"
+        var text = "\(name), \(fuel.label) \(spokenPrice)"
         if !brand.monogram.isEmpty { text += ", \(brand.displayName)" }
         text += ", \(tier.label)"
         if isCheapest { text += ", " + String(localized: "il più economico") }

@@ -416,13 +416,36 @@
 
 ---
 
+## Plan Iteration: RESTYLE-001 — Restyle visual completo — Completed
+**Date:** 2026-06-08
+
+### Architect (design system)
+- Tokens semánticos en Asset Catalog 1:1 con `tokens.css`; tiers de precio daltónico-seguros (color+forma+etiqueta); fills de tier mode-independent. ADR-005.
+- Fases R0 (fundación) → R5 (estados/a11y): tokens, `PriceTier`, pins/cluster/chrome+capas, filtros, sheets, skeletons/Reduce Motion/Dynamic Type.
+
+### Developer (implementation)
+- Nuevo: `DesignSystem/{Spacing,Radius,Elevation,Typography,TokenGallery}`, `Features/Map/SheetComponents`, 35+`goldInk` Color sets, `Core/Foundation/PriceFreshness`, `FuelVariantBuilder`.
+- Migrados: StationPin, ClusterPin, BrandBadge, MapView/MapFeature (control de capas `mapStyle`), FiltersView, StationListView, FavoritesView, StationDetailView, AppView. Strings it/es/en.
+
+### QA (tests)
+- +6 tests: tier forma/etiqueta, `mapStyleChanged`, `FuelVariantBuilder` (agrupación/orden/variantes), `PriceFreshness` (umbral 48h). **57 tests, SwiftLint 0.**
+- Informe de cobertura: `.claude/reviews/2026-06-08-restyle-qa.md` (veredicto: suficiente).
+
+### Review
+- `.claude/reviews/2026-06-08-restyle-review.md` (ios-reviewer, /simplify primero). 1 bug bloqueante (A-1 doble unidad € en fila) + altos/medios.
+- Remediación aplicada: A-1 (`fuelPriceValue` número-solo), M-2 (tiers desde el store), M-3 (nav apps cacheadas), dedup `SortPill`, extracción de lógica pura (variants/freshness) + tests.
+- Diferido (deuda menor): ring hairline de elevación en oscuro (M-4), dedup de `separator`, nits varios.
+- Verdict: **APPROVED** tras remediación.
+
+---
+
 ## Current State
-**Date:** 2026-06-05
-- **App con datos reales + UX enriquecida:** mapa con **color de precio (heat map)**, clustering, **monograma de marca** en pines, lista, detalle (badge de marca, **frescura del precio**, **selector de navegación** Apple/Google/Waze), favoritos. Localizada it/es/en. AdMob (test) + UMP/ATT.
-- iOS: **50 tests**, SwiftLint 0. Backend desplegado (Supabase + cron CI). Repo `Danmarjim/FuelMap` (privado) al día. ADRs 001–004.
-- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle).
-- Issues hechos: FM-1…FM-13, FM-2/3/5/15, FM-16/17/18/19. **Restante: FM-14** (App Store prep).
-- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Mejora futura: logos reales de marca (drop-in).
+**Date:** 2026-06-08
+- **Restyle visual completo aplicado** (RESTYLE-001, design system "bold/energetic" azul): tokens semánticos claro/oscuro, tiers daltónico-seguros, pins/cluster/chrome nuevos + **control de capas**, barra de filtros, sheets (lista/favoritos/detalle), skeletons, Reduce Motion, Dynamic Type capada en pin. Referencia: `.claude/design/`, ADR-005.
+- iOS: **57 tests**, SwiftLint 0. Build verde (iPhone 17 sim). Repo `Danmarjim/FuelMap` al día. ADRs 001–005.
+- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle) si no estaba; aceptar PLA Apple (device/TestFlight).
+- Issues de producto: hechos FM-1…FM-13, FM-15…FM-19. **Restante: FM-14** (App Store prep).
+- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Deuda restyle menor en review. Favoritos sin precio/tier en vivo (mejora futura).
 
 ---
 
