@@ -16,25 +16,41 @@ const DOWNLOAD_RETRIES = 3;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// El endpoint del MIMIT es un servidor público inestable: timeouts y resets
-// esporádicos tumbaban el sync diario. Reintenta con backoff exponencial.
+// UA de navegador: el WAF del MIMIT rechaza intermitentemente clientes no-browser
+// (el UA por defecto de undici/node). No cuesta nada y esquiva esa regla.
+const BROWSER_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+  Accept: "text/csv,text/plain,*/*",
+};
+
+// `fetch failed` envuelve la causa real en error.cause; exponerla para diagnosticar
+// (ECONNRESET / ETIMEDOUT / bloqueo por IP del servidor del MIMIT).
+const causeOf = (error) => error?.cause?.code ?? error?.cause?.message ?? "";
+
+// El endpoint del MIMIT es un servidor público inestable y filtra IPs de cloud
+// extranjeras de forma intermitente. Reintenta con backoff; el rescate real ante
+// un bloqueo por IP son los slots de cron extra (runner nuevo = IP nueva).
 async function download(url) {
   let lastError;
   for (let attempt = 1; attempt <= DOWNLOAD_RETRIES; attempt++) {
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) });
+      const res = await fetch(url, {
+        headers: BROWSER_HEADERS,
+        signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
+      });
       if (!res.ok) throw new Error(`download ${url}: HTTP ${res.status}`);
       return await res.text();
     } catch (error) {
       lastError = error;
       if (attempt < DOWNLOAD_RETRIES) {
         const backoff = 2 ** (attempt - 1) * 2000; // 2s, 4s
-        console.warn(`download ${url} falló (intento ${attempt}/${DOWNLOAD_RETRIES}): ${error.message}; reintento en ${backoff}ms`);
+        console.warn(`download ${url} falló (intento ${attempt}/${DOWNLOAD_RETRIES}): ${error.message} [${causeOf(error)}]; reintento en ${backoff}ms`);
         await sleep(backoff);
       }
     }
   }
-  throw new Error(`download ${url}: ${lastError.message} tras ${DOWNLOAD_RETRIES} intentos`);
+  throw new Error(`download ${url}: ${lastError.message} [${causeOf(lastError)}] tras ${DOWNLOAD_RETRIES} intentos`);
 }
 
 function chunk(array, size) {
@@ -50,10 +66,35 @@ function client() {
   return createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 }
 
+// Idempotencia: con varios slots de cron al día, salta si YA hubo un sync OK hoy.
+// Se basa en finished_at (no en extraction_date: el "Estrazione del" del MIMIT va
+// con un día de retraso). Datos diarios → un éxito al día es suficiente.
+// FORCE_SYNC=true (input manual) lo salta para poder validar la descarga bajo demanda.
+async function alreadySyncedToday(supabase) {
+  if (process.env.FORCE_SYNC === "true") return false;
+  const todayStart = `${new Date().toISOString().slice(0, 10)}T00:00:00Z`; // medianoche UTC
+  const { data, error } = await supabase
+    .from("sync_runs")
+    .select("id")
+    .eq("status", "ok")
+    .gte("finished_at", todayStart)
+    .limit(1);
+  if (error) {
+    console.warn(`guard de idempotencia falló (sigo igualmente): ${error.message}`);
+    return false;
+  }
+  return (data?.length ?? 0) > 0;
+}
+
 async function main() {
   const supabase = client();
   const startedAt = new Date().toISOString();
   const notes = [];
+
+  if (await alreadySyncedToday(supabase)) {
+    console.log("SKIP — ya existe un sync OK con la extracción de hoy");
+    return;
+  }
 
   const [anaText, prezzoText] = await Promise.all([download(ANAGRAFICA_URL), download(PREZZO_URL)]);
   const ana = parseAnagrafica(anaText);

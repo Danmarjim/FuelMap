@@ -2,8 +2,17 @@ name: Sync MIMIT
 
 on:
   schedule:
-    - cron: "30 6 * * *" # 06:30 UTC ≈ 08:30 CEST (RFC §6.3)
-  workflow_dispatch: {} # ejecución manual
+    # Varios slots: el MIMIT filtra IPs de cloud de forma intermitente; cada slot es
+    # un runner nuevo (otra IP). El guard de idempotencia salta si ya se sincronizó hoy.
+    - cron: "30 6 * * *" # 06:30 UTC ≈ 08:30 CEST (RFC §6.3) — slot principal
+    - cron: "30 9 * * *" # 09:30 UTC — reintento si el principal falló
+    - cron: "30 12 * * *" # 12:30 UTC — segundo reintento
+  workflow_dispatch: # ejecución manual
+    inputs:
+      force:
+        description: "Forzar sync aunque ya se haya sincronizado hoy"
+        type: boolean
+        default: false
 
 jobs:
   sync:
@@ -25,3 +34,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FORCE_SYNC: ${{ inputs.force }}
