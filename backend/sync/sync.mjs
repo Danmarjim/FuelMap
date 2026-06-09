@@ -11,11 +11,30 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ANAGRAFICA_URL = "https://www.mimit.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
 const PREZZO_URL = "https://www.mimit.gov.it/images/exportCSV/prezzo_alle_8.csv";
 const CHUNK = 1000;
+const DOWNLOAD_TIMEOUT_MS = 60_000;
+const DOWNLOAD_RETRIES = 3;
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// El endpoint del MIMIT es un servidor público inestable: timeouts y resets
+// esporádicos tumbaban el sync diario. Reintenta con backoff exponencial.
 async function download(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`download ${url}: HTTP ${res.status}`);
-  return res.text();
+  let lastError;
+  for (let attempt = 1; attempt <= DOWNLOAD_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS) });
+      if (!res.ok) throw new Error(`download ${url}: HTTP ${res.status}`);
+      return await res.text();
+    } catch (error) {
+      lastError = error;
+      if (attempt < DOWNLOAD_RETRIES) {
+        const backoff = 2 ** (attempt - 1) * 2000; // 2s, 4s
+        console.warn(`download ${url} falló (intento ${attempt}/${DOWNLOAD_RETRIES}): ${error.message}; reintento en ${backoff}ms`);
+        await sleep(backoff);
+      }
+    }
+  }
+  throw new Error(`download ${url}: ${lastError.message} tras ${DOWNLOAD_RETRIES} intentos`);
 }
 
 function chunk(array, size) {
