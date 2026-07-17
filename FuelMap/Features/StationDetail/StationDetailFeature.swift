@@ -39,6 +39,7 @@ struct StationDetailFeature {
     @Dependency(\.apiClient) var apiClient
     @Dependency(\.favoritesClient) var favoritesClient
     @Dependency(\.adClient) var adClient
+    @Dependency(\.purchaseClient) var purchaseClient
     @Dependency(\.openURL) var openURL
     @Dependency(\.dismiss) var dismiss
 
@@ -47,7 +48,11 @@ struct StationDetailFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
-                if state.adUnitID.isEmpty { state.adUnitID = adClient.detailAdUnitID() }
+                // Lectura síncrona del entitlement: evita propagar `isPremium` como estado
+                // desde AppFeature a través de MapFeature (PREMIUM-001 §P3).
+                if state.adUnitID.isEmpty, !purchaseClient.isPremium() {
+                    state.adUnitID = adClient.detailAdUnitID()
+                }
                 let id = state.stationId
                 return .merge(
                     .run { send in

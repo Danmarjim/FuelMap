@@ -10,7 +10,7 @@ import SwiftUI
 
 /// Vista raíz. Aloja el mapa y el banner de ads debajo (fuera del mapa) (RFC §1, §6.4).
 struct AppView: View {
-    let store: StoreOf<AppFeature>
+    @Bindable var store: StoreOf<AppFeature>
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +24,23 @@ struct AppView: View {
                         Rectangle().fill(Color(.separator)).frame(height: 1)
                     }
             }
+        }
+        .sheet(isPresented: Binding(
+            get: { store.isShowingSettings },
+            set: { if !$0 { store.send(.settingsDismissed) } }
+        )) {
+            SettingsView(
+                isPremium: store.isPremium,
+                onPremiumTapped: { store.send(.premiumTapped) },
+                onClose: { store.send(.settingsDismissed) }
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $store.scope(state: \.paywall, action: \.paywall)) { paywallStore in
+            PaywallView(store: paywallStore)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .onAppear { store.send(.onAppear) }
     }

@@ -88,6 +88,16 @@ struct MapFeature {
         case favoritePricesResponse(Result<[Station], APIError>)
         case favoriteSelected(FavoriteStationInfo)
         case reload
+        case delegate(Delegate)
+    }
+
+    /// Lo que el mapa delega en el reducer raíz. Fuera de `Action` para respetar el
+    /// límite de anidamiento de SwiftLint (1 nivel).
+    enum Delegate: Equatable {
+        /// El usuario abrió la hoja de informazioni desde el chrome del mapa. El estado
+        /// premium vive en `AppFeature`, así que la hoja se presenta allí y no aquí
+        /// (evita duplicar `isPremium` y que quede obsoleto tras comprar).
+        case settingsTapped
     }
 
     @Dependency(\.apiClient) var apiClient
@@ -204,6 +214,9 @@ struct MapFeature {
 
             case .reload:
                 return load(&state)
+
+            case .delegate:
+                return .none
 
             case let .stationsResponse(.success(stations)):
                 state.isLoading = false

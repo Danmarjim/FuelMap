@@ -46,6 +46,7 @@ struct MapView: View {
                 listButton
                 favoritesButton
                 layersButton
+                settingsButton
             }
             .padding(.leading, Spacing.s4)
             .padding(.top, Spacing.s2)
@@ -179,6 +180,15 @@ struct MapView: View {
             Image(systemName: store.mapStyle.symbol).font(.fmHeadline).mapControlChrome()
         }
         .accessibilityLabel("Tipo di mappa")
+    }
+
+    private var settingsButton: some View {
+        Button {
+            store.send(.delegate(.settingsTapped))
+        } label: {
+            Image(systemName: "info.circle").font(.fmHeadline).mapControlChrome()
+        }
+        .accessibilityLabel("Informazioni")
     }
 
     @ViewBuilder

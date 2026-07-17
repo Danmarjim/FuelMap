@@ -1,178 +1,244 @@
-# Plan: RESTYLE-001 — Restyle visual completo (Design System "Bold & Energetic", azul)
+# Plan: PREMIUM-001 — Capa premium (pago único, sin anuncios) con StoreKit 2
 
-> **Objetivo (Goal).** Reescribir la capa visual de FuelMap aplicando íntegramente el
-> design system entregado por Claude Design (`Design_System/`): personalidad *bold &
-> energetic*, ancla **azure `#0091FF`**, paridad claro/oscuro, tokens semánticos
-> mapeados 1:1 a un asset catalog de SwiftUI, y tiers de precio **a prueba de
-> daltonismo** (color + forma + etiqueta). Nada se difiere: entra también el sistema
-> de tiers, los estados (loading/empty/error con skeletons), Reduce Motion y el
-> **control de capas del mapa** (tipo de mapa).
+> **Objetivo (Goal).** Añadir una compra **no-consumible de pago único** que elimina los
+> anuncios de toda la app. Implementación con **StoreKit 2 directo** envuelto en un
+> `PurchaseClient` (`@Dependency`), sin dependencias de terceros. El usuario premium no
+> ve banners **ni el formulario UMP ni el prompt de ATT**: sin ads no hay base legal que
+> pedir ni tracking que consentir.
 
-> **Fuente de verdad.** `Design_System/assets/tokens.css` (valores hex claro/oscuro,
-> spacing, radios, elevación, tipografía) + `Design_System/assets/app.css` (specs
-> exactas por componente) + `Design_System/FuelMap Design System.html` (mockups de
-> las 7 pantallas y estados, claro/oscuro). **No es solo recolorear**: introduce UI
-> funcional nueva (formas+etiquetas de tier, cluster con "da X", fresh-pill, skeletons,
-> control de capas).
+> **Decisiones tomadas con el usuario (2026-07-17).**
+> 1. **StoreKit 2 directo, no RevenueCat.** RevenueCat resuelve suscripciones
+>    (renovaciones, churn, grace periods, entitlements cross-platform); para un único
+>    no-consumible aporta un dashboard a cambio de un SDK, una cuenta y ~1% de fee.
+>    `Transaction.currentEntitlements` + `Transaction.updates` cubren compra, restore
+>    entre dispositivos, family sharing y refunds sin servidor propio.
+> 2. **Favoritos siguen gratis e ilimitados.** Descartado capar favoritos: es el gancho
+>    de retención, y la retención *es* el ingreso publicitario del tramo free. Además es
+>    expectativa de categoría (Google Maps, Waze, Prezzi Benzina lo dan gratis) y las
+>    reseñas son el canal de adquisición de una app gratis.
+> 3. **El pack v1 es solo "quitar los anuncios".** No se infla con features para
+>    justificar precio. Economía: eCPM de banner en Italia ~€1–4 → un usuario que abre
+>    4×/mes deja del orden de €0,30–0,50/año; un pago único de ~€3,99 equivale a ~10 años
+>    de ese usuario, cobrados hoy.
 
 ---
 
 ## Contexto (Context)
 
-- App ya funcional (FM-1…FM-19 + clustering + UX enrichment). Este plan toca **solo
-  la capa de presentación**; sin cambios de arquitectura, dominio, red ni datos.
-- TCA + SwiftUI + MapKit, iOS 17+, Swift 6 strict concurrency. Mantener todo testeable.
-- Ya existe `FuelMap/Assets.xcassets` con `AppIcon` y los 6 logos de marca
-  (`brand-eni`…). Se amplía con los **Color sets semánticos**.
-- Decisión UX confirmada por el usuario: **adoptar forma (▲ ● ▼) + etiqueta
-  (BASSO/MEDIO/ALTO)** en los tiers, en pin, filas y detalle.
+- App **no publicada** (FM-14 pendiente): no hay usuarios a los que quitar nada, así que
+  el diseño no arrastra deuda de migración.
+- Ads ya integrados: `Core/Ads/AdClient.swift` (`start` / `requestConsent` UMP→ATT /
+  `bannerAdUnitID` / `detailAdUnitID`) + `Core/Ads/BannerAdView.swift`.
+- **Dos placements**: `AppView` (banner bajo el mapa) y `StationDetailView:253`.
+- Ambos ya se ocultan solos con el patrón "ad unit vacía = sin banner"
+  (`AppView:18`, `StationDetailFeature:50`). El gate premium se apoya en él.
+- TCA + SwiftUI, iOS 17+, Swift 6 strict concurrency. Ejecución directa (sin cadena de
+  agentes); red de seguridad = build + tests + SwiftLint + simulador.
 
 ## Fuera de alcance (Out of scope)
 
-- FM-14 (App Store prep) — sigue pendiente como trabajo de producto independiente.
-- Feature premium / calculadora de viaje (análisis hecho, sin construir).
-- CarPlay (investigado; post-lanzamiento y sujeto a entitlement de Apple).
-- Cambios de lógica de negocio, RPCs o sync.
+- Suscripciones, tiers múltiples, paywall A/B testing, Android → si algún día entran,
+  se reevalúa RevenueCat (§Riesgos).
+- Histórico de precios, calculadora de viaje, alertas de bajada de precio (APNs +
+  backend): features premium candidatas para v2, cada una es una fase propia.
+- Cap de favoritos (descartado, ver Decisión 2).
+- FM-14 (App Store prep) sigue siendo trabajo independiente, salvo la atribución IODL 2.0
+  que se adelanta aquí por sinergia (§P4).
 
 ---
 
-## Mapa diseño → tokens → asset catalog
+## Arquitectura
 
-Crear **Color sets semánticos** (nombres = custom properties de `tokens.css`, mapeo 1:1).
-Apariencias **Any + Dark** salvo donde se indique *valor único*.
+```
+PurchaseClient (@Dependency, StoreKit 2)
+    ↓ entitlement
+AppFeature.onAppear → resuelve entitlement ANTES de consent/ads
+    ├── premium → sin banner, sin UMP, sin ATT
+    └── free    → adUnitID + requestConsent() + start()
+    ↓
+PaywallFeature / PaywallView (hoja) ← entry point: hoja Info/Impostazioni
+```
 
-| Grupo | Color sets | Nota |
-|---|---|---|
-| Brand | `brandPrimary` `brandPrimaryFill` `brandPrimaryPressed` `brandTint` `brandSurface` `onBrand` | onBrand = blanco |
-| Surfaces | `surface` `surfaceElevated` `surfaceSecondary` `surfaceTertiary` `surfaceScrim` | scrim con alpha |
-| Text | `textPrimary` `textSecondary` `textTertiary` `textOnTier` | |
-| Lines | `separator` `separatorStrong` `hairline` | hairline con alpha |
-| **Tiers (fills)** | `priceCheap` `priceMid` `priceHigh` | **VALOR ÚNICO** (idénticos claro/oscuro) |
-| Tier ink | `priceCheapInk` `priceMidInk` `priceHighInk` | Any+Dark (brillan en oscuro) |
-| Tier surface | `priceCheapSurface` `priceMidSurface` `priceHighSurface` | Any+Dark |
-| Tier stroke | `tierStroke` | blanco (claro) / `#0B0E14` (oscuro) |
-| Functional | `success` `warning` `warningSurface` `error` `errorSurface` | |
-| Accent | `cheapestGold` (`#F5B301`) | corona/anillo "más barata" |
+**Decisión de diseño no obvia:** el entitlement se resuelve **antes** del flujo de
+consentimiento, no después. Si no, el usuario premium ve el formulario GDPR y el prompt
+de ATT que no le corresponden — y esos prompts se piden una sola vez.
 
-**`DesignTokens.swift`** (no-color):
-- `Spacing`: 2/4/8/12/16/20/24/32/40/48 (grid 4pt).
-- `Radius`: sm 8 · md 12 · lg 16 · xl 20 · pill (capsule).
-- `Elevation` (ViewModifiers): `e1 e2 e3 ePin ePinSelected eSheet` (sombra + hairline; en
-  oscuro sombra más profunda + ring claro 1px — aproximar las multi-sombra del CSS).
-- `Typography`: roles SF Pro (largeTitle 34/bold … caption2 11/medium) mapeados a text
-  styles para Dynamic Type; precio/números con `.monospacedDigit()`; **pin price con
-  Dynamic Type capada** (no crece más de Large para no desbordar sobre el mapa).
+**Cache síncrona del entitlement.** `PurchaseClient.isPremium() -> Bool` lee un
+`LockIsolated<Bool>` sembrado al arranque desde `Transaction.currentEntitlements` y
+mantenido por un listener de `Transaction.updates`. Es el **mismo patrón que ya usa
+`LocationClient`** para `authorizationStatus` (coordinador + `LockIsolated`), así que
+`StationDetailFeature` puede decidir sin plumbing de estado a través de dos niveles.
+
+**Product ID:** `com.danmarjim.fuelmap.premium.noads` (non-consumable).
 
 ---
 
-## Fases de ejecución
+## Tareas
 
-### Fase R0 — Fundación (no destructiva) ✅
-**Meta:** tokens disponibles sin tocar ninguna vista; build verde, app idéntica.
-- [x] Reubicar `Design_System/` → `.claude/design/` (referencia versionada fuera del árbol de fuentes).
-- [x] Crear los 34 **Color sets** en `Assets.xcassets/Colors` (claro/oscuro; tiers fill = valor único). Símbolos `Color(.brandPrimary)` confirmados (35 generados).
-- [x] `DesignSystem/Spacing.swift`, `Radius.swift`, `Elevation.swift` (modifier `.elevation(_:)`), `Typography.swift` (Font roles + helpers de precio) + `TokenGallery` (#Preview).
-- [x] Build + lint verdes; 51 tests OK. `.swiftlint.yml` permite tokens cortos.
-- **Verificación:** ✅ compila, app idéntica (aún no migrado).
+### P1 — `PurchaseClient` (StoreKit 2) ✅ hecho (17/07)
+> P5 se adelantó: sin el `.storekit` el camino live no era verificable.
+>
+> **Hallazgo (bloqueante, resuelto): los builds headless firman ad-hoc y sin entitlements**
+> → StoreKit devuelve `StoreKitError.notEntitled`, sin productos ni compras, y `SKTestSession`
+> queda con `storefront` vacío. No era el `.storekit` ni el scheme: se descartaron apuntando
+> la sesión a un archivo generado por Xcode (falla igual) y añadiendo la referencia al
+> `TestAction` (no cambia nada). Se arregla con `FuelMap/FuelMap.entitlements`
+> (`application-identifier` + `team-identifier`), aplicado **solo a simulador** vía
+> `CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]`: en device/TestFlight los inyecta el
+> provisioning profile y hardcodearlos ahí sería un problema.
+>
+> **Límite de `SKTestSession`**: `refundTransaction` no propaga la revocación a
+> `currentEntitlements` (la transacción sigue con `revocationDate == nil`), y las sesiones
+> se contaminan entre sí (el `storefront` de una se filtra a la siguiente). El test de
+> reembolso se retira: probaría el simulador, no nuestro código. La conducta real
+> (perder entitlement → vuelven ads + re-consent) se dirige desde `AppFeature` en §P2.
+>
+> **Otro**: `storeKitConfiguration` bajo `test:` lo ignora XcodeGen en silencio (solo
+> aplica a `run:`). Innecesario: los tests usan el `PurchaseClient` mock.
+- `Core/Purchases/PurchaseClient.swift` — `@Dependency`:
+  - `premiumProduct: () async throws -> PremiumProduct` (id + `displayPrice` ya localizado)
+  - `purchase: () async throws -> PurchaseOutcome` (`.success` / `.userCancelled` / `.pending`)
+  - `restore: () async throws -> Bool`
+  - `isPremium: () -> Bool` (lectura síncrona cacheada)
+  - `refreshEntitlement: () async -> Bool`
+  - `entitlementUpdates: () -> AsyncStream<Bool>`
+- `PurchaseError` **tipado** (nunca `Error` crudo): `productUnavailable`, `failedVerification`,
+  `network`, `unknown`. `userCancelled` es un *outcome*, no un error.
+- `liveValue` StoreKit 2 · `previewValue` = free con producto mock · `testValue` unimplemented.
+- `Core/Purchases/PurchaseStore.swift` — actor/coordinador con el `LockIsolated<Bool>` y el
+  listener de `Transaction.updates` (arranca en el `.task` raíz, no en `init`).
 
-### Fase R1 — Sistema de tiers (modelo base del resto) ✅
-**Meta:** `PriceTier` expone color+forma+etiqueta; cimiento de pin/filas/detalle.
-- [x] `PriceTier`: `fill`, `ink`, `surface` (tokens), `symbolName` (▲ `arrowtriangle.up.fill` / ● `circle.fill` / ▼ `arrowtriangle.down.fill`), `label` localizada + alias `color`.
-- [x] Strings de tier (Basso/Medio/Alto) en `Localizable.xcstrings` (it/es/en).
-- [x] Tests del mapeo de tier (forma+etiqueta distintas por nivel). 52 tests OK.
-- **Verificación:** ✅ tests verdes.
+### P2 — Entitlement en el arranque (`AppFeature`) ✅ hecho (17/07)
+> `entitlementResolved` **no** se añadió al State: `bannerAdUnitID` vacío ya significa
+> "sin resolver o premium", y el `if !store.bannerAdUnitID.isEmpty` que ya tenía `AppView`
+> cubre el anti-parpadeo sin estado extra. `AppView` quedó sin tocar.
+>
+> Guard de idempotencia en `entitlementChanged`: `refresh()` puede emitir al stream el
+> mismo valor ya aplicado (el arranque premium manda `entitlementLoaded` **y**
+> `entitlementChanged`), y sin el guard se re-dispararía consent/start. Con test.
+>
+> **Verificado**: 68 tests / 19 suites verdes, SwiftLint 0, y app en simulador como
+> gratuito (banner AdMob de test presente, sin regresión). El camino premium end-to-end
+> queda pendiente de §P4: sin paywall no hay forma de comprar desde la UI.
+- `State`: `isPremium: Bool`, `entitlementResolved: Bool`, `bannerAdUnitID`.
+- `.onAppear` → `.run`: `refreshEntitlement()` → `.entitlementLoaded(isPremium)`.
+  - premium → nada más: sin `adUnitID`, sin `requestConsent()`, sin `start()`.
+  - free → `bannerAdUnitID = adClient.bannerAdUnitID()`, luego `requestConsent()` → `start()`.
+- `.task` con `entitlementUpdates()`: compra, restore desde otro dispositivo, **refund** y
+  family sharing entran por aquí y actualizan `isPremium` en vivo.
+- **Sin flash de banner**: no renderizar el strip hasta `entitlementResolved`.
+  `currentEntitlements` es lectura local (ms), no red. Si el simulador muestra flash,
+  espejo en `UserDefaults` como *hint* de arranque (StoreKit sigue siendo la verdad).
+- **Edge case del refund**: premium → refund → vuelven los ads y a ese usuario nunca se le
+  pidió UMP/ATT. El listener debe disparar `requestConsent()` + `start()` al pasar a free.
 
-### Fase R2 — Mapa: pins + chrome + capas ✅
-**Meta:** el mapa con el lenguaje visual nuevo, legible sobre cualquier tile.
-- [x] `StationPin.swift`: cápsula (fill de tier) + badge (monograma tier / ★ dorada si más barata / `fuelpump.fill`), **forma de tier**, precio tabular, cola (`DownTriangle`) + halo `tierStroke` + `.elevation(.pin)`. Estados: **seleccionado** (más grande, etiqueta de tier, `pinSelected`), **más barata** (badge dorado + anillo `cheapestGold` + corona).
-- [x] `ClusterPin.swift`: burbuja `surfaceElevated` con borde del tier del más barato + cápsula `da X` del mismo tier; halo + sombra.
-- [x] `BrandBadge.swift`: spec de chip (rounded rect + hairline `separator`; logo sobre `logoBackground`, navy Eni; sin logo → monograma `textPrimary` / pompa `textSecondary` sobre `surfaceElevated`).
-- [x] `MapView.swift` chrome: status banner (overlay) restyle (`surfaceElevated`/`e2`; variante error `errorSurface`); float controls 44pt (`mapControlChrome`: lista, favoritos, **capas**).
-- [x] **Control de capas:** `mapStyle` en `MapFeature.State` (standard/hybrid/imagery) + `.mapStyle(...)` (vía `MapStyleModifier`); menú en el `floatctl`. Acción + reducer + test. Strings it/es/en.
-- **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de `StationPin`/`ClusterPin`/`BrandBadge` + app en simulador.
+### P3 — Ads off en el detalle ✅ hecho (17/07)
+- `StationDetailFeature:50` → `if !purchaseClient.isPremium() { state.adUnitID = adClient.detailAdUnitID() }`.
+  Usa la cache síncrona; sin cambios de estructura.
 
-### Fase R3 — Barra de filtros ✅
-**Meta:** filtros con el nuevo estilo, ≥44pt, sin truncar labels.
-- [x] `FiltersView.swift`: segmentado scrollable de combustible (activo `surfaceElevated`+`brandPrimary` sobre track `surfaceTertiary`), toggle Self custom (switch `success`), stepper de radio (recorre `RadiusOption.all`), sort pills Prezzo/Distanza. Fondo con degradado a `surface`. Fila inferior en scroll horizontal (sin truncar). A11y básica en cada control.
-- [x] `sort` inyectado como binding desde `MapView` (vive en `MapFeature`).
-- **Verificación:** ✅ build/lint; 53 tests. Validación visual: preview de `FiltersView` + app.
+### P4 — Paywall + entry point ✅ hecho (17/07)
+> **`SettingsFeature` no existe**: la hoja no tiene lógica propia, así que es una vista
+> plana con callbacks (patrón de `StationListView`/`FavoritesView`). Solo el paywall es
+> reducer, porque sí tiene asincronía.
+>
+> **Dónde vive el estado**: `isShowingSettings` + `@Presents paywall` están en `AppFeature`,
+> no en `MapFeature`. La hoja necesita `isPremium`, que es estado de app; duplicarlo en el
+> mapa habría quedado obsoleto justo tras comprar. El botón sube por `MapFeature.Delegate`
+> (`settingsTapped`). `Delegate` va fuera de `Action` por el límite de anidamiento (1 nivel).
+>
+> **Legal**: solo EULA estándar de Apple. Sin privacy policy → **bloquea la submission**,
+> no el desarrollo. `LegalURLs` centraliza el enlace; añadir la privacy es una línea.
+>
+> **Verificado en simulador**: el paywall renderiza y la clave interpolada del CTA resuelve
+> en español ("Elimina los anuncios — 3,99 €"), con el precio viniendo de StoreKit. Nota:
+> `simctl launch` **no aplica** el `storeKitConfiguration` del scheme (solo lo hace Xcode al
+> lanzar), así que la captura se hizo con un arranque temporal + `PurchaseClient.mock()`,
+> ya revertido.
+>
+> **NO verificado**: el tap-through real (pulsar CTA → hoja de compra de Apple → banner
+> desaparece). Conducir el simulador por coordenadas resultó poco fiable (el árbol de
+> accesibilidad no expone la app) y se abandonó. Pendiente: lanzar desde Xcode y comprar.
 
-### Fase R4 — Sheets: lista, favoritos, detalle ✅
-**Meta:** las 3 hojas con el vocabulario de filas/precios nuevo.
-- [x] Componentes compartidos (`SheetComponents.swift`): `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow`. Color `goldInk` adaptativo. Grab vía `presentationDragIndicator`.
-- [x] `StationListView.swift`: header (título+count+cerrar) + `sortBar` (pills) + `StationRow` (chip, nombre, `best-flag`+distancia, precio tabular+unidad, `tier-tag`); separador con sangría; estado vacío.
-- [x] `FavoritesView.swift`: misma cabecera + fila con chip (marca inferida del nombre) + estrella oro; estado vacío. (Sin precio/distancia: el modelo de favorito no los lleva — mejora futura.)
-- [x] `StationDetailView.swift`: hero (chip `lg`, nombre, dirección, estrella `iconbtn` oro), section header + `FreshnessPill` (ok/stale), filas `prow` (badge **Filtro** en el filtrado, Self/Servito, mejor precio en `priceCheapInk`, fila activa `brandSurface` + barra de acento), fila dirección, **CTA `Indicazioni`** (`brandPrimaryFill`, 52pt) → selector de navegación.
-- **Verificación:** ✅ build/lint; 53 tests. Validación visual: previews de las 3 hojas.
+> **Deuda de diseño**: el paywall deja un hueco vertical grande entre los beneficios y el
+> footer en pantallas altas. Funciona y es legible; pulir si molesta.
+- `Features/Settings/SettingsFeature.swift` + `SettingsView.swift` — hoja nueva desde un
+  float control (gear) en `MapView`, junto a lista/favoritos/capas. Contiene: CTA premium,
+  **Ripristina acquisti**, links legales, **atribución IODL 2.0** (adelanta FM-14) y versión.
+  - *Por qué una hoja y no un botón junto al banner*: la política de AdMob penaliza UI
+    adyacente al banner que induzca clics accidentales.
+- `Features/Premium/PaywallFeature.swift` + `PaywallView.swift`:
+  - Propuesta de valor (sin anuncios · apoya la app), **precio desde `product.displayPrice`**
+    — nunca hardcodeado (storefront/moneda/localización).
+  - Estados explícitos: loading · error+retry · purchasing · pending (SCA) · success.
+  - **Botón de restore obligatorio** (su ausencia es rechazo casi seguro en review).
+  - Links a Privacy Policy y EULA (Apple los exige en el paywall).
+  - `#Preview` para cada estado. Dynamic Type + VoiceOver.
+- Post-compra: el banner desaparece sin relanzar (vía `entitlementUpdates`) + confirmación.
 
-### Fase R5 — Estados, movimiento y accesibilidad ✅
-**Meta:** loading/empty/error consistentes + a11y.
-- [x] Skeletons (`SkeletonRow`/`SkeletonList` con `shimmer()`) en carga de lista; `SheetEmptyState` para empty/error (R4); banner de estado en mapa (R2).
-- [x] **Reduce Motion**: shimmer off + estático; pin sin spring; recentrado del mapa sin animación.
-- [x] **Dynamic Type**: precio del pin capado a `.large` (resto escala); VoiceOver del pin/lista incluye el tier (palabra) + rango + precio.
-- [x] Ad banner: `surfaceSecondary` + separador superior.
-- **Verificación:** ✅ build/lint; 53 tests. Pase a11y manual en simulador (Dynamic Type / Reduce Motion / VoiceOver).
+### P5 — Tooling ✅ hecho (17/07, adelantado a P1)
+- `FuelMap.storekit` (config local) con el no-consumible → permite comprar, cancelar,
+  refundar y probar *todo* en simulador **sin App Store Connect ni PLA**.
+- `project.yml` → `schemes.FuelMap.run.storeKitConfiguration: FuelMap.storekit`.
+  Obligatorio ahí: el `.xcodeproj` es generado, un ajuste a mano en el scheme se pierde
+  en el siguiente `xcodegen generate`. (Verificado: XcodeGen 2.45.4 lo soporta.)
 
-### Fase R6 — QA, docs y review ✅
-- [x] Suite completa: **57 tests**, SwiftLint 0, build verde.
-- [x] `SYSTEM_MAP.md` (capa Design System + cambios) y `PHASE_LOG.md` actualizados.
-- [x] **Evaluación multi-agente**: ios-reviewer (`reviews/2026-06-08-restyle-review.md`) + ios-qa (`reviews/2026-06-08-restyle-qa.md`). Veredicto reviewer: CHANGES REQUESTED → **APPROVED** tras remediación.
-- [x] Remediación: A-1 (doble € en fila → `fuelPriceValue`), M-2 (tiers del store), M-3 (nav apps cacheadas), dedup `SortPill`, extracción `FuelVariantBuilder`/`PriceFreshness` + tests.
-- [x] `ADR-005-design-system.md`.
-- **Deuda menor diferida:** ring de elevación en oscuro (M-4), dedup `separator`, nits; favoritos sin precio/tier en vivo.
+### P6 — Localización
+- Strings nuevas (paywall + settings) en `Resources/Localizable.xcstrings`: it (fuente) · es · en.
+
+### P7 — Tests (Swift Testing + `TestStore`)
+- **premium → cero ads**: `adClient.requestConsent`/`start` quedan `unimplemented` → el test
+  falla si se llaman. (Mismo patrón que `FavoritePricesTests` con `stationsByIDs`.)
+- free → `adUnitID` + consent + start, en ese orden.
+- compra OK → `isPremium` true → `bannerAdUnitID` vacío.
+- cancelación → estado limpio, sin error visible.
+- restore sin compras previas → mensaje, no error.
+- **refund vía `entitlementUpdates`** → vuelven los ads *y* se pide consent.
+- detalle premium → `adUnitID` vacío.
+- Objetivo: mantener SwiftLint 0 y vigilar `type_body_length` (250) al crecer los suites —
+  suite nueva `PremiumTests`, no engordar `AppFeatureTests`.
+
+### P8 — Acciones del usuario (App Store Connect)
+> No bloquean P1–P7: con `FuelMap.storekit` se desarrolla y testea entero en local.
+
+1. **Aceptar el Paid Applications Agreement** en developer.apple.com — sin él no existen
+   productos IAP ni sandbox. Ya estaba anotado como pendiente en `PHASE_LOG`.
+2. Crear el no-consumible en ASC (`com.danmarjim.fuelmap.premium.noads`), precio
+   (**propuesta: €3,99**), nombre/descripción en it/es/en, screenshot de review.
+3. Probar en device con cuenta sandbox antes de TestFlight.
 
 ---
 
-## RESTYLE-001 — COMPLETADO (2026-06-08)
+## Archivos a tocar
 
-Las 7 fases (R0–R6) cerradas. Restyle visual completo aplicado y evaluado. Listo para `/close-phase`.
+| Archivo | Acción |
+|---|---|
+| `Core/Purchases/PurchaseClient.swift` | nuevo — `@Dependency` StoreKit 2 |
+| `Core/Purchases/PurchaseStore.swift` | nuevo — cache `LockIsolated` + `Transaction.updates` |
+| `Features/Premium/PaywallFeature.swift` · `PaywallView.swift` | nuevos |
+| `Features/Settings/SettingsFeature.swift` · `SettingsView.swift` | nuevos — entry point + IODL 2.0 |
+| `App/AppFeature.swift` · `AppView.swift` | entitlement antes de consent; banner condicionado |
+| `Features/StationDetail/StationDetailFeature.swift` | gate en `adUnitID` |
+| `Features/Map/MapView.swift` | float control (gear) → hoja settings |
+| `Resources/Localizable.xcstrings` | strings it/es/en |
+| `FuelMap.storekit` · `project.yml` | config StoreKit + scheme |
+| `FuelMapTests/PremiumTests.swift` | nuevo |
 
----
+## Riesgos
 
-## Verificación global (Definition of Done)
+- **PLA sin aceptar** → sin sandbox ni producción. Mitigado en desarrollo por el `.storekit`
+  local, pero es bloqueante para TestFlight y lanzamiento.
+- **Rechazo en review** por falta de restore, precio hardcodeado o ausencia de EULA/privacy
+  en el paywall. Cubierto en P4.
+- **Refund/family sharing** dejan el entitlement obsoleto si no se escucha
+  `Transaction.updates`. Cubierto en P2 (incluido el re-consent).
+- **Pago único = techo de LTV.** Aceptado a conciencia: para una utility de uso puntual la
+  economía favorece al pago único (ver Decisión 3). Si el roadmap gira a suscripción o
+  Android, reevaluar RevenueCat *antes* de tener base instalada de compradores.
+- **Verificación en simulador** de que el banner no parpadea al arrancar como premium.
 
-- Build + lint limpios; **todos los tests verdes** (incluidos los nuevos de tier y mapStyle).
-- Paridad **claro/oscuro** en las 7 pantallas y todos los estados.
-- Tiers distinguibles por **color + forma + etiqueta**; AA de contraste en texto/UI esencial.
-- Sin regresiones funcionales (filtros, detalle, favoritos, navegación, clustering, frescura).
-- `Design_System` versionado en `.claude/design/`; tokens 1:1 con el asset catalog.
+## Definición de hecho
 
----
-
-## Riesgos / decisiones
-
-- **Sombras multi-capa del CSS** no traducen literal a SwiftUI → aproximar con 1-2
-  `.shadow` + overlay de hairline; validar sobre el mapa.
-- **Pin más ancho** (badge+forma+precio) sobre el mapa → vigilar footprint y solape; la
-  Dynamic Type capada del precio lo protege.
-- **Tiers fill mode-independent**: crear esos Color sets con valor único (no Any/Dark) o
-  el blanco del pin perdería contraste en un modo.
-- **Control de capas**: feature nueva — mantener mínima (toggle de `mapStyle`), sin tocar
-  el flujo de carga.
-
----
-
-## Estado previo del proyecto (referencia — no parte del restyle)
-
-**Backlog FM (todo hecho salvo FM-14):** FM-1…FM-13, FM-15…FM-19 ✅; FM-2/FM-3 desplegados;
-APIClient real; 49 tests iOS + 3 backend. Evaluación multi-agente 2026-06-05 aplicada
-(`reviews/2026-06-05-evaluacion-completa.md`). UX posterior: lista→detalle con recentrado,
-detalle por variante real (`fuel_raw`, migración 0003), recentrado al pulsar pin, banner de
-estado como overlay, **logos reales de 6 marcas** en el detalle.
-
-**Pendiente de producto (independiente del restyle):**
-- **FM-14** (App Store): IDs AdMob reales + `SKAdNetworkItems`, `PrivacyInfo.xcprivacy`,
-  l10n del Info.plist (es/en), atribución IODL 2.0, prep TestFlight.
-- **Acción del usuario:** aceptar el PLA en developer.apple.com (firma device/TestFlight).
-
-**Deuda no bloqueante:** carga inicial supeditada al permiso de ubicación; pulido a11y
-menor (VoiceOver dirección/marca, conservar zoom al recentrar, `MapView.camera` desde
-`store.center/span`); IP es logo raster (vector puro pendiente si aparece).
-
----
-
-## Convenciones del workflow
-
-- Decisiones congeladas → `decisions/ADR-XXX-*.md`. Historia → `PHASE_LOG.md`.
-- Mapa de código → `SYSTEM_MAP.md` (actualizar al cerrar fase).
-- Al cerrar RESTYLE-001 → `/close-phase` mueve este `plan.md` a `plan-archive/`.
+Build verde · tests verdes (61 + nuevos) · SwiftLint 0 · verificado en simulador con
+`FuelMap.storekit`: comprar → banner desaparece en mapa y detalle, sin UMP ni ATT en
+arranque premium; refund → vuelven los ads y se pide consent; restore funciona.
+Después: `PHASE_LOG` + `SYSTEM_MAP` + ADR-006 (StoreKit 2 sobre RevenueCat).

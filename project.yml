@@ -54,6 +54,11 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.danmarjim.fuelmap
         TARGETED_DEVICE_FAMILY: "1"
+        # Solo simulador: los builds headless firman ad-hoc y sin entitlements, y
+        # StoreKit responde `notEntitled` (ni productos ni compras, tampoco con
+        # SKTestSession). En device/TestFlight los inyecta el provisioning profile,
+        # así que no se pisan aquí (PREMIUM-001).
+        CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]: FuelMap/FuelMap.entitlements
     info:
       path: FuelMap/Info.plist
       properties:
@@ -74,10 +79,18 @@ targets:
     platform: iOS
     sources:
       - path: FuelMapTests
+      # `SKTestSession(configurationFileNamed:)` resuelve el .storekit desde los
+      # recursos del bundle de tests, no desde la raíz del repo. Solo en tests: la
+      # app nunca lo embebe (PREMIUM-001).
+      - path: FuelMap.storekit
+        buildPhase: resources
     dependencies:
       # Solo el host app: TCA llega transitivamente. Re-enlazar el paquete
       # estático aquí provoca undefined symbols de CasePathsCore/PerceptionCore.
       - target: FuelMap
+      # StoreKitTest: `SKTestSession` ejercita compra/reembolso contra StoreKit real
+      # sobre FuelMap.storekit (PREMIUM-001). Framework del SDK, no del host app.
+      - sdk: StoreKitTest.framework
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
@@ -88,6 +101,11 @@ schemes:
       targets:
         FuelMap: all
         FuelMapTests: [test]
+    # StoreKit local: permite comprar/cancelar/reembolsar en simulador sin App Store
+    # Connect ni PLA. Debe vivir aquí: el .xcodeproj es generado y un ajuste hecho a
+    # mano en el scheme se perdería en el siguiente `xcodegen generate` (PREMIUM-001).
+    run:
+      storeKitConfiguration: FuelMap.storekit
     test:
       targets:
         - FuelMapTests

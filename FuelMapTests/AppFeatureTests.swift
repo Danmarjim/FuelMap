@@ -19,9 +19,10 @@ struct AppFeatureTests {
         #expect(state.map.stations.isEmpty)
     }
 
-    @Test("onAppear pide consentimiento y luego arranca el SDK de ads")
+    @Test("Usuario gratuito: onAppear pide consentimiento y luego arranca el SDK de ads")
     func appFeature_onAppear_consentThenStart() async {
         let calls = LockIsolated<[String]>([])
+        let (updates, continuation) = AsyncStream.makeStream(of: Bool.self)
         let store = TestStore(initialState: AppFeature.State()) {
             AppFeature()
         } withDependencies: {
@@ -31,11 +32,15 @@ struct AppFeatureTests {
                 bannerAdUnitID: { "test" },
                 detailAdUnitID: { "test" }
             )
+            $0.purchaseClient.refreshEntitlement = { false }
+            $0.purchaseClient.entitlementUpdates = { updates }
         }
 
-        await store.send(.onAppear) {
+        await store.send(.onAppear)
+        await store.receive(\.entitlementLoaded) {
             $0.bannerAdUnitID = "test"
         }
+        continuation.finish()
         await store.finish()
 
         #expect(calls.value == ["consent", "start"])

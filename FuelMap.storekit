@@ -1,0 +1,102 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "it_IT",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "56A6D5E5",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "3.99",
+      "familyShareable" : false,
+      "internalID" : "6801442310",
+      "localizations" : [
+        {
+          "description" : "Rimuovi per sempre la pubblicità da FuelMap e sostieni lo sviluppo dell'app.",
+          "displayName" : "FuelMap Senza Pubblicità",
+          "locale" : "it_IT"
+        },
+        {
+          "description" : "Elimina para siempre los anuncios de FuelMap y apoya el desarrollo de la app.",
+          "displayName" : "FuelMap Sin Anuncios",
+          "locale" : "es_ES"
+        },
+        {
+          "description" : "Remove ads from FuelMap forever and support the app's development.",
+          "displayName" : "FuelMap Ad-Free",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.danmarjim.fuelmap.premium.noads",
+      "referenceName" : "FuelMap Premium — Senza pubblicità",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_developerTeamID" : "HLC2ZTTHKH",
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "it_IT",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "ITA",
+    "_storeKitErrors" : [
+      {
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

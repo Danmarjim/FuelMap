@@ -23,6 +23,7 @@ struct StationDetailFeatureTests {
             StationDetailFeature()
         } withDependencies: {
             $0.apiClient = .mock()
+            $0.purchaseClient.isPremium = { false }
         }
         store.exhaustivity = .off
 
@@ -45,6 +46,7 @@ struct StationDetailFeatureTests {
             StationDetailFeature()
         } withDependencies: {
             $0.apiClient.stationDetail = { _ in throw APIError.noResults }
+            $0.purchaseClient.isPremium = { false }
         }
         store.exhaustivity = .off
 
