@@ -13,8 +13,6 @@ import SwiftUI
 /// Los precios llegan del store (`stations_by_ids`); la marca/coordenada del propio favorito.
 struct FavoritesView: View {
     let favorites: [FavoriteDisplay]
-    /// Origen para la distancia (ubicación del usuario; si no, centro del mapa).
-    let origin: Coordinate
     /// Terciles de precio del conjunto de favoritos (calculados en el store).
     let tiers: PriceTiers
     /// Favorito más barato → recibe el `BestFlag`.
@@ -65,7 +63,7 @@ struct FavoritesView: View {
             StationRow(
                 brand: BrandStyle.from(favorite.station?.brand ?? favorite.info.name),
                 name: favorite.info.name,
-                distance: distanceText(to: favorite.info.coordinate),
+                distance: distanceText(favorite.distance),
                 price: favorite.price,
                 tier: favorite.price.map { tiers.tier(for: $0) },
                 isCheapest: favorite.id == cheapestID,
@@ -78,8 +76,7 @@ struct FavoritesView: View {
         .accessibilityHint(Text("Centra la mappa qui"))
     }
 
-    private func distanceText(to coordinate: Coordinate) -> String {
-        let meters = origin.distance(to: coordinate)
+    private func distanceText(_ meters: Double) -> String {
         if meters < 1000 {
             return "\(Int(meters.rounded())) m"
         }
@@ -87,7 +84,7 @@ struct FavoritesView: View {
     }
 
     private func voiceOverLabel(for favorite: FavoriteDisplay) -> String {
-        var parts = [favorite.info.name, distanceText(to: favorite.info.coordinate)]
+        var parts = [favorite.info.name, distanceText(favorite.distance)]
         if let price = favorite.price {
             parts.append(price.fuelPriceLabel)
             parts.append(tiers.tier(for: price).label)
@@ -105,12 +102,12 @@ struct FavoritesView: View {
         FavoriteDisplay(
             info: FavoriteStationInfo(id: station.id, name: station.name, coordinate: station.coordinate),
             station: station.id == 3 ? nil : station,   // id 3 simula "non disp."
+            distance: Coordinate.italyDefault.distance(to: station.coordinate),
             order: index
         )
     }
     return FavoritesView(
         favorites: displays,
-        origin: .italyDefault,
         tiers: PriceTiers(prices: stations.compactMap { $0.cheapest?.price }),
         cheapestID: stations.min { ($0.cheapest?.price ?? 0) < ($1.cheapest?.price ?? 0) }?.id,
         fuel: .benzina,

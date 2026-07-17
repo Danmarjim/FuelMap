@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 import Testing
 
 @testable import FuelMap
@@ -81,6 +82,37 @@ struct FavoritePricesTests {
         #expect(store.state.cheapestFavoriteID == 4)
         // El favorito sin ese combustible no trae station (→ "non disp." en la vista).
         #expect(store.state.favoriteDisplays.last?.station == nil)
+    }
+
+    /// Estación mínima con un único precio de benzina, a `kilometers` al norte del usuario.
+    private func station(id: Int, price: Decimal, kmAway kilometers: Double) -> Station {
+        Station(
+            id: id, name: "Stazione \(id)", brand: nil, address: nil,
+            municipality: nil, province: nil,
+            coordinate: Coordinate(latitude: 41.9028 + kilometers / 111.0, longitude: 12.4964),
+            prices: [FuelPrice(fuel: .benzina, fuelRaw: "Benzina", price: price,
+                               isSelf: true, communicatedAt: nil)]
+        )
+    }
+
+    @Test("A igualdad de precio gana la más cercana, no la añadida antes")
+    func favorites_priceTie_breaksByDistance() {
+        // Las fixtures no tienen dos precios iguales: el empate se construye aquí.
+        // El favorito 1 se añadió primero pero está a 10 km; el 2 empata a precio a 1 km.
+        let far = station(id: 1, price: 1.899, kmAway: 10)
+        let near = station(id: 2, price: 1.899, kmAway: 1)
+        let cheaperFarther = station(id: 3, price: 1.799, kmAway: 20)
+        let state = MapFeature.State(
+            userLocation: Coordinate(latitude: 41.9028, longitude: 12.4964),
+            favorites: [far, near, cheaperFarther].map {
+                FavoriteStationInfo(id: $0.id, name: $0.name, coordinate: $0.coordinate)
+            },
+            favoriteStations: [far, near, cheaperFarther]
+        )
+
+        // El precio manda sobre la distancia (3 va primero pese a ser la más lejana);
+        // solo dentro del empate 1.899 decide la cercanía (2 antes que 1).
+        #expect(state.favoriteDisplays.map(\.id) == [3, 2, 1])
     }
 
     @Test("Cambiar el combustible refresca también los precios de favoritos")

@@ -59,7 +59,8 @@ Core/
 | `App/AppView.swift` | View | Raíz; `MapView` + `BannerAdView` debajo (fuera del mapa) (FM-7/FM-11). |
 | `Core/Ads/AdClient.swift` | `@Dependency` | `start`/`requestConsent` (UMP→ATT)/`bannerAdUnitID` (TEST); `AdConsentCoordinator` (FM-11). |
 | `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
-| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). Precios en vivo de favoritos: `favoriteStations` + efecto cancelable, refresco al cambiar filtro; derivados `favoriteDisplays`/`cheapestFavoriteID`/`favoritePriceTiers` (FAV-PRICE). `MapStyleOption`/`StationSort`/`FavoriteDisplay`/`MapDefaults`. |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). Precios en vivo de favoritos: `favoriteStations` + efecto cancelable, refresco al cambiar filtro (FAV-PRICE). `MapStyleOption`/`StationSort`/`MapDefaults`. |
+| `Map/MapFeature+Favorites.swift` | derivados | `favoriteDisplays` (precio asc, desempate por distancia, sin precio al final), `cheapestFavoriteID`, `favoritePriceTiers` + `FavoriteDisplay` (lleva `distance` ya calculada) (FAV-PRICE). |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado (Reduce Motion), `.mapStyle`, status banner flotante + float controls (lista/favoritos/capas) (R2). |
 | `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
 | `Map/ClusterPin.swift` | View | Cluster: burbuja `surfaceElevated` + cápsula `da X` con tier de la más barata (R2). |
@@ -68,7 +69,7 @@ Core/
 | `Map/BrandBadge.swift` | View | Chip de marca: logo sobre `logoBackground` o monograma/pompa neutro (R2). |
 | `Map/StationPin.swift` | View | Pin: cápsula de tier + badge + forma de tier + precio + cola + halo; seleccionado/más barata; Reduce Motion + Dynamic Type capada (R2/R5). |
 | `Map/StationListView.swift` | View | Hoja: header + sort pills + `StationRow` (chip, best-flag, precio, tier-tag); skeleton de carga; estado vacío (R4/R5). |
-| `Map/FavoritesView.swift` | View | Hoja de favoritos con precio en vivo: orden por precio, `BestFlag` en el más barato, distancia + `TierTag`, "n/d" si no vende el combustible activo; skeleton en la 1ª carga; estado vacío (R4/FAV-PRICE). |
+| `Map/FavoritesView.swift` | View | Hoja de favoritos con precio en vivo: consume `FavoriteDisplay` ya ordenado (no calcula distancias), `BestFlag` en el más barato, distancia + `TierTag`, "n/d" si no vende el combustible activo; skeleton en la 1ª carga; estado vacío (R4/FAV-PRICE). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm`. `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Barra: segmentado combustible + toggle Self + stepper radio + sort pills; fondo degradado (R3). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |

@@ -88,7 +88,6 @@ struct MapView: View {
         .sheet(isPresented: $showingFavorites) {
             FavoritesView(
                 favorites: store.favoriteDisplays,
-                origin: store.distanceOrigin,
                 tiers: store.favoritePriceTiers,
                 cheapestID: store.cheapestFavoriteID,
                 fuel: store.filters.fuel,
