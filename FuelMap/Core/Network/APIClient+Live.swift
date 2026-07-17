@@ -42,6 +42,17 @@ extension APIClient {
                 } catch {
                     throw mapError(error)
                 }
+            },
+            stationsByIDs: { ids, fuel, selfOnly in
+                guard !ids.isEmpty else { return [] }
+                let params = ByIDsParams(ids: ids, fuel: fuel.rawValue, selfOnly: selfOnly)
+                do {
+                    let response = try await client.rpc("stations_by_ids", params: params).execute()
+                    let rows = try JSONDecoder.fuelMap.decode([NearbyStationRowDTO].self, from: response.data)
+                    return StationMapper.stations(from: rows)
+                } catch {
+                    throw mapError(error)
+                }
             }
         )
     }
@@ -75,5 +86,17 @@ private struct DetailParams: Encodable {
 
     enum CodingKeys: String, CodingKey {
         case id = "in_id"
+    }
+}
+
+private struct ByIDsParams: Encodable {
+    let ids: [Int]
+    let fuel: String
+    let selfOnly: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case ids = "in_ids"
+        case fuel = "in_fuel"
+        case selfOnly = "in_self_only"
     }
 }

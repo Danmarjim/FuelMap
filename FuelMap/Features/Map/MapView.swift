@@ -16,7 +16,7 @@ struct MapView: View {
     @State private var camera: MapCameraPosition = .region(
         MKCoordinateRegion(
             center: Coordinate.italyDefault.clLocationCoordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.08, longitudeDelta: 0.08)
+            span: MKCoordinateSpan(latitudeDelta: MapDefaults.span, longitudeDelta: MapDefaults.span)
         )
     )
     @State private var showingList = false
@@ -87,7 +87,12 @@ struct MapView: View {
         }
         .sheet(isPresented: $showingFavorites) {
             FavoritesView(
-                favorites: store.favorites,
+                favorites: store.favoriteDisplays,
+                origin: store.distanceOrigin,
+                tiers: store.favoritePriceTiers,
+                cheapestID: store.cheapestFavoriteID,
+                fuel: store.filters.fuel,
+                isLoadingPrices: store.isLoadingFavoritePrices,
                 onSelect: { favorite in
                     showingFavorites = false
                     store.send(.favoriteSelected(favorite))

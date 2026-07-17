@@ -46,6 +46,15 @@ struct APIClient: Sendable {
 
     /// Detalle completo (todos los combustibles) de una estación.
     var stationDetail: @Sendable (_ id: Int) async throws -> Station
+
+    /// Precios en vivo de un lote de estaciones (favoritos), filtrados al combustible
+    /// dado (y a self si `selfOnly`). Cada `Station` trae solo precios de ese combustible;
+    /// `cheapest` da el más barato. Estaciones sin ese combustible no vienen en el resultado.
+    var stationsByIDs: @Sendable (
+        _ ids: [Int],
+        _ fuel: FuelType,
+        _ selfOnly: Bool
+    ) async throws -> [Station]
 }
 
 // MARK: - Dependency
@@ -56,7 +65,8 @@ extension APIClient: DependencyKey {
 
     static let testValue = APIClient(
         nearbyStations: unimplemented("APIClient.nearbyStations"),
-        stationDetail: unimplemented("APIClient.stationDetail")
+        stationDetail: unimplemented("APIClient.stationDetail"),
+        stationsByIDs: unimplemented("APIClient.stationsByIDs")
     )
 }
 

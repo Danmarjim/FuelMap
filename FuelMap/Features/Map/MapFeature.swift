@@ -6,6 +6,7 @@
 //
 
 import ComposableArchitecture
+import Foundation
 
 /// Feature principal: mapa con gasolineras y precios (RFC §6.2).
 @Reducer
@@ -17,7 +18,7 @@ struct MapFeature {
         /// Ubicación del usuario (referencia para distancias). Fijada al arrancar.
         var userLocation: Coordinate?
         /// Apertura del mapa (latitudeDelta) para el zoom de la cámara.
-        var span: Double = 0.08
+        var span: Double = MapDefaults.span
         var filters = FiltersFeature.State()
         var stations: [Station] = []
         var isLoading = false
@@ -31,7 +32,12 @@ struct MapFeature {
         var mapStyle: MapStyleOption = .standard
         /// Estación más barata del conjunto actual (para destacarla en el mapa).
         var cheapestStationID: Int?
+        /// Favoritos persistidos (id + nombre + coordenada). Fuente de la lista.
         var favorites: [FavoriteStationInfo] = []
+        /// Precios en vivo de los favoritos para el combustible activo (filtrado en servidor).
+        /// Puede no incluir un favorito si no vende ese combustible.
+        var favoriteStations: [Station] = []
+        var isLoadingFavoritePrices = false
 
         /// Elementos del mapa: estaciones individuales o clusters según el zoom (FM-15).
         var mapItems: [MapItem] {
@@ -79,6 +85,7 @@ struct MapFeature {
         case recenterHandled
         case loadFavorites
         case favoritesResponse([FavoriteStationInfo])
+        case favoritePricesResponse(Result<[Station], APIError>)
         case favoriteSelected(FavoriteStationInfo)
         case reload
     }
@@ -88,7 +95,7 @@ struct MapFeature {
     @Dependency(\.favoritesClient) var favoritesClient
     @Dependency(\.continuousClock) var clock
 
-    private enum CancelID { case reload }
+    private enum CancelID { case reload, favoritePrices }
 
     var body: some ReducerOf<Self> {
         Scope(state: \.filters, action: \.filters) {
@@ -133,8 +140,9 @@ struct MapFeature {
                 return load(&state, debounced: true)
 
             case .filters:
-                // Cualquier cambio de filtro (combustible/self/radio) recarga.
-                return load(&state)
+                // Cualquier cambio de filtro (combustible/self/radio) recarga el mapa y,
+                // si hay favoritos, refresca sus precios al nuevo combustible/self.
+                return .merge(load(&state), loadFavoritePrices(&state))
 
             case let .sortOrderChanged(order):
                 state.sortOrder = order
@@ -167,6 +175,17 @@ struct MapFeature {
 
             case let .favoritesResponse(favorites):
                 state.favorites = favorites
+                return loadFavoritePrices(&state)
+
+            case let .favoritePricesResponse(.success(stations)):
+                state.isLoadingFavoritePrices = false
+                state.favoriteStations = stations
+                return .none
+
+            case .favoritePricesResponse(.failure):
+                // Fallo silencioso: la hoja sigue usable por nombre/distancia; conserva
+                // cualquier precio previo en vez de vaciar la vista.
+                state.isLoadingFavoritePrices = false
                 return .none
 
             case let .favoriteSelected(favorite):
@@ -257,9 +276,90 @@ struct MapFeature {
         }
         .cancellable(id: CancelID.reload, cancelInFlight: true)
     }
+
+    /// Trae los precios en vivo de los favoritos para el combustible/self activos.
+    /// Sin favoritos, limpia el estado y no hace red.
+    private func loadFavoritePrices(_ state: inout State) -> Effect<Action> {
+        let ids = state.favorites.map(\.id)
+        guard !ids.isEmpty else {
+            state.favoriteStations = []
+            state.isLoadingFavoritePrices = false
+            return .none
+        }
+        state.isLoadingFavoritePrices = true
+        let fuel = state.filters.fuel
+        let selfOnly = state.filters.selfOnly
+        return .run { send in
+            do {
+                let stations = try await apiClient.stationsByIDs(ids, fuel, selfOnly)
+                await send(.favoritePricesResponse(.success(stations)))
+            } catch let error as APIError {
+                await send(.favoritePricesResponse(.failure(error)))
+            } catch {
+                await send(.favoritePricesResponse(.failure(.network(error.localizedDescription))))
+            }
+        }
+        .cancellable(id: CancelID.favoritePrices, cancelInFlight: true)
+    }
+}
+
+// MARK: - Favoritos enriquecidos (derivados del estado)
+
+extension MapFeature.State {
+    /// Favoritos enriquecidos con su precio en vivo, ordenados por precio ascendente
+    /// (los que tienen precio primero; los no disponibles al final, en su orden original).
+    var favoriteDisplays: [FavoriteDisplay] {
+        let byID = Dictionary(favoriteStations.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return favorites
+            .enumerated()
+            .map { index, info in FavoriteDisplay(info: info, station: byID[info.id], order: index) }
+            .sorted { lhs, rhs in
+                switch (lhs.price, rhs.price) {
+                case let (lhsPrice?, rhsPrice?):
+                    return lhsPrice == rhsPrice ? lhs.order < rhs.order : lhsPrice < rhsPrice
+                case (_?, nil): return true
+                case (nil, _?): return false
+                case (nil, nil): return lhs.order < rhs.order
+                }
+            }
+    }
+
+    /// Favorito más barato (para el `BestFlag` en la hoja de favoritos).
+    var cheapestFavoriteID: Int? {
+        favoriteStations.min {
+            ($0.cheapest?.price ?? .greatestFiniteMagnitude)
+                < ($1.cheapest?.price ?? .greatestFiniteMagnitude)
+        }?.id
+    }
+
+    /// Terciles de precio del conjunto de favoritos (para sus `TierTag`).
+    var favoritePriceTiers: PriceTiers {
+        PriceTiers(prices: favoriteStations.compactMap { $0.cheapest?.price })
+    }
+}
+
+// MARK: - FavoriteDisplay
+
+/// Favorito enriquecido con su precio en vivo para el combustible activo.
+/// `station` es `nil` si ese favorito no vende el combustible filtrado (→ "non disp.").
+struct FavoriteDisplay: Equatable, Identifiable, Sendable {
+    let info: FavoriteStationInfo
+    let station: Station?
+    /// Posición original (addedAt) para desempatar el orden.
+    let order: Int
+
+    var id: Int { info.id }
+    var price: Decimal? { station?.cheapest?.price }
 }
 
 // MARK: - Helpers
+
+/// Valores por defecto del mapa.
+enum MapDefaults {
+    /// Apertura inicial (latitudeDelta) ≈ 5 km de alto: vista local centrada en el
+    /// usuario, menos pines a la vista que el zoom anterior (~2 km).
+    static let span: Double = 0.02
+}
 
 /// Tipo de mapa para el control de capas (RESTYLE-001 R2).
 enum MapStyleOption: String, CaseIterable, Sendable, Equatable {

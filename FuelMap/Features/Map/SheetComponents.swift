@@ -212,6 +212,9 @@ struct StationRow: View {
     var tier: PriceTier?
     var isCheapest: Bool = false
     var trailingStar: Bool = false
+    /// Nota mostrada en la columna de precio cuando no hay precio (p. ej. el favorito
+    /// no vende el combustible filtrado). Se ignora si `price` está presente.
+    var unavailableNote: LocalizedStringKey?
 
     var body: some View {
         HStack(spacing: Spacing.s4) {
@@ -245,6 +248,10 @@ struct StationRow: View {
                     }
                     if let tier { TierTag(tier: tier) }
                 }
+            } else if let unavailableNote {
+                Text(unavailableNote)
+                    .font(.fmFootnote.weight(.semibold))
+                    .foregroundStyle(Color(.textTertiary))
             }
             if trailingStar {
                 Image(systemName: "star.fill").font(.system(size: 20)).foregroundStyle(Color(.goldInk))

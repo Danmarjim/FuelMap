@@ -41,6 +41,17 @@ extension APIClient {
                     throw APIError.noResults
                 }
                 return station
+            },
+            stationsByIDs: { ids, fuel, selfOnly in
+                let wanted = Set(ids)
+                return stations
+                    .filter { wanted.contains($0.id) }
+                    .compactMap { station -> Station? in
+                        var prices = station.prices.filter { $0.fuel == fuel }
+                        if selfOnly { prices = prices.filter(\.isSelf) }
+                        guard !prices.isEmpty else { return nil }
+                        return station.with(prices: prices)
+                    }
             }
         )
     }
