@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#EDF6FF" />
+  <g transform="rotate(-8 512 512)" stroke="#CDE7FF" fill="none">
+    <path d="M -120 232 H 1144" stroke-width="34" />
+    <path d="M -120 560 H 1144" stroke-width="66" />
+    <path d="M -120 872 H 1144" stroke-width="34" />
+    <path d="M 168 -120 V 1144" stroke-width="34" />
+    <path d="M 540 -120 V 1144" stroke-width="52" />
+    <path d="M 892 -120 V 1144" stroke-width="34" />
+  </g>
+  <path d="M 484 600 L 512 862 L 540 600 Z" fill="#005BB8" />
+  <rect x="336" y="160" width="352" height="470" rx="44" fill="#0072E6" />
+  <rect x="380" y="301" width="264" height="84" rx="26" fill="#F5B301" />
+  <rect x="380" y="429" width="184" height="60" rx="20" fill="#FFFFFF" opacity="0.82" />
+</svg>

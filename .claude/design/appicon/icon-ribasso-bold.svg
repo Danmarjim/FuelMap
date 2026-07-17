@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <mask id="ribasso-bold-cut">
+      <rect width="1024" height="1024" fill="#FFFFFF" />
+      <path d="M 420 342 L 604 342 L 512 490 Z" fill="#000000" />
+    </mask>
+  </defs>
+  <rect width="1024" height="1024" fill="#0072E6" />
+  <g transform="rotate(-8 512 512)" stroke="#0091FF" fill="none">
+    <path d="M -120 232 H 1144" stroke-width="34" />
+    <path d="M -120 560 H 1144" stroke-width="66" />
+    <path d="M -120 872 H 1144" stroke-width="34" />
+    <path d="M 168 -120 V 1144" stroke-width="34" />
+    <path d="M 540 -120 V 1144" stroke-width="52" />
+    <path d="M 892 -120 V 1144" stroke-width="34" />
+  </g>
+  <circle cx="512" cy="396" r="216" fill="#F5B301" />
+  <g mask="url(#ribasso-bold-cut)" fill="#FFFFFF">
+    <circle cx="512" cy="396" r="216" />
+    <path d="M 512 836 L 344 516 L 680 516 Z" />
+  </g>
+</svg>

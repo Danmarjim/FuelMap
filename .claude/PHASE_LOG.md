@@ -439,11 +439,62 @@
 
 ---
 
+## Plan Iteration: Sync MIMIT — fix cron `fetch failed` — Completed
+**Date:** 2026-06-09
+
+### Architect (diagnóstico)
+- N/A — fix de mantenimiento (Quick Execution), sin decisiones de arquitectura.
+- Causa raíz del run fallido (06-08, `27134391155`): step `node sync.mjs` con `SYNC FAILED: fetch failed` — timeout/reset transitorio del servidor público del MIMIT al descargar los CSV. Tests del parser OK (3/3). El warning de Node 20 era ruido (deprecación de actions, no la causa). Endpoints confirmados HTTP 200 al diagnosticar.
+
+### Developer (implementation)
+- `backend/sync/sync.mjs`: `download()` con **retry 3× backoff exponencial (2s, 4s)** + timeout explícito **60s** (`AbortSignal.timeout`). Antes un único `fetch` fallido tumbaba el sync diario.
+- `.github/workflows/sync-mimit.yml`: `checkout`/`setup-node` **v4 → v5** (Node 24; elimina warning de deprecación).
+- Commit `55ba708` en `main` (acotado a esos 2 archivos; cambios iOS en curso sin tocar).
+
+### QA (tests)
+- `node --check` OK; tests del parser **3/3** (sin cambios — el retry no es unit-testeable sin mock de red).
+
+### Review
+- Validación end-to-end: run manual `27196007918` en **verde** (51s), actions v5 sin warning de Node 20, `OK — extracción 2026-06-08: 23718 stations, 92223 prices, 106 descartadas`.
+- Cron diario siguiente (06:30 UTC) ya usará la versión robusta en `main`.
+- Verdict: **APPROVED**.
+
+---
+
+## Plan Iteration: App Icon (APPICON-001) — Completed
+**Date:** 2026-07-17
+
+### Architect (dirección de diseño)
+- Skill `opendesign:svg-design` instalada en scope user (`claude plugin install opendesign@opendata-skills`, v1.3.2). El repo `tryopendata/skills` **no tiene skill de "appIcon"**: solo `opendata`, `openchart` y `opendesign` (SVG logos/iconos). No es un generador de app icons de iOS — diseña el SVG; la rasterización y el appiconset se hacen a mano.
+- Dirección acordada con el usuario vía el paso 0 obligatorio de la skill: precio/ahorro primero · métafora "encontrar barato cerca" · referencia estética Google Maps · **gasolinera como héroe + € como métafora de ahorro** (aclarado en la 4ª ronda).
+- Paleta anclada a `.claude/design/assets/tokens.css`, no a hex sueltos: azure #0072E6, `cheapestGold` #F5B301, azure profundo #005BB8.
+- 3 rondas de ideación, 13 conceptos, 4 categorías estructurales (símbolo, espacio negativo, geométrico abstracto, letterform). Descartes documentados en `.claude/design/appicon/README.md`.
+
+### Developer (implementación)
+- Elegido **G2 "Colonnina bold"**: `.claude/design/appicon/icon-colonnina-bold.svg` → `FuelMap/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png` (1024², RGB sin alfa).
+- `AppIcon.appiconset/Contents.json`: añadido `filename` al slot 1024 (estaba vacío desde 06-05).
+- Decisión de contraste: display en oro con € en azure profundo, **no** € oro sobre blanco (~1.9:1, ilegible).
+- Sin rasterizador SVG en la máquina (ni `rsvg-convert`, ni `cairosvg` con libcairo, ni ImageMagick) → pipeline con Chrome headless + Pillow. Documentado en el README.
+- Herramienta propia: `squircle-sheet.html`, hoja de contactos con la máscara squircle de iOS a 180/120/80/60/40pt. El `preview.html` de la skill es para logos (favicon/nav bar) y no enmascara.
+
+### QA (tests)
+- N/A — cambio de assets, sin superficie de código. Test count sin cambios (**57**).
+- Verificación visual a los 5 tamaños de home screen con máscara squircle en cada ronda; los descartes salieron de esa lectura (Totem = bocadillo de chat, Pompa-pin = surtidor goteando, Due prezzi = skeleton loader).
+
+### Review
+- `xcodegen generate` + `xcodebuild build` (iPhone 17 sim): **BUILD SUCCEEDED**.
+- Icono verificado **dentro del bundle**, no solo en el catálogo: `actool` derivó `AppIcon60x60@2x.png` y `AppIcon76x76@2x~ipad.png`; `Info.plist` con `CFBundleIconName = AppIcon`. PNG compilado inspeccionado a 120².
+- Verdict: **APPROVED**.
+
+---
+
 ## Current State
-**Date:** 2026-06-08
+**Date:** 2026-07-17
 - **Restyle visual completo aplicado** (RESTYLE-001, design system "bold/energetic" azul): tokens semánticos claro/oscuro, tiers daltónico-seguros, pins/cluster/chrome nuevos + **control de capas**, barra de filtros, sheets (lista/favoritos/detalle), skeletons, Reduce Motion, Dynamic Type capada en pin. Referencia: `.claude/design/`, ADR-005.
 - iOS: **57 tests**, SwiftLint 0. Build verde (iPhone 17 sim). Repo `Danmarjim/FuelMap` al día. ADRs 001–005.
+- **Backend sync endurecido** (06-09): `download()` con retry+timeout; workflow en actions v5. Cron diario verde, ~23.7k stations / ~92k prices por run.
 - Pendiente usuario: aplicar `0002_station_detail.sql` (detalle) si no estaba; aceptar PLA Apple (device/TestFlight).
+- **App icon entregado** (APPICON-001, 07-17): surtidor blanco sobre azure con display oro y € (gasolinera héroe + € = ahorro). Fuente SVG en `.claude/design/appicon/`; el PNG del catálogo se genera desde ahí. Tacha una dependencia de FM-14.
 - Issues de producto: hechos FM-1…FM-13, FM-15…FM-19. **Restante: FM-14** (App Store prep).
 - **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Deuda restyle menor en review. Favoritos sin precio/tier en vivo (mejora futura).
 
