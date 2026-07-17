@@ -488,15 +488,47 @@
 
 ---
 
+## Plan Iteration: Favoritos con precio en vivo (FAV-PRICE) — Completed
+**Date:** 2026-07-17
+
+### Architect (decisiones)
+- N/A como fase de plan: FAV-PRICE salda la deuda diferida de RESTYLE-001 R4/R6 ("favoritos sin precio/tier en vivo"), no una fase nueva de `plan.md`.
+- **Filtrado en servidor, no en cliente**: RPC nueva `stations_by_ids(in_ids, in_fuel, in_self_only)` en vez de N llamadas a `station_detail` o traerse todos los combustibles y filtrar en el dispositivo. Un round-trip por refresco.
+- **Mismo shape que `nearby_stations`** → reutiliza `NearbyStationRowDTO` + `StationMapper` sin código de mapeo nuevo. `distance_m = 0`: la distancia se calcula en cliente desde la ubicación real del usuario.
+- Sin ADR: no cambia arquitectura; es una RPC más dentro del patrón ya congelado por ADR-001/003.
+
+### Developer (implementation)
+- `backend/migrations/0004_stations_by_ids.sql`: RPC `stable`, `search_path` fijado, grants a `anon`/`authenticated`, idempotente (`create or replace`).
+- `APIClient`: tercer endpoint `stationsByIDs` (live vía RPC, mock filtrando fixtures, `testValue` unimplemented).
+- `MapFeature`: `favoriteStations` + `isLoadingFavoritePrices` en State; efecto `loadFavoritePrices` cancelable (`CancelID.favoritePrices`), disparado tras `favoritesResponse` y **fusionado con `load` en cualquier cambio de filtro**. Sin favoritos no hay red. Derivados: `favoriteDisplays` (orden por precio asc, sin precio al final, desempate por orden de alta), `cheapestFavoriteID`, `favoritePriceTiers`.
+- `FavoritesView`: filas con distancia, precio, `TierTag`, `BestFlag` en el más barato y nota "n/d" si el favorito no vende el combustible activo. VoiceOver compone nombre + distancia + precio + tier. Skeleton solo en la **primera** carga; en refrescos conserva los precios previos.
+- Fallo de red **silencioso**: la hoja sigue usable por nombre/distancia en vez de vaciarse.
+- Colado en el mismo commit (no es de FAV-PRICE): `MapDefaults.span` **0.08 → 0.02** — zoom inicial ≈5 km, menos pines a la vista.
+- Commits: `7f38897` (feature) + `d9b0f2b` (remediación de review).
+
+### QA (tests)
+- `FavoritePricesTests.swift` (nuevo, 4 tests): carga + fetch de precios · sin favoritos no toca la API (`stationsByIDs` queda `unimplemented`, falla el test si se llama) · orden por precio con el "no disponible" al final · cambio de combustible refresca (Esso sin GPL → sin precio).
+- `MapFeatureTests`: `clusterTapped` ahora asienta sobre `MapDefaults.span` en vez del literal.
+- **60 tests en 17 suites, todos verdes** (57 → 60). SwiftLint **0**. `xcodebuild test` (iPhone 17 sim): **TEST SUCCEEDED**.
+
+### Review
+- **Colisión de migraciones**: la RPC entró como `0003_stations_by_ids.sql` con `0003_expose_fuel_raw.sql` ya ocupando ese número → renumerada a `0004`. El orden de aplicación manual en el SQL editor es la única garantía de secuencia; dos `0003` la rompen.
+- **Regresión de lint**: los 4 tests nuevos llevaron `MapFeatureTests` a 285 líneas (`type_body_length`, límite 250) rompiendo el SwiftLint 0 del repo → extraídos a `FavoritePricesTests`.
+- `stations_by_ids` **no devuelve `fuel_raw`** (sí lo hacen las RPC tocadas por `0003_expose_fuel_raw`). No rompe: `NearbyStationRowDTO.fuelRaw` es opcional y `StationMapper` cae a `row.fuel`. La hoja de favoritos muestra el precio más barato, no la variante — sin impacto visible. Añadir la columna si algún día la hoja muestra variante real.
+- Verdict: **APPROVED** tras remediación.
+
+---
+
 ## Current State
 **Date:** 2026-07-17
 - **Restyle visual completo aplicado** (RESTYLE-001, design system "bold/energetic" azul): tokens semánticos claro/oscuro, tiers daltónico-seguros, pins/cluster/chrome nuevos + **control de capas**, barra de filtros, sheets (lista/favoritos/detalle), skeletons, Reduce Motion, Dynamic Type capada en pin. Referencia: `.claude/design/`, ADR-005.
-- iOS: **57 tests**, SwiftLint 0. Build verde (iPhone 17 sim). Repo `Danmarjim/FuelMap` al día. ADRs 001–005.
+- iOS: **60 tests** (17 suites), SwiftLint 0. Build verde (iPhone 17 sim). Repo `Danmarjim/FuelMap` al día. ADRs 001–005.
 - **Backend sync endurecido** (06-09): `download()` con retry+timeout; workflow en actions v5. Cron diario verde, ~23.7k stations / ~92k prices por run.
-- Pendiente usuario: aplicar `0002_station_detail.sql` (detalle) si no estaba; aceptar PLA Apple (device/TestFlight).
 - **App icon entregado** (APPICON-001, 07-17): surtidor blanco sobre azure con display oro y € (gasolinera héroe + € = ahorro). Fuente SVG en `.claude/design/appicon/`; el PNG del catálogo se genera desde ahí. Tacha una dependencia de FM-14.
+- **Favoritos con precio en vivo** (FAV-PRICE, 07-17): la hoja ordena por precio, marca el más barato y muestra distancia + tier; refresca al cambiar de combustible. Salda la deuda de RESTYLE-001 R4/R6. Zoom inicial del mapa a ≈5 km (`MapDefaults.span` 0.02).
 - Issues de producto: hechos FM-1…FM-13, FM-15…FM-19. **Restante: FM-14** (App Store prep).
-- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Deuda restyle menor en review. Favoritos sin precio/tier en vivo (mejora futura).
+- **Pendiente usuario (bloquea favoritos en producción):** aplicar `0004_stations_by_ids.sql` en el SQL editor de Supabase — sin él, `stationsByIDs` falla y la hoja cae al modo degradado (nombre/distancia, sin precio). También `0002_station_detail.sql` si no estaba; aceptar PLA Apple (device/TestFlight).
+- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Deuda menor: ring de elevación en oscuro (M-4), dedup `separator`; `stations_by_ids` sin `fuel_raw` (irrelevante hoy).
 
 ---
 

@@ -15,7 +15,7 @@
 | `DesignSystem/Elevation.swift` | modifier | `.elevation(.e1/.e2/.e3/.pin/.pinSelected/.sheet)`; profundiza en oscuro. |
 | `DesignSystem/Typography.swift` | ext Font | Roles SF Pro mapeados a text styles (Dynamic Type) + fuentes de precio tabulares. |
 | `DesignSystem/TokenGallery.swift` | View (#Preview) | Galería de validación de la paleta claro/oscuro. |
-| `Features/Map/SheetComponents.swift` | Views | `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow`, `SkeletonRow/List` + `shimmer()`. |
+| `Features/Map/SheetComponents.swift` | Views | `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow` (con `unavailableNote` para filas sin precio), `SkeletonRow/List` + `shimmer()`. |
 
 > **En construcción.** Esqueleto TCA en marcha (FM-1). Las tablas marcadas `<!-- VERIFY -->` se rellenan conforme se implementan sus issues.
 
@@ -59,7 +59,7 @@ Core/
 | `App/AppView.swift` | View | Raíz; `MapView` + `BannerAdView` debajo (fuera del mapa) (FM-7/FM-11). |
 | `Core/Ads/AdClient.swift` | `@Dependency` | `start`/`requestConsent` (UMP→ATT)/`bannerAdUnitID` (TEST); `AdConsentCoordinator` (FM-11). |
 | `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
-| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). `MapStyleOption`/`StationSort`. |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). Precios en vivo de favoritos: `favoriteStations` + efecto cancelable, refresco al cambiar filtro; derivados `favoriteDisplays`/`cheapestFavoriteID`/`favoritePriceTiers` (FAV-PRICE). `MapStyleOption`/`StationSort`/`FavoriteDisplay`/`MapDefaults`. |
 | `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado (Reduce Motion), `.mapStyle`, status banner flotante + float controls (lista/favoritos/capas) (R2). |
 | `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
 | `Map/ClusterPin.swift` | View | Cluster: burbuja `surfaceElevated` + cápsula `da X` con tier de la más barata (R2). |
@@ -68,7 +68,7 @@ Core/
 | `Map/BrandBadge.swift` | View | Chip de marca: logo sobre `logoBackground` o monograma/pompa neutro (R2). |
 | `Map/StationPin.swift` | View | Pin: cápsula de tier + badge + forma de tier + precio + cola + halo; seleccionado/más barata; Reduce Motion + Dynamic Type capada (R2/R5). |
 | `Map/StationListView.swift` | View | Hoja: header + sort pills + `StationRow` (chip, best-flag, precio, tier-tag); skeleton de carga; estado vacío (R4/R5). |
-| `Map/FavoritesView.swift` | View | Hoja de favoritos: header + fila con chip + estrella; estado vacío (R4). |
+| `Map/FavoritesView.swift` | View | Hoja de favoritos con precio en vivo: orden por precio, `BestFlag` en el más barato, distancia + `TierTag`, "n/d" si no vende el combustible activo; skeleton en la 1ª carga; estado vacío (R4/FAV-PRICE). |
 | `Filters/FiltersFeature.swift` | Reducer | `BindingReducer`; estado `fuel`/`selfOnly`/`radiusKm`. `RadiusOption` (FM-8). |
 | `Filters/FiltersView.swift` | View | Barra: segmentado combustible + toggle Self + stepper radio + sort pills; fondo degradado (R3). |
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
@@ -95,8 +95,8 @@ Core/
 | `Foundation/Decimal+FuelPrice.swift` | ext | `fuelPriceLabel` ("1,879 €"); formateo de precio compartido (review). |
 | `Foundation/String+NilIfEmpty.swift` | ext | `nilIfEmpty` para campos vacíos del MIMIT (FM-4). |
 | `Location/Coordinate+CoreLocation.swift` | ext | `clLocationCoordinate` + `init(_ CLLocationCoordinate2D)` compartidos (review). |
-| `Network/APIClient.swift` | `@Dependency` | `nearbyStations`/`stationDetail` async; `APIError` tipado. `liveValue` = `.live()` (Supabase), `previewValue` = `.mock()`, `testValue` unimplemented (FM-5). |
-| `Network/APIClient+Live.swift` | impl real | RPC `nearby_stations`/`station_detail` vía supabase-swift; decode `JSONDecoder.fuelMap` + `StationMapper` (FM-5). |
+| `Network/APIClient.swift` | `@Dependency` | `nearbyStations`/`stationDetail`/`stationsByIDs` async; `APIError` tipado. `liveValue` = `.live()` (Supabase), `previewValue` = `.mock()`, `testValue` unimplemented (FM-5/FAV-PRICE). |
+| `Network/APIClient+Live.swift` | impl real | RPC `nearby_stations`/`station_detail`/`stations_by_ids` vía supabase-swift; decode `JSONDecoder.fuelMap` + `StationMapper` (FM-5/FAV-PRICE). |
 | `Network/SupabaseConfig.swift` | config | URL + anon key (read-only/RLS) + `SupabaseClient` compartido (FM-5). |
 | `Network/APIClient+Mock.swift` | mock + fixtures | `APIClient.mock()` (previews/tests); `StationFixtures` (6 estaciones de Roma) (FM-5). |
 | `Location/LocationClient.swift` | `@Dependency` | Wrapper CoreLocation (coordinador `@MainActor` + `LockIsolated` para status síncrono); `authorizationStatus`/`requestWhenInUse`/`currentLocation`; `LocationError` (FM-6). |
@@ -123,6 +123,8 @@ Core/
 |---|---|
 | `backend/migrations/0001_init.sql` | Esquema (`stations`,`prices`,`sync_runs`) + PostGIS + índices GIST + RPC `nearby_stations` + RLS read-only (anon) + grants (FM-2). |
 | `backend/migrations/0002_station_detail.sql` | RPC `station_detail(in_id)` — todos los combustibles de una estación (FM-5). |
+| `backend/migrations/0003_expose_fuel_raw.sql` | Añade `fuel_raw` (nombre MIMIT original) a las RPC; drop+recreate por cambio de tipo de retorno. |
+| `backend/migrations/0004_stations_by_ids.sql` | RPC `stations_by_ids(in_ids, in_fuel, in_self_only)` — precios de un lote de estaciones (favoritos), filtrado en servidor; mismo shape que `nearby_stations`, `distance_m = 0` (FAV-PRICE). |
 | `backend/sync/parse.mjs` | Parse CSV pipe-separated; salta `Estrazione`+cabecera; valida coords (NF6); dtComu (FM-3). |
 | `backend/sync/fuel-mapping.mjs` | `normalizeFuel` descCarburante→FuelType (ADR-003) (FM-3). |
 | `backend/sync/sync.mjs` | Descarga MIMIT → upsert stations + reemplazo prices + `sync_runs` (service_role) (FM-3). |
