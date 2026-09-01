@@ -22,6 +22,7 @@ struct MapView: View {
     @State private var showingList = false
     @State private var showingFavorites = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Map(position: $camera) {
@@ -46,6 +47,7 @@ struct MapView: View {
                 listButton
                 favoritesButton
                 layersButton
+                locationSearchButton
                 settingsButton
             }
             .padding(.leading, Spacing.s4)
@@ -60,6 +62,25 @@ struct MapView: View {
                     set: { store.send(.sortOrderChanged($0)) }
                 )
             )
+        }
+        // Oculta mapa+controles+filtros a VoiceOver mientras el overlay bloqueante
+        // está presente: un `.overlay` por sí solo tapa píxeles y toques, pero no el
+        // árbol de accesibilidad (review RELEASE-001 F1-F2, C-3). Va antes del propio
+        // `.overlay` de abajo para no ocultar también la tarjeta.
+        .accessibilityHidden(store.locationPermissionDenied)
+        .overlay {
+            // Sin ningún contexto de ubicación (ni permiso ni ciudad buscada), el mapa
+            // muestra Roma sin relación con el usuario: bloquea mapa, controles Y la
+            // barra de filtros (ajustar combustible/radio no tiene sentido si no se ve
+            // nada en pantalla) hasta que elija una de las dos salidas
+            // (LOCATION-FALLBACK-001 parte 3). Va DESPUÉS de `.safeAreaInset` a
+            // propósito: así cubre también la `FiltersView` del inset inferior.
+            if store.locationPermissionDenied {
+                LocationPromptOverlay(
+                    onEnableLocation: { store.send(.openLocationSettingsTapped) },
+                    onSearchCity: { store.send(.locationSearchButtonTapped) }
+                )
+            }
         }
         .sheet(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
             StationDetailView(store: detailStore)
@@ -86,6 +107,22 @@ struct MapView: View {
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: Binding(
+            get: { store.isShowingLocationSearch },
+            set: { if !$0 { store.send(.locationSearchDismissed) } }
+        )) {
+            LocationSearchView(
+                isSearching: store.isSearchingLocation,
+                errorMessage: store.locationSearchError,
+                onSubmit: { query in store.send(.locationSearchSubmitted(query)) },
+                onClose: { store.send(.locationSearchDismissed) }
+            )
+            // `[.medium, .large]`, no solo `.medium`: con el teclado levantado (la
+            // vista se autoenfoca en `onAppear`) el detent medium tapaba el botón
+            // "Cerca" en iPhone SE/13 mini (review RELEASE-001 F1-F2, M-3).
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showingFavorites) {
             FavoritesView(
                 favorites: store.favoriteDisplays,
@@ -103,6 +140,10 @@ struct MapView: View {
             .presentationDragIndicator(.visible)
         }
         .onAppear { store.send(.onAppear) }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            store.send(.appBecameActive)
+        }
         .onChange(of: store.recenter) { _, target in
             guard let target else { return }
             let region = MKCoordinateRegion(
@@ -182,6 +223,15 @@ struct MapView: View {
         .accessibilityLabel("Tipo di mappa")
     }
 
+    private var locationSearchButton: some View {
+        Button {
+            store.send(.locationSearchButtonTapped)
+        } label: {
+            Image(systemName: "magnifyingglass").font(.fmHeadline).mapControlChrome()
+        }
+        .accessibilityLabel("Cerca una città")
+    }
+
     private var settingsButton: some View {
         Button {
             store.send(.delegate(.settingsTapped))
@@ -218,7 +268,7 @@ struct MapView: View {
             kind == .error ? Color(.errorSurface) : Color(.surfaceElevated),
             in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
         )
-        .elevation(.e2)
+        .elevation(.e2, in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous))
         .padding(.top, Spacing.s2)
     }
 }
@@ -247,7 +297,7 @@ private extension View {
             .foregroundStyle(Color(.brandTint))
             .frame(width: 44, height: 44)
             .background(Color(.surfaceElevated), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .elevation(.e2)
+            .elevation(.e2, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .contentShape(Rectangle())
     }
 }

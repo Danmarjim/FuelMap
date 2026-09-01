@@ -8,15 +8,35 @@
 import ComposableArchitecture
 import SwiftUI
 
-/// Enlaces legales del paywall.
-///
-/// Falta la privacy policy: no existe URL todavía (FM-14). Apple la exige para publicar,
-/// así que es deuda bloqueante de submission, no de desarrollo.
+/// Enlaces legales de la app.
 enum LegalURLs {
     /// EULA estándar de Apple: válido cuando la app no aporta uno propio.
     static let eula = URL(
         string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
     )! // swiftlint:disable:this force_unwrapping
+
+    /// GitHub Pages desde `/docs` (it/es/en en una sola página) — RELEASE-001 F2.
+    static let privacyPolicy = URL(
+        string: "https://danmarjim.github.io/FuelMap/privacy-policy.html"
+    )! // swiftlint:disable:this force_unwrapping
+}
+
+/// Fila de enlaces legales — antes duplicada en `PaywallView`/`SettingsView` con
+/// orden y estilo distintos (Apple/App Review ven las dos); review RELEASE-001
+/// F1-F2, reuso #6.
+struct LegalLinksRow: View {
+    var body: some View {
+        HStack(spacing: Spacing.s4) {
+            Link(destination: LegalURLs.privacyPolicy) {
+                Text("Privacy")
+            }
+            Link(destination: LegalURLs.eula) {
+                Text("Condizioni d'uso")
+            }
+        }
+        .font(.fmCaption)
+        .foregroundStyle(Color(.textTertiary))
+    }
 }
 
 /// Paywall del pago único "senza pubblicità" (PREMIUM-001 §P4).
@@ -158,18 +178,14 @@ struct PaywallView: View {
             }
             .disabled(store.isBusy)
 
-            Link(destination: LegalURLs.eula) {
-                Text("Condizioni d'uso")
-                    .font(.fmCaption)
-                    .foregroundStyle(Color(.textTertiary))
-            }
+            LegalLinksRow()
         }
         .padding(.horizontal, Spacing.s5)
         .padding(.top, Spacing.s3)
         .padding(.bottom, Spacing.s5)
         .background(Color(.surfaceElevated))
         .overlay(alignment: .top) {
-            Rectangle().fill(Color(.separator)).frame(height: 1)
+            HairlineDivider()
         }
     }
 

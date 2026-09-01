@@ -139,7 +139,7 @@ struct StationDetailView: View {
         } else {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 if index > 0 {
-                    Rectangle().fill(Color(.separator)).frame(height: 1).padding(.horizontal, Spacing.s5)
+                    HairlineDivider().padding(.horizontal, Spacing.s5)
                 }
                 priceRow(row)
             }
@@ -198,7 +198,7 @@ struct StationDetailView: View {
     @ViewBuilder
     private func addressRow(_ station: Station) -> some View {
         if let address = station.address {
-            Rectangle().fill(Color(.separator)).frame(height: 1).padding(.horizontal, Spacing.s5)
+            HairlineDivider().padding(.horizontal, Spacing.s5)
             Button {
                 requestDirections()
             } label: {

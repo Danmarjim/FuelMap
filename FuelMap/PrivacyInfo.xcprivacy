@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	Privacy manifest del TARGET de la app (RELEASE-001 F2). No declara el uso que
+	hacen GoogleMobileAds/UserMessagingPlatform/Supabase: cada SDK trae su propio
+	PrivacyInfo.xcprivacy embebido, que Apple fusiona automáticamente con este en
+	build time. Aquí solo va lo que FuelMap.swift usa directamente.
+
+	Revisar antes de enviar a review (FM-14): esto es un borrador razonado a partir
+	de las categorías documentadas por Apple, no una revisión legal.
+	-->
+
+	<!-- Ubicación e identificador de publicidad: no ligados a una identidad
+	     (la app no tiene cuentas de usuario). El identificador de dispositivo
+	     solo se comparte con Google/AdMob tras consentimiento (UMP) + ATT. -->
+	<key>NSPrivacyTracking</key>
+	<true/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array>
+		<dict>
+			<!-- Coarse, no Precise: `LocationClient.swift` pide
+			     `kCLLocationAccuracyHundredMeters`, no la máxima precisión
+			     disponible — declarar Precise sería declarar de más sobre lo que
+			     realmente se recoge (review RELEASE-001 F1-F2, M-11). -->
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeCoarseLocation</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyCollectedDataType</key>
+			<string>NSPrivacyCollectedDataTypeDeviceID</string>
+			<key>NSPrivacyCollectedDataTypeLinked</key>
+			<false/>
+			<key>NSPrivacyCollectedDataTypeTracking</key>
+			<true/>
+			<key>NSPrivacyCollectedDataTypePurposes</key>
+			<array>
+				<string>NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- UserDefaults: único uso directo en el código de la app (flag de onboarding,
+	     `Core/Onboarding/OnboardingStorage.swift`). Acceso propio, sin app groups. -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

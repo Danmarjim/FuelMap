@@ -13,6 +13,17 @@ struct AppView: View {
     @Bindable var store: StoreOf<AppFeature>
 
     var body: some View {
+        Group {
+            if store.showOnboarding {
+                OnboardingView(store: store.scope(state: \.onboarding, action: \.onboarding))
+            } else {
+                mainContent
+            }
+        }
+        .onAppear { store.send(.onAppear) }
+    }
+
+    private var mainContent: some View {
         VStack(spacing: 0) {
             MapView(store: store.scope(state: \.map, action: \.map))
             if !store.bannerAdUnitID.isEmpty {
@@ -21,7 +32,7 @@ struct AppView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color(.surfaceSecondary))
                     .overlay(alignment: .top) {
-                        Rectangle().fill(Color(.separator)).frame(height: 1)
+                        HairlineDivider()
                     }
             }
         }
@@ -42,7 +53,6 @@ struct AppView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .onAppear { store.send(.onAppear) }
     }
 }
 

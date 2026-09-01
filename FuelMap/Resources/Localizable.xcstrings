@@ -192,6 +192,55 @@
         }
       }
     },
+    "Attiva la posizione" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on location"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activa la ubicación"
+          }
+        }
+      }
+    },
+    "Attiva la posizione per continuare" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on location to continue"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activa la ubicación para continuar"
+          }
+        }
+      }
+    },
+    "Attiva posizione" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on location"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar ubicación"
+          }
+        }
+      }
+    },
     "attivo" : {
 
     },
@@ -279,6 +328,39 @@
         }
       }
     },
+    "Cerca" : {
+      "comment" : "Botón de búsqueda manual de ciudad",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar"
+          }
+        }
+      }
+    },
+    "Cerca una città" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search a city"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar una ciudad"
+          }
+        }
+      }
+    },
     "Chiudi" : {
       "localizations" : {
         "en" : {
@@ -295,6 +377,23 @@
         }
       }
     },
+    "Ci serve per mostrarti i distributori più vicini a te e ordinarli per distanza." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We use it to show you the nearest stations and sort them by distance."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La usamos para mostrarte las gasolineras más cercanas y ordenarlas por distancia."
+          }
+        }
+      }
+    },
     "Condizioni d'uso" : {
       "localizations" : {
         "en" : {
@@ -307,6 +406,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Condiciones de uso"
+          }
+        }
+      }
+    },
+    "Continua" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar"
           }
         }
       }
@@ -436,6 +552,23 @@
         }
       }
     },
+    "Es. Milano, Barcellona…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E.g. Milan, Barcelona…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "P. ej. Milán, Barcelona…"
+          }
+        }
+      }
+    },
     "Filtra solo le stazioni self-service" : {
       "localizations" : {
         "en" : {
@@ -483,6 +616,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "FuelMap sin anuncios"
+          }
+        }
+      }
+    },
+    "FuelMap ti mostra i distributori più vicini a te. Senza la posizione, puoi comunque cercare una città." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FuelMap shows you the nearest stations. Without location, you can still search for a city."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FuelMap te muestra las gasolineras más cercanas. Sin ubicación, puedes buscar una ciudad."
           }
         }
       }
@@ -792,6 +941,23 @@
         }
       }
     },
+    "Nessun risultato per questa ricerca." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No results for this search."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin resultados para esta búsqueda."
+          }
+        }
+      }
+    },
     "Nessuna richiesta di tracciamento" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -995,6 +1161,23 @@
         }
       }
     },
+    "Prezzi ufficiali del MIMIT, aggiornati ogni giorno: te li mostriamo sulla mappa, senza dover cercare." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Official MIMIT prices, updated every day: we show them on the map, no searching needed."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Precios oficiales del MIMIT, actualizados a diario: te los mostramos en el mapa, sin tener que buscar."
+          }
+        }
+      }
+    },
     "Prezzo" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1110,6 +1293,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restaurar compras"
+          }
+        }
+      }
+    },
+    "Salta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saltar"
           }
         }
       }
@@ -1245,6 +1444,23 @@
     "Tocca per ingrandire" : {
 
     },
+    "Trova il distributore più conveniente" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Find the cheapest station"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encuentra la gasolinera más barata"
+          }
+        }
+      }
+    },
     "Un pagamento unico, per sempre" : {
       "localizations" : {
         "en" : {
@@ -1297,6 +1513,74 @@
     },
     "Via Roma 42 · aggiornato 4 ore fa" : {
 
+    },
+    "Privacy" : {
+      "comment" : "Enlace a la política de privacidad — igual en it/es/en",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad"
+          }
+        }
+      }
+    },
+    "Pagina" : {
+      "comment" : "Indicador de página del onboarding",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Página"
+          }
+        }
+      }
+    },
+    "1 di 2" : {
+      "comment" : "Indicador de página del onboarding",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 of 2"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 de 2"
+          }
+        }
+      }
+    },
+    "2 di 2" : {
+      "comment" : "Indicador de página del onboarding",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 of 2"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 de 2"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

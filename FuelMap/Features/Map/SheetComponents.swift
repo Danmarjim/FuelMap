@@ -7,6 +7,16 @@
 
 import SwiftUI
 
+/// Línea separadora de 1pt. Repetida 6 veces sin este componente (dos copias byte a
+/// byte en `FavoritesView`/`StationListView`) — review RESTYLE-001 D-2 / RELEASE-001
+/// F1-F2. Sin padding propio: cada sitio aplica el suyo (`.leading`, `.horizontal`,
+/// ninguno), que ya difería entre ellos antes de este componente.
+struct HairlineDivider: View {
+    var body: some View {
+        Rectangle().fill(Color(.separator)).frame(height: 1)
+    }
+}
+
 /// Etiqueta de nivel de precio: forma + palabra sobre fondo tintado (redundancia
 /// daltónica). Design system `tier-tag`.
 struct TierTag: View {

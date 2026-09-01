@@ -61,7 +61,7 @@ struct StationListView: View {
     }
 
     private var separator: some View {
-        Rectangle().fill(Color(.separator)).frame(height: 1).padding(.leading, 60)
+        HairlineDivider().padding(.leading, 60)
     }
 
     private func rowButton(_ station: Station) -> some View {

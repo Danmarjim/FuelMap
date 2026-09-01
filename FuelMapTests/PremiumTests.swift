@@ -46,7 +46,9 @@ struct PremiumTests {
             $0.purchaseClient.entitlementUpdates = { updates }
         }
 
-        await store.send(.onAppear)
+        await store.send(.onAppear) {
+            $0.didAppear = true
+        }
         await store.receive(\.entitlementLoaded) {
             $0.isPremium = true
         }
@@ -68,7 +70,9 @@ struct PremiumTests {
             $0.purchaseClient.entitlementUpdates = { updates }
         }
 
-        await store.send(.onAppear)
+        await store.send(.onAppear) {
+            $0.didAppear = true
+        }
         await store.receive(\.entitlementLoaded) {
             $0.bannerAdUnitID = "test"
         }
@@ -97,7 +101,9 @@ struct PremiumTests {
             $0.purchaseClient.entitlementUpdates = { updates }
         }
 
-        await store.send(.onAppear)
+        await store.send(.onAppear) {
+            $0.didAppear = true
+        }
         await store.receive(\.entitlementLoaded) {
             $0.isPremium = true
         }
@@ -147,7 +153,9 @@ struct PremiumTests {
             $0.purchaseClient.entitlementUpdates = { updates }
         }
 
-        await store.send(.onAppear)
+        await store.send(.onAppear) {
+            $0.didAppear = true
+        }
         await store.receive(\.entitlementLoaded) {
             $0.bannerAdUnitID = "test"
         }

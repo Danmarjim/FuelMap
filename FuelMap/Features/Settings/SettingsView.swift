@@ -31,6 +31,7 @@ struct SettingsView: View {
                         premiumCTA
                     }
                     attribution
+                    legal
                     version
                 }
                 .padding(.horizontal, Spacing.s5)
@@ -118,6 +119,13 @@ struct SettingsView: View {
             Color(.surfaceSecondary),
             in: RoundedRectangle(cornerRadius: Radius.lg, style: .continuous)
         )
+    }
+
+    // MARK: - Legale
+
+    private var legal: some View {
+        LegalLinksRow()
+            .frame(maxWidth: .infinity)
     }
 
     private var version: some View {

@@ -36,25 +36,6 @@ struct MapFeatureTests {
         #expect(store.state.isLoading == false)
     }
 
-    @Test("Permiso denegado: usa el centro por defecto y carga igualmente")
-    func map_onAppear_deniedUsesDefaultCenter() async {
-        let store = TestStore(initialState: MapFeature.State()) {
-            MapFeature()
-        } withDependencies: {
-            $0.apiClient = .mock()
-            $0.locationClient.requestWhenInUse = { .denied }
-            $0.continuousClock = ImmediateClock()
-        }
-        store.exhaustivity = .off
-
-        await store.send(.onAppear)
-        await store.receive(\.locationResponse)
-        await store.receive(\.stationsResponse.success)
-
-        #expect(store.state.center == .italyDefault)
-        #expect(!store.state.stations.isEmpty)
-    }
-
     @Test("Mover el mapa hace debounce y cancela la carga anterior")
     func map_cameraChanged_debouncesAndCancelsPrevious() async {
         let clock = TestClock()

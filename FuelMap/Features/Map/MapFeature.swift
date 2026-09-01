@@ -6,7 +6,9 @@
 //
 
 import ComposableArchitecture
+import CoreLocation
 import Foundation
+import UIKit
 
 /// Feature principal: mapa con gasolineras y precios (RFC §6.2).
 @Reducer
@@ -27,6 +29,9 @@ struct MapFeature {
         /// Objetivo de recentrado one-shot (p. ej. ubicación del usuario al arrancar).
         var recenter: Coordinate?
         var didRequestLocation = false
+        /// El usuario denegó (o tiene restringido) el permiso de ubicación: se muestra
+        /// Roma por defecto y un banner con acceso directo a Ajustes.
+        var locationPermissionDenied = false
         var sortOrder: StationSort = .price
         /// Tipo de mapa (estándar / híbrido / satélite) — control de capas.
         var mapStyle: MapStyleOption = .standard
@@ -38,6 +43,13 @@ struct MapFeature {
         /// Puede no incluir un favorito si no vende ese combustible.
         var favoriteStations: [Station] = []
         var isLoadingFavoritePrices = false
+        var isSearchingLocation = false
+        var locationSearchError: String?
+        /// La hoja de búsqueda la abre/cierra el reducer, no un `@State` de la vista:
+        /// así el cierre en éxito es explícito (`handleLocationSearchResponse`), no
+        /// inferido de `isSearching`+`error` cambiando en el mismo frame (review
+        /// RELEASE-001 F1-F2, M-1).
+        var isShowingLocationSearch = false
 
         /// Elementos del mapa: estaciones individuales o clusters según el zoom (FM-15).
         var mapItems: [MapItem] {
@@ -72,6 +84,17 @@ struct MapFeature {
     enum Action: Equatable {
         case onAppear
         case locationResponse(Coordinate?)
+        case locationPermissionDenied
+        /// El permiso quedó resuelto (concedido/denegado/restringido) — puede venir
+        /// del propio `.onAppear` o, si el onboarding lo pidió primero, reenviado por
+        /// `AppFeature` tras `.onboarding(.delegate(.finished))`. Nadie vuelve a
+        /// llamar a `requestWhenInUse()` una segunda vez para el mismo lanzamiento.
+        case locationPermissionResolved(CLAuthorizationStatus)
+        case openLocationSettingsTapped
+        /// La app vuelve a primer plano: si aún no hay ubicación real del usuario,
+        /// comprueba si concedió el permiso desde Ajustes (incluso si mientras tanto
+        /// buscó una ciudad a mano — eso no sustituye la ubicación real).
+        case appBecameActive
         case mapCameraChanged(center: Coordinate, span: Double)
         case stationsResponse(Result<[Station], APIError>)
         case stationTapped(Station)
@@ -88,6 +111,12 @@ struct MapFeature {
         case favoritePricesResponse(Result<[Station], APIError>)
         case favoriteSelected(FavoriteStationInfo)
         case reload
+        /// Búsqueda manual de ciudad/dirección (para quien deniega el permiso, o
+        /// simplemente quiere mirar otra zona).
+        case locationSearchButtonTapped
+        case locationSearchDismissed
+        case locationSearchSubmitted(String)
+        case locationSearchResponse(Result<Coordinate, GeocodingError>)
         case delegate(Delegate)
     }
 
@@ -103,9 +132,13 @@ struct MapFeature {
     @Dependency(\.apiClient) var apiClient
     @Dependency(\.locationClient) var locationClient
     @Dependency(\.favoritesClient) var favoritesClient
+    @Dependency(\.geocodingClient) var geocodingClient
+    @Dependency(\.openURL) var openURL
     @Dependency(\.continuousClock) var clock
 
-    private enum CancelID { case reload, favoritePrices }
+    /// No `private`: `MapFeature+Loading.swift`/`MapFeature+LocationSearch.swift`
+    /// (otros archivos) necesitan referenciarla en `.cancellable(id:)`.
+    enum CancelID { case reload, favoritePrices, locationSearch }
 
     var body: some ReducerOf<Self> {
         Scope(state: \.filters, action: \.filters) {
@@ -119,23 +152,50 @@ struct MapFeature {
                 return .merge(
                     .run { send in
                         let status = await locationClient.requestWhenInUse()
-                        switch status {
-                        case .authorizedWhenInUse, .authorizedAlways:
-                            await send(.locationResponse(try? await locationClient.currentLocation()))
-                        default:
-                            await send(.locationResponse(nil))
-                        }
+                        await send(.locationPermissionResolved(status))
                     },
                     .send(.loadFavorites)
                 )
+
+            case let .locationPermissionResolved(status):
+                // Idempotente: si ya se resolvió (p. ej. lo trajo el onboarding antes
+                // de que este `MapView` llegara a montarse), no hace nada más aquí —
+                // el `.onAppear` que lo disparó ya puso `didRequestLocation = true`.
+                state.didRequestLocation = true
+                return resolveLocationEffect(for: status)
 
             case let .locationResponse(coordinate):
                 if let coordinate {
                     state.center = coordinate
                     state.userLocation = coordinate
                     state.recenter = coordinate
+                    state.locationPermissionDenied = false
                 }
                 return load(&state)
+
+            case .locationPermissionDenied:
+                state.locationPermissionDenied = true
+                return load(&state)
+
+            case .openLocationSettingsTapped:
+                return .run { _ in
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    await openURL(url)
+                }
+
+            case .appBecameActive:
+                // No basta con mirar `locationPermissionDenied`: una búsqueda manual lo
+                // limpia sin que haya ubicación real. Lo que importa es si ya tenemos
+                // `userLocation` — si no, comprueba si concedió el permiso en Ajustes.
+                guard state.userLocation == nil else { return .none }
+                return .run { send in
+                    switch locationClient.authorizationStatus() {
+                    case .authorizedWhenInUse, .authorizedAlways:
+                        await send(.locationResponse(try? await locationClient.currentLocation()))
+                    default:
+                        break
+                    }
+                }
 
             case let .mapCameraChanged(center, span):
                 // El span (zoom) se actualiza siempre para reclusterizar; el centro y la
@@ -215,6 +275,22 @@ struct MapFeature {
             case .reload:
                 return load(&state)
 
+            case .locationSearchButtonTapped:
+                state.isShowingLocationSearch = true
+                state.locationSearchError = nil
+                return .none
+
+            case .locationSearchDismissed:
+                state.isShowingLocationSearch = false
+                state.locationSearchError = nil
+                return .none
+
+            case let .locationSearchSubmitted(query):
+                return searchLocation(&state, query: query)
+
+            case let .locationSearchResponse(result):
+                return handleLocationSearchResponse(&state, result: result)
+
             case .delegate:
                 return .none
 
@@ -266,97 +342,20 @@ struct MapFeature {
         }
     }
 
-    /// Lanza la consulta de estaciones, cancelando cualquier carga en vuelo.
-    /// Con `debounced` espera ~400 ms (para no saturar al mover el mapa).
-    private func load(_ state: inout State, debounced: Bool = false) -> Effect<Action> {
-        state.isLoading = true
-        let center = state.center
-        let radius = state.filters.radiusKm
-        let fuel = state.filters.fuel
-        let selfOnly = state.filters.selfOnly
-        return .run { send in
-            if debounced {
-                try await clock.sleep(for: .milliseconds(400))
+    /// Único punto que decide qué hacer con un `CLAuthorizationStatus` ya resuelto —
+    /// antes estaba escrito dos veces (en `.onAppear` y en `appBecameActive`).
+    private func resolveLocationEffect(for status: CLAuthorizationStatus) -> Effect<Action> {
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            return .run { send in
+                await send(.locationResponse(try? await locationClient.currentLocation()))
             }
-            do {
-                let stations = try await apiClient.nearbyStations(center, radius, fuel, selfOnly)
-                await send(.stationsResponse(.success(stations)))
-            } catch let error as APIError {
-                await send(.stationsResponse(.failure(error)))
-            } catch {
-                await send(.stationsResponse(.failure(.network(error.localizedDescription))))
-            }
-        }
-        .cancellable(id: CancelID.reload, cancelInFlight: true)
-    }
-
-    /// Trae los precios en vivo de los favoritos para el combustible/self activos.
-    /// Sin favoritos, limpia el estado y no hace red.
-    private func loadFavoritePrices(_ state: inout State) -> Effect<Action> {
-        let ids = state.favorites.map(\.id)
-        guard !ids.isEmpty else {
-            state.favoriteStations = []
-            state.isLoadingFavoritePrices = false
-            return .none
-        }
-        state.isLoadingFavoritePrices = true
-        let fuel = state.filters.fuel
-        let selfOnly = state.filters.selfOnly
-        return .run { send in
-            do {
-                let stations = try await apiClient.stationsByIDs(ids, fuel, selfOnly)
-                await send(.favoritePricesResponse(.success(stations)))
-            } catch let error as APIError {
-                await send(.favoritePricesResponse(.failure(error)))
-            } catch {
-                await send(.favoritePricesResponse(.failure(.network(error.localizedDescription))))
-            }
-        }
-        .cancellable(id: CancelID.favoritePrices, cancelInFlight: true)
-    }
-}
-
-// MARK: - Helpers
-
-/// Valores por defecto del mapa.
-enum MapDefaults {
-    /// Apertura inicial (latitudeDelta) ≈ 5 km de alto: vista local centrada en el
-    /// usuario, menos pines a la vista que el zoom anterior (~2 km).
-    static let span: Double = 0.02
-}
-
-/// Tipo de mapa para el control de capas (RESTYLE-001 R2).
-enum MapStyleOption: String, CaseIterable, Sendable, Equatable {
-    case standard
-    case hybrid
-    case imagery
-
-    var label: String {
-        switch self {
-        case .standard: return String(localized: "Standard", comment: "Tipo de mapa: estándar")
-        case .hybrid: return String(localized: "Ibrida", comment: "Tipo de mapa: híbrido")
-        case .imagery: return String(localized: "Satellite", comment: "Tipo de mapa: satélite")
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .standard: return "map"
-        case .hybrid: return "map.fill"
-        case .imagery: return "globe.americas.fill"
+        case .denied, .restricted:
+            return .send(.locationPermissionDenied)
+        default:
+            return .send(.locationResponse(nil))
         }
     }
 }
 
-/// Criterio de orden de la lista de estaciones (RFC §4 FM-10).
-enum StationSort: String, CaseIterable, Sendable, Equatable {
-    case price
-    case distance
-
-    var label: String {
-        switch self {
-        case .price: return String(localized: "Prezzo")
-        case .distance: return String(localized: "Distanza")
-        }
-    }
-}
+// Tipos auxiliares (`MapDefaults`, `MapStyleOption`, `StationSort`) en `MapTypes.swift`.
