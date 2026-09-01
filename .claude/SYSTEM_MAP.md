@@ -1,7 +1,7 @@
 # System Map — FuelMap
 
 > Module map and key file reference. Agents read from here to navigate the codebase without loading the entire repo.
-> Last updated: 2026-06-08 (RESTYLE-001 — design system aplicado R0–R6)
+> Last updated: 2026-09-01 (RELEASE-001 Fase 3 — polish/HIG + remediación review)
 
 ## Design System layer
 
@@ -12,10 +12,10 @@
 | `Assets.xcassets/Colors/*.colorset` | tokens | 35 Color sets semánticos claro/oscuro (brand, surfaces, text, lines, price tiers, functional, `goldInk`). Tiers *fill* = valor único (mode-independent). `Color(.brandPrimary)`. |
 | `DesignSystem/Spacing.swift` | enum | Escala 4pt (`s1`…`s10`). |
 | `DesignSystem/Radius.swift` | enum | Radios sm/md/lg/xl/pill. |
-| `DesignSystem/Elevation.swift` | modifier | `.elevation(.e1/.e2/.e3/.pin/.pinSelected/.sheet)`; profundiza en oscuro. |
+| `DesignSystem/Elevation.swift` | modifier | `.elevation(.e1/.e2/.e3/.pin/.pinSelected/.sheet)`; profundiza en oscuro. `.elevation(_:in:)` añade además el hairline de contraste en oscuro sobre la forma dada — superficies planas sin borde propio (RESTYLE-001 D-1, RELEASE-001 F1-F2). |
 | `DesignSystem/Typography.swift` | ext Font | Roles SF Pro mapeados a text styles (Dynamic Type) + fuentes de precio tabulares. |
 | `DesignSystem/TokenGallery.swift` | View (#Preview) | Galería de validación de la paleta claro/oscuro. |
-| `Features/Map/SheetComponents.swift` | Views | `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow` (con `unavailableNote` para filas sin precio), `SkeletonRow/List` + `shimmer()`. |
+| `Features/Map/SheetComponents.swift` | Views | `TierTag`, `BestFlag`, `SortPill`, `SheetHeader`, `SheetEmptyState`, `FreshnessPill`, `StationRow` (con `unavailableNote` para filas sin precio), `SkeletonRow/List` + `shimmer()`, `HairlineDivider` (RESTYLE-001 D-2, RELEASE-001 F1-F2). |
 
 > **En construcción.** Esqueleto TCA en marcha (FM-1). Las tablas marcadas `<!-- VERIFY -->` se rellenan conforme se implementan sus issues.
 
@@ -23,7 +23,9 @@
 
 | Archivo | Responsibility |
 |---|---|
-| `project.yml` | Spec XcodeGen: target iOS 17, Swift 6 strict concurrency, paquete SPM TCA. Genera `FuelMap.xcodeproj` (no commiteado). |
+| `project.yml` | Spec XcodeGen: target iOS 17, Swift 6 strict concurrency, paquete SPM TCA. Genera `FuelMap.xcodeproj` (no commiteado). `GAD_APPLICATION_IDENTIFIER` bifurcado por `settings.configs.Release` (RELEASE-001 F2). |
+| `FuelMap/PrivacyInfo.xcprivacy` | Manifest de privacidad del target (RELEASE-001 F2) — borrador razonado, revisar antes de submission (FM-14). |
+| `docs/privacy-policy.html` | Privacy policy it/es/en, servida vía GitHub Pages (`https://danmarjim.github.io/FuelMap/`) — repo público desde 09-01 (RELEASE-001 F2). |
 | `FuelMap/App/FuelMapApp.swift` | `@main` App; crea el `Store` raíz (inline, a promover en FM-7). |
 | `FuelMap/App/AppFeature.swift` | Reducer raíz (esqueleto). Compondrá Map/Filters/Detail. |
 | `FuelMap/App/AppView.swift` | Vista raíz; placeholder `ContentUnavailableView`, alojará `MapView` (FM-7). |
@@ -59,9 +61,14 @@ Core/
 | `App/AppView.swift` | View | Raíz; `MapView` + `BannerAdView` debajo (fuera del mapa) (FM-7/FM-11). |
 | `Core/Ads/AdClient.swift` | `@Dependency` | `start`/`requestConsent` (UMP→ATT)/`bannerAdUnitID` (TEST); `AdConsentCoordinator` (FM-11). |
 | `Core/Ads/BannerAdView.swift` | UIViewRepresentable | `GADBannerView` (banner AdMob) (FM-11). |
-| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). Precios en vivo de favoritos: `favoriteStations` + efecto cancelable, refresco al cambiar filtro (FAV-PRICE). `MapStyleOption`/`StationSort`/`MapDefaults`. |
+| `Map/MapFeature.swift` | Reducer | State del mapa; permisos→ubicación, carga con debounce/cancelación, guard de jitter, `@Presents detail`, error, `mapStyle` (capas, R2). Precios en vivo de favoritos: `favoriteStations` + efecto cancelable, refresco al cambiar filtro (FAV-PRICE). `locationPermissionDenied` + `appBecameActive` (guard por `userLocation == nil`, no por `locationPermissionDenied` — review C-2) + `locationPermissionResolved` (recibido del onboarding, no vuelve a pedir el permiso — review C-1) + `isShowingLocationSearch` (el reducer posee la presentación — review M-1) (LOCATION-FALLBACK-001, RELEASE-001 F1-F2). |
+| `Map/MapTypes.swift` | tipos | `MapDefaults`/`MapStyleOption`/`StationSort`, extraídos de `MapFeature.swift` por `file_length` (RELEASE-001 F1-F2). |
+| `Map/MapFeature+Loading.swift` | efectos | `load`/`loadFavoritePrices` extraídos del reducer principal (`type_body_length`) (LOCATION-FALLBACK-001). |
+| `Map/MapFeature+LocationSearch.swift` | efectos | Búsqueda manual de ciudad/dirección (`geocodingClient`): centra el mapa, limpia `locationPermissionDenied` si estaba activo, mensaje si no hay resultados (LOCATION-FALLBACK-001). |
 | `Map/MapFeature+Favorites.swift` | derivados | `favoriteDisplays` (precio asc, desempate por distancia, sin precio al final), `cheapestFavoriteID`, `favoritePriceTiers` + `FavoriteDisplay` (lleva `distance` ya calculada) (FAV-PRICE). |
-| `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado (Reduce Motion), `.mapStyle`, status banner flotante + float controls (lista/favoritos/capas) (R2). |
+| `Map/MapView.swift` | View | `Map` iOS 17+, annotations de precio, `onMapCameraChange`, recentrado (Reduce Motion), `.mapStyle`, status banner flotante (loading/error/vacío) + float controls (lista/favoritos/capas/buscar/settings); `scenePhase` dispara `appBecameActive` (R2, LOCATION-FALLBACK-001). |
+| `Map/LocationSearchView.swift` | View | Hoja de búsqueda manual (campo + botón); la presentación la posee `MapFeature` (`isShowingLocationSearch`), no un `@Environment(\.dismiss)` local. `ScrollView` para tamaños de accesibilidad; botón con `accessibilityLabel` fijo (LOCATION-FALLBACK-001, RELEASE-001 F1-F2). |
+| `Map/LocationPromptOverlay.swift` | View | Blur + tarjeta bloqueante sin contexto de ubicación: activar permiso o buscar ciudad, mismo peso visual. Cubre mapa, controles flotantes y barra de filtros (se aplica tras `.safeAreaInset`); `.accessibilityAddTraits(.isModal)` + `ScrollView`; sin reducer propio (LOCATION-FALLBACK-001, RELEASE-001 F1-F2). |
 | `Map/MapClustering.swift` | lógica | `MapItem`/`StationCluster` + grid clustering por zoom (ADR-004, FM-15). |
 | `Map/ClusterPin.swift` | View | Cluster: burbuja `surfaceElevated` + cápsula `da X` con tier de la más barata (R2). |
 | `Map/PriceTiers.swift` | lógica | Terciles → `PriceTier` con `fill`/`ink`/`surface` + `symbolName` (▲●▼) + `label` localizada (daltónico-seguro, R1). |
@@ -75,6 +82,11 @@ Core/
 | `StationDetail/StationDetailFeature.swift` | Reducer | Carga detalle completo (`stationDetail`); deep link Apple Maps (`openURL`); `dismiss` (FM-9). |
 | `StationDetail/StationDetailView.swift` | View | Hoja: hero + precios por variante (Self/Servito, filtrado destacado), `FreshnessPill`, CTA Indicazioni→selector de navegación (R4). |
 | `StationDetail/NavApp.swift` | enum | Apple/Google/Waze: deep links de indicaciones + probe de instalación (FM-17). |
+| `Settings/SettingsView.swift` | View | Hoja plana (sin reducer propio, callbacks) desde float control (gear) en `MapView`: entry point al paywall, Ripristina acquisti, atribución IODL 2.0, sección legal (Privacy/Condizioni), versión (PREMIUM-001, RELEASE-001 F2). |
+| `Onboarding/OnboardingFeature.swift` | Reducer | 2 páginas (bienvenida/ubicación); `pageChanged(Page)` unifica swipe y botón. `skipTapped`/`enableLocationTapped` piden permiso por igual — `Delegate.finished(CLAuthorizationStatus)` lleva el status resuelto para que `MapFeature` no lo vuelva a pedir (review C-1); sin pitch de premium (RELEASE-001 F1, F1-F2). |
+| `Onboarding/OnboardingView.swift` | View | `TabView` paginado (swipe) + page control propio (cápsulas animadas, respeta Reduce Motion); mismo lenguaje visual que `PaywallView` (hero circular + título + subtítulo + CTA) (RELEASE-001 F1). |
+| `Premium/PaywallFeature.swift` | Reducer | Estados loading/error+retry/purchasing/pending/success; precio desde `product.displayPrice` (nunca hardcodeado); restore obligatorio (ADR-006, PREMIUM-001). |
+| `Premium/PaywallView.swift` | View | Propuesta de valor + CTA compra + restore + `LegalLinksRow` (`LegalURLs`: EULA + privacy policy, `docs/privacy-policy.html` vía GitHub Pages; componente compartido con `SettingsView`, antes duplicado — review reuso #6); `#Preview` por estado (PREMIUM-001, RELEASE-001 F1-F2). |
 
 ---
 
@@ -101,7 +113,11 @@ Core/
 | `Network/SupabaseConfig.swift` | config | URL + anon key (read-only/RLS) + `SupabaseClient` compartido (FM-5). |
 | `Network/APIClient+Mock.swift` | mock + fixtures | `APIClient.mock()` (previews/tests); `StationFixtures` (6 estaciones de Roma) (FM-5). |
 | `Location/LocationClient.swift` | `@Dependency` | Wrapper CoreLocation (coordinador `@MainActor` + `LockIsolated` para status síncrono); `authorizationStatus`/`requestWhenInUse`/`currentLocation`; `LocationError` (FM-6). |
-| `Ads/AdClient.swift` | `@Dependency` | <!-- VERIFY --> Integración AdMob banner (FM-11) |
+| `Location/GeocodingClient.swift` | `@Dependency` | Búsqueda de lugares por texto libre vía `MKLocalSearch`; `search(query) -> Coordinate`; `GeocodingError.noResults` (LOCATION-FALLBACK-001). |
+| `Ads/AdClient.swift` | `@Dependency` | Integración AdMob banner + UMP/ATT; `bannerAdUnitID`/`detailAdUnitID` leídos del Info.plist (`FuelMapBannerAdUnitID`/`FuelMapDetailAdUnitID`, bifurcados por config en `project.yml` — única fuente de verdad, ya no `#if DEBUG` tras review A-4) (FM-11, RELEASE-001 F1-F2). |
+| `Purchases/PurchaseClient.swift` | `@Dependency` | StoreKit 2: `premiumProduct`/`purchase`/`restore`/`isPremium` (síncrono, cacheado)/`refreshEntitlement`/`entitlementUpdates`. `PurchaseError` tipado. `liveValue` StoreKit 2 · `previewValue` free+mock · `testValue` unimplemented (ADR-006, PREMIUM-001). |
+| `Purchases/PurchaseStore.swift` | actor/coordinador | `LockIsolated<Bool>` + listener `Transaction.updates`; arranca en `.task` raíz (PREMIUM-001). |
+| `Onboarding/OnboardingStorage.swift` | `@Dependency` | Flag `hasCompletedOnboarding` en `UserDefaults` (preferencia de app, no dato de dominio) (RELEASE-001 F1). |
 
 ---
 

@@ -523,16 +523,473 @@
 
 ---
 
+## Plan Iteration: PREMIUM-001 — Capa premium (pago único, sin ads) con StoreKit 2 — Completed
+**Date:** 2026-09-01
+
+### Architect (ADR-006)
+- StoreKit 2 directo (sin RevenueCat) envuelto en `PurchaseClient` (`@Dependency`); no-consumible `com.danmarjim.fuelmap.premium.noads` (~€3,99). Favoritos siguen gratis e ilimitados (gancho de retención, no se capan).
+- Entitlement se resuelve **antes** del flujo de consentimiento (UMP/ATT) en `AppFeature.onAppear`: premium no ve formulario GDPR ni prompt de tracking.
+- Cache síncrona del entitlement (`LockIsolated<Bool>` + listener de `Transaction.updates`), mismo patrón que `LocationClient`.
+- Hallazgo bloqueante resuelto en desarrollo: builds headless firman ad-hoc sin entitlements → StoreKit no da productos/compras. Se arregla con `FuelMap.entitlements` aplicado solo a simulador (`CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]`); en device/TestFlight los inyecta el provisioning profile.
+
+### Developer (implementation)
+- `Core/Purchases/{PurchaseClient,PurchaseStore}.swift`, `Features/Premium/{PaywallFeature,PaywallView}.swift`, `Features/Settings/SettingsView.swift` (hoja plana con callbacks, sin reducer propio — entry point + Ripristina acquisti + atribución IODL 2.0 + versión).
+- `AppFeature`: `isPremium`/`bannerAdUnitID` en State; premium → sin `adUnitID`/consent/start; free → orden `adUnitID` → `requestConsent()` → `start()`. Guard de idempotencia en `entitlementChanged` (evita re-disparar consent/start si el stream repite el mismo valor).
+- `StationDetailFeature`: `adUnitID` gateado por `purchaseClient.isPremium()`.
+- `FuelMap.storekit` + `project.yml` (`storeKitConfiguration` en el scheme) — compra/cancela/reembolsa/restaura en simulador sin ASC ni PLA.
+- Strings de paywall/settings localizadas it/es/en (verificado en el catálogo: 8/8 claves con las 3 locales).
+
+### QA (tests)
+- `PremiumTests`, `PurchaseStoreTests` (contra `.storekit` local), `PaywallFeatureTests`. **75 tests en 20 suites, todos verdes** (61 → 75). SwiftLint 0.
+- Verificado en esta sesión (2026-09-01): `xcodegen generate` + `xcodebuild test` (iPhone 17 sim) → **TEST SUCCEEDED**, `swiftlint lint` → 0 violaciones.
+
+### Review
+- Límite de `SKTestSession` documentado: `refundTransaction` no propaga a `currentEntitlements` en simulador (test de reembolso vía sesión descartado a propósito; la conducta real se verifica por el listener en `AppFeature`, con test).
+- **No verificado en esta sesión** (requiere Xcode + interacción manual, no headless): tap-through real del paywall (CTA → hoja de compra de Apple → banner desaparece) y compra en device con cuenta sandbox.
+- Deuda de diseño conocida y aceptada: hueco vertical en el paywall en pantallas altas (cosmético, no bloquea).
+- Verdict: **APPROVED**. Ver ADR-006.
+
+---
+
+## Plan Iteration: RELEASE-001 Fase 1 — Onboarding — Completed
+**Date:** 2026-09-01
+
+### Architect (decisiones tomadas en directo, ejecución sin PRD/RFC separado)
+- 2 pantallas (no 3): bienvenida (propuesta de valor) + priming de ubicación. Se
+  descartó la pantalla de selección de combustible planteada en `.claude/plan.md`
+  para mantenerlo "sencillo, nada fancy" (pedido explícito del usuario) — el
+  combustible por defecto ya es ajustable en `FiltersFeature` sin fricción.
+- Sin pitch de premium en el onboarding (coherente con ADR-006: el onboarding vende
+  la app, no la compra).
+- Siempre saltable; sin paginación por swipe (un botón basta para 2 pasos).
+- Flag `hasCompletedOnboarding` en `UserDefaults` vía `OnboardingStorage`
+  (`@Dependency`, mismo patrón que el resto de clients), no SwiftData — es
+  preferencia de app, no dato de dominio.
+- **Decisión no obvia**: el consentimiento UMP/ATT (ya disparado desde
+  `AppFeature.onAppear` para el entitlement premium) se **difiere** hasta que el
+  onboarding termina — apilar el formulario GDPR sobre la pantalla de bienvenida
+  habría sido la regresión de UX que este plan buscaba evitar. Cubierto con guards
+  en `entitlementLoaded`/`entitlementChanged` + retomado en
+  `.onboarding(.delegate(.finished))`.
+- `LocationClient.requestWhenInUse` ya era idempotente (`guard current == .notDetermined`)
+  → `MapFeature` no necesitó tocarse: si el onboarding ya pidió el permiso, la
+  llamada de `MapFeature.onAppear` simplemente devuelve el estado actual sin
+  relanzar el prompt del sistema.
+
+### Developer (implementation)
+- `Core/Onboarding/OnboardingStorage.swift` — `@Dependency` sobre `UserDefaults`.
+- `Features/Onboarding/{OnboardingFeature,OnboardingView}.swift` — reducer de 2
+  páginas + vista con el mismo lenguaje visual que `PaywallView` (hero circular +
+  título + subtítulo + CTA), sin componentes ni animaciones propias.
+- `AppFeature`: `showOnboarding`/`onboarding` en `State`; resuelto originalmente en
+  `.onAppear` desde `onboardingStorage` (mismo patrón que el entitlement premium).
+  **Superado por el fix de esta misma fase** (ver entrada "Fix — el permiso de
+  ubicación se pedía de golpe..." más abajo): pasó al `init()`, síncrono. Guards en
+  `entitlementLoaded`/`entitlementChanged` para diferir `enableAds` mientras
+  `showOnboarding` es `true`.
+- `AppView`: `Group` raíz que muestra `OnboardingView` a pantalla completa o el
+  contenido normal (mapa + banner + sheets), según `showOnboarding`.
+- 8 strings nuevas it/es/en en `Localizable.xcstrings` (insertadas preservando el
+  formato exacto de Xcode — `" : "` con espacio — para no generar un diff de
+  reformateo masivo del catálogo).
+- `Delegate`/`Page` de `OnboardingFeature` viven al nivel del reducer, no anidados
+  en `Action`/`State` (límite de anidamiento de SwiftLint, mismo patrón que
+  `MapFeature.Delegate`).
+
+### QA (tests)
+- `OnboardingFeatureTests` (4): avance de página, skip sin tocar ubicación, activar
+  ubicación pide permiso y termina, "no ahora" termina sin pedir permiso.
+- `AppFeatureTests`: nuevo test de regresión para el diferido de ads/consent
+  durante el onboarding (entitlement se resuelve pero no dispara `enableAds` hasta
+  `.onboarding(.delegate(.finished))`).
+- `OnboardingStorage.testValue.hasCompleted` devuelve `true` por defecto (para no
+  romper los tests existentes que no son sobre onboarding); los tests de onboarding
+  lo sobreescriben a `false` explícitamente.
+- **80 tests en 21 suites, todos verdes** (75 → 80). SwiftLint 0. `xcodebuild test`
+  (iPhone 17 sim): **TEST SUCCEEDED**.
+
+### Review
+- Build + tests + lint verificados en esta sesión tras el refactor de nesting
+  (`Delegate`/`Page` sacados de `Action`/`State`) y el fix de línea larga con
+  string multilínea en `OnboardingView`.
+- **No verificado en simulador de forma interactiva** (headless): instalación
+  limpia mostrando las 2 pantallas, skip funcional a ojo, y que el permiso de
+  ubicación no se pide dos veces en un lanzamiento real. Recomendado antes de
+  TestFlight (FM-14 ya incluye una verificación manual similar para el paywall).
+- Verdict: **APPROVED** (pendiente de verificación visual manual, no bloqueante
+  para seguir con la Fase 2 del plan).
+
+### Iteración — navegación por swipe + page control animado (mismo día)
+- **Petición del usuario**: permitir scroll horizontal como navegación y añadir un
+  page control animado (los botones seguían siendo obligatorios).
+- `OnboardingFeature.Page` pasa a `Hashable, CaseIterable` (requerido por
+  `TabView(selection:)` y el `ForEach` del page control).
+- **Unificación de acciones**: `continueTapped` se elimina en favor de un único
+  `pageChanged(Page)` — el botón "Continua" y el swipe del `TabView` son el mismo
+  gesto para el reducer, no dos conceptos distintos.
+- `OnboardingView`: `TabView` con `.tabViewStyle(.page(indexDisplayMode: .never))`
+  ligado a `store.page` vía `Binding` manual (envía `.pageChanged`); page control
+  propio (cápsulas, no los puntos nativos) para mantener el lenguaje visual del
+  design system — cápsula ancha + `brandPrimaryFill` en la página activa, punto
+  `separator` en las demás, con `.spring` (respeta Reduce Motion). El footer
+  también anima el cambio de botones entre páginas.
+- Tests: `onboarding_continue_advancesToLocationPage` migrado a `.pageChanged`;
+  nuevo `onboarding_swipeBack_returnsToWelcomePage` (mismo reducer, sin lógica
+  nueva que probar más allá del cambio de página en cualquier dirección).
+- **81 tests en 21 suites, todos verdes** (80 → 81). SwiftLint 0. Build verde.
+- Verdict: **APPROVED** (verificación visual manual sigue pendiente, igual que la
+  entrada anterior).
+
+### Fix — el permiso de ubicación se pedía de golpe en el paso 1 (mismo día)
+- **Reportado por el usuario** al probar en simulador: el alert de ubicación saltaba
+  en la primera pantalla del onboarding, no en la segunda.
+- **Causa raíz**: `showOnboarding` se inicializaba en `false` por defecto y solo se
+  corregía dentro del reducer al procesar `.onAppear`. SwiftUI pinta `body` **antes**
+  de que `.onAppear` llegue a ejecutarse, así que en el primer frame `AppView`
+  renderizaba `mainContent` (con `MapView`) en vez de `OnboardingView`. El `onAppear`
+  de `MapView` dispara `locationClient.requestWhenInUse()` de inmediato — de ahí el
+  permiso "de golpe", visualmente superpuesto al primer frame del onboarding.
+- **Fix**: `AppFeature.State` gana un `init()` propio que resuelve `showOnboarding`
+  leyendo `onboardingStorage` de forma **síncrona** (es una lectura de `UserDefaults`
+  sin red, no hay razón para diferirla como el entitlement de StoreKit). Ya no hay
+  frame intermedio con el valor por defecto equivocado.
+- **A petición del usuario**: se quita el botón "Non ora"/"Ahora no" del segundo
+  paso — `enableLocationTapped` es ahora el único camino hacia adelante ahí (si el
+  usuario deniega en el alert del sistema, el onboarding termina igual vía
+  `.locationResponse`); retroceder a la bienvenida (swipe) y usar "Salta" sigue
+  siendo la vía de escape completa.
+- Tests: nuevo `appFeature_state_resolvesShowOnboardingSynchronouslyAtInit` (construye
+  `AppFeature.State()` bajo `withDependencies` sin enviar ninguna acción — ancla la
+  regresión exacta). `appFeature_firstLaunch_defersAdsUntilOnboardingFinishes`
+  ajustado: ya no espera que `.onAppear` mute `showOnboarding` (viene del init).
+  `onboarding_notNow_finishesWithoutRequestingPermission` eliminado (acción borrada).
+- **81 tests en 21 suites** (mismo total: -1 test de `notNow`, +1 de regresión).
+  SwiftLint 0. Build verde.
+- Verdict: **APPROVED**.
+
+---
+
+## Plan Iteration: LOCATION-FALLBACK-001 — Plan para permiso de ubicación denegado — Completed
+**Date:** 2026-09-01
+
+### Contexto (pregunta de producto del usuario)
+- "¿Qué ofrecemos a quien no acepta el permiso de ubicación?" — hoy la app caía en
+  silencio a Roma sin explicar nada ni dar alternativa.
+- Decisión de alcance con el usuario: dos partes, ambas en esta iteración —
+  (1) banner + deep link a Ajustes (arreglo barato, reutiliza el fallback existente);
+  (2) búsqueda manual de ciudad/dirección (la que de verdad sirve a quien nunca va a
+  dar el permiso). No hubo pregunta de producto adicional: el orden y el alcance de
+  cada parte se decidieron en la conversación previa.
+
+### Parte 1 — Banner + Ajustes
+- `MapFeature`: nuevo `locationPermissionDenied: Bool` + acción `locationPermissionDenied`
+  (status `.denied`/`.restricted` en `onAppear`) — sigue cargando estaciones en Roma
+  (`load(&state)`), pero ahora lo marca. Nueva acción `appBecameActive`: al volver a
+  primer plano con el permiso antes denegado, reconsulta `authorizationStatus()` y
+  recupera la ubicación real si el usuario lo concedió desde Ajustes (sin esto, el
+  botón de Ajustes sería un callejón sin salida — volver a la app no habría hecho nada).
+- `MapView`: `statusBar` gana una rama con CTA "Impostazioni" (`UIApplication
+  .openSettingsURLString`); `@Environment(\.scenePhase)` dispara `appBecameActive`.
+  El `banner(...)` helper gana un botón de acción opcional (antes solo título+icono).
+- Prioridad de banners sin cambios de criterio: loading > error > **denegado** > vacío
+  (denegado es contexto persistente, no debe tapar loading/error transitorios).
+
+### Parte 2 — Búsqueda manual de ciudad/dirección
+- **Decisión no obvia**: el botón de búsqueda queda visible siempre, no solo cuando
+  el permiso está denegado — cualquier usuario puede querer mirar precios de otra
+  ciudad (viaje, etc.), no es exclusivo del caso de fallback.
+- `Core/Location/GeocodingClient.swift` (`@Dependency` nuevo): `search(query) async
+  throws -> Coordinate` vía `MKLocalSearch`; `GeocodingError.noResults`.
+- `MapFeature`: `locationSearchSubmitted(String)` / `locationSearchResponse(Result<...>)`;
+  `isSearchingLocation` / `locationSearchError` en `State`. Éxito → centra el mapa,
+  recarga estaciones, y **limpia `locationPermissionDenied`** (ya no tiene sentido
+  seguir explicando "mostrando Roma" si el usuario acaba de elegir dónde mirar).
+- `LocationSearchView.swift` (nueva): hoja con un campo + botón; se cierra sola al
+  tener éxito (`onChange` de `isSearching`, sin nuevo estado ad-hoc). Botón de lupa
+  añadido al stack de controles flotantes del mapa (junto a capas/settings).
+
+### Refactor de tamaño (SwiftLint `type_body_length`, límite 250)
+- `MapFeature.swift` superaba el límite tras añadir los casos nuevos → `load`/
+  `loadFavoritePrices` extraídos a `MapFeature+Loading.swift` (mismo patrón que
+  `MapFeature+Favorites.swift`); `CancelID` deja de ser `private` (visible entre
+  archivos de la extensión).
+- `MapFeatureTests.swift` superaba el límite → los tests de permiso/búsqueda se
+  movieron a `LocationPermissionTests.swift` y `LocationSearchTests.swift` (mismo
+  patrón que `FavoritePricesTests.swift`).
+
+### QA (tests)
+- `LocationPermissionTests` (4): denegado marca el banner y carga igual; restringido
+  igual que denegado; volver de Ajustes con permiso ya concedido recupera ubicación
+  y quita el banner; `appBecameActive` sin denegación previa no toca nada (dependencia
+  `unimplemented` para probarlo).
+- `LocationSearchTests` (3): búsqueda con éxito centra+carga+limpia el banner; sin
+  resultados marca error sin tocar el centro (aserción por `!= nil`, no por string
+  exacto — el runner puede correr en `es`, ver nota abajo); consulta en blanco no
+  llama a la dependencia (`unimplemented`).
+- Nota de aprendizaje: un test inicial comparaba `locationSearchError` contra el
+  literal en italiano y falló porque el runner resolvió `String(localized:)` en
+  español — mismo motivo por el que otros tests del repo (`map_stationsResponseFailure
+  _setsError`) ya comprobaban solo `!= nil`. Corregido para seguir ese patrón.
+- **87 tests en 23 suites, todos verdes** (81 → 87). SwiftLint 0. Build verde
+  (iPhone 17 sim).
+
+### Review
+- No verificado en simulador de forma interactiva (headless): que el botón "Impostazioni"
+  abra Ajustes de verdad, que volver de Ajustes con el permiso concedido recupere la
+  ubicación en pantalla, y el flujo completo de búsqueda (teclado, resultado, cierre
+  de hoja). Recomendado antes de TestFlight, acumulándose con las verificaciones
+  manuales ya pendientes de onboarding y del paywall.
+- Verdict: **APPROVED**.
+
+### Parte 3 — Blur + tarjeta bloqueante (mismo día, a petición del usuario)
+- **Cambio de dirección de producto**: "sin el permiso la app tiene poco sentido" →
+  en vez de solo un banner discreto, difuminar el mapa entero con una tarjeta central
+  hasta que exista **algún contexto de ubicación** (real o buscado a mano). Decisión
+  explícita: las dos salidas (activar permiso / buscar ciudad) con el mismo peso
+  visual — no es solo "empuja a dar el permiso", la búsqueda manual de Parte 2 sigue
+  siendo una salida legítima, no un premio de consolación.
+- `LocationPromptOverlay.swift` (nuevo): `Rectangle().fill(.ultraThinMaterial)` a
+  pantalla completa + tarjeta centrada (icono + título + subtítulo + 2 botones).
+  Sin reducer propio — puramente presentacional, gateada por `store.locationPermissionDenied`
+  (ya probado en `LocationPermissionTests`; no necesita tests nuevos).
+- **La tarjeta reemplaza, no complementa, el banner de Parte 1**: mostrar el aviso
+  fino Y la tarjeta grande a la vez habría sido un mensaje duplicado. Se retira la
+  rama `locationPermissionDenied` de `statusBar` y el `banner(...)` helper vuelve a
+  su forma simple (sin `actionTitle`/`action`, que solo esa rama usaba).
+- Strings huérfanas retiradas del catálogo (`Impostazioni`, `Mostrando Roma — attiva
+  la posizione`) — la tarjeta reutiliza `"Attiva posizione"` (ya localizada, la misma
+  copy que en el onboarding) y `"Cerca una città"` (ya localizada, título de la hoja
+  de búsqueda) en vez de inventar botones nuevos. 2 strings nuevas: título y subtítulo
+  de la tarjeta.
+- El overlay se sitúa **después** de `.safeAreaInset(edge: .bottom)`: bloquea el mapa,
+  los controles flotantes (lista/favoritos/capas/buscar/settings) **y** la barra de
+  filtros inferior. Corrección a petición del usuario el mismo día: inicialmente el
+  overlay iba antes del `safeAreaInset` y dejaba `FiltersView` fuera de su alcance —
+  "no tiene sentido dejar ajustar filtros si no ve nada en pantalla". El orden de los
+  modifiers en SwiftUI importa aquí: un `.overlay` aplicado después de
+  `.safeAreaInset` cubre la vista compuesta completa (mapa + inset), no solo el mapa.
+
+### QA (tests)
+- Sin tests nuevos: el estado que gatea la tarjeta (`locationPermissionDenied`) ya
+  está cubierto por `LocationPermissionTests`/`LocationSearchTests`; la vista en sí
+  no tiene lógica propia que probar (mismo criterio que `OnboardingView`).
+- **87 tests en 23 suites** (sin cambio de número — es un cambio de vista pura).
+  SwiftLint 0. Build verde.
+
+### Review
+- No verificado en simulador de forma interactiva (headless): que el blur bloquee de
+  verdad la interacción con el mapa/controles, que los dos botones de la tarjeta
+  funcionen, y que desaparezca sola tras conceder el permiso o buscar con éxito.
+  Se acumula con el resto de verificaciones manuales pendientes.
+- Verdict: **APPROVED**.
+
+---
+
+## Plan Iteration: RELEASE-001 Fase 2 — Ads en producción — Completed
+**Date:** 2026-09-01
+
+### Contexto
+- Cuenta AdMob creada por el usuario en esta sesión (app iOS "FuelMap", sin publicar
+  aún — límites de servicio activos hasta enlazarla a una ficha de App Store en la
+  Fase 4; no bloquea nada de lo de aquí). Guiado paso a paso: apps.admob.com → Add
+  app (iOS, no publicada) → 2 ad units de banner (mapa/detalle) → Privacy & messaging
+  (mensaje GDPR, requisito para que el UMP ya integrado tenga qué mostrar).
+
+### Developer (implementation)
+- **IDs reales**: `GADApplicationIdentifier` (`ca-app-pub-6310894186551423~8828201061`)
+  y los 2 ad units (`.../4014858083` mapa, `.../9555141528` detalle) cableados.
+  Bifurcación Debug/Release: `#if DEBUG` en `AdClient.swift` (TEST siempre en Debug,
+  reales solo en Release — nunca reportar tráfico de desarrollo a la cuenta real);
+  `GAD_APPLICATION_IDENTIFIER` en Info.plist vía `settings.configs.Release` de
+  `project.yml` (mismo mecanismo, a nivel de build setting).
+- **`SKAdNetworkItems`**: añadido con el ID de Google (`cstr6suwn9.skadnetwork`) —
+  suficiente sin mediation (la app solo usa AdMob directo); ampliar la lista si se
+  añaden redes de mediation en el futuro.
+- **`PrivacyInfo.xcprivacy`** (nuevo): declara solo lo que el código de la app usa
+  directamente (`UserDefaults` en `OnboardingStorage`, razón `CA92.1`) y los tipos de
+  dato recogidos (ubicación precisa para funcionalidad, device ID para publicidad de
+  terceros con `NSPrivacyTracking: true`). No declara el uso de GoogleMobileAds/UMP/
+  Supabase — cada SDK trae su propio manifest, Apple los fusiona en build time.
+  XcodeGen lo detectó solo como recurso (sin configuración adicional en `project.yml`).
+- **Bloqueante no previsto**: AdMob exigió una URL de privacy policy para completar
+  la configuración de la app — deuda ya anotada desde PREMIUM-001 (`LegalURLs`
+  comentaba "Apple la exige para publicar", ahora también la exige AdMob). Resuelto
+  en la misma sesión:
+  - `docs/privacy-policy.html` (it/es/en en una página, sin JS ni dependencias
+    externas) redactada a partir del comportamiento real de la app (sin cuentas,
+    ubicación no persistida, favoritos solo locales, ads vía AdMob con consentimiento,
+    compras vía StoreKit sin datos de pago propios, atribución MIMIT/IODL 2.0).
+  - **Repo `Danmarjim/FuelMap` pasado a público** (decisión del usuario, confirmada
+    explícitamente) para poder servir GitHub Pages desde `/docs` en el plan gratuito
+    — verificado antes de cambiar la visibilidad que no hay secretos commiteados
+    (solo la `anon key` de Supabase, documentada como segura para el cliente; la
+    `service_role key` solo se referencia por nombre de variable de entorno, nunca
+    su valor). Publicada en `https://danmarjim.github.io/FuelMap/privacy-policy.html`
+    (verificado HTTP 200).
+  - `LegalURLs.privacyPolicy` (nuevo) enlazado desde el paywall (junto al EULA) y
+    desde la hoja de Ajustes (`SettingsView`, sección "legal" nueva) — visible para
+    todo el mundo, no solo para quien abre el paywall.
+- Commit `83f05a8` en `main`: **solo** `docs/privacy-policy.html` (el rename de
+  `plan.md` a `plan-archive/PREMIUM-001.md`, ya en el índice de una sesión anterior,
+  se coló en el mismo commit — sin impacto, era un movimiento pendiente de comitear
+  igualmente). El resto del trabajo de esta sesión (onboarding, location-fallback,
+  ads) sigue sin commitear, a la espera de que el usuario lo pida explícitamente.
+
+### QA (tests)
+- Sin tests nuevos: IDs/config no son lógica de dominio. Verificación por build:
+  `xcodebuild build` en **Debug** (IDs de TEST) y **Release** (IDs reales) — ambos
+  verdes; `strings` sobre el binario de Release confirma que los ad units reales
+  quedan embebidos solo ahí, no en Debug. `plutil` sobre el Info.plist compilado
+  confirma `GADApplicationIdentifier`/`SKAdNetworkItems` resueltos correctamente en
+  cada configuración.
+- **87 tests en 23 suites** (sin cambio — no hay reducers nuevos). SwiftLint 0.
+
+### Review
+- El `PrivacyInfo.xcprivacy` es un borrador razonado a partir de las categorías
+  documentadas por Apple, no una revisión legal — anotado explícitamente en el
+  propio archivo y aquí para que se revise antes de la submission (FM-14).
+- No verificado en dispositivo/TestFlight (no disponible en esta sesión): que el
+  banner real sirva impresiones de verdad (los límites de servicio de AdMob seguirán
+  activos hasta enlazar la app en la Fase 4, así que el volumen real será bajo al
+  principio de todos modos) y que el formulario UMP de producción cargue el mensaje
+  GDPR configurado en la cuenta.
+- Verdict: **APPROVED**.
+
+---
+
+## Plan Iteration: RELEASE-001 Fase 3 — Polish/HIG pass (ios-reviewer) + remediación — Completed
+**Date:** 2026-09-01
+
+### Architect (evaluación con agentes, según lo acordado en `workflow-mode`)
+- `ios-reviewer` lanzado sobre el diff acumulado sin commitear de Onboarding +
+  LOCATION-FALLBACK-001 + Ads producción, más la deuda diferida de RESTYLE-001
+  (ring de elevación oscuro, dedup `separator`). Corrió `/simplify` primero (norma
+  del proyecto). Informe completo: `.claude/reviews/2026-09-01-release-001-f1-f2-review.md`.
+- Veredicto: **Changes Requested** — 3 críticos, 7 altos, 12 medios, 9 nits, 2 deuda
+  RESTYLE-001 (ambas vivas). Arquitectura correcta, sin data races/force-unwraps/
+  retain cycles nuevos; los defectos eran de flujo de producto y accesibilidad, no
+  de diseño de fondo.
+
+### Developer (remediación — todos los bloqueantes + varios no bloqueantes de bajo coste)
+- **C-1** (el permiso salía sin priming al pulsar "Salta", y competía con UMP/ATT):
+  `OnboardingFeature` unifica `skipTapped`/`enableLocationTapped` — ambos piden el
+  permiso y terminan; `Delegate.finished` ahora lleva el `CLAuthorizationStatus`
+  resuelto. `AppFeature` lo reenvía a `MapFeature` como `locationPermissionResolved`;
+  `MapFeature.onAppear` ya no vuelve a llamar a `requestWhenInUse()` si el onboarding
+  ya lo resolvió. Nuevo helper `resolveLocationEffect(for:)` (antes duplicado entre
+  `.onAppear` y `appBecameActive`, reuso #5 del informe).
+- **C-2** (`locationPermissionDenied` significaba tres cosas; una búsqueda manual
+  dejaba `appBecameActive` sin salida): guard cambiado a `state.userLocation == nil`.
+  El rediseño completo con un `enum LocationContext` queda como deuda de arquitectura
+  (ver Altitud #18 del informe) — no se hizo aquí a propósito, es un cambio mayor.
+- **C-3** (el blur bloqueante no bloqueaba VoiceOver): `.accessibilityHidden` sobre
+  mapa+controles+filtros mientras el overlay está presente, `.accessibilityAddTraits(
+  .isModal)` en la tarjeta.
+- **A-1** (`.onAppear` de `AppFeature` no era idempotente): `didAppear` en `State`,
+  mismo patrón que `MapFeature.didRequestLocation`.
+- **A-2** (`SKAdNetworkItems` solo con el ID de Google): lista completa de ~50 IDs de
+  la documentación de Google para AdMob (`developers.google.com/admob/ios/ios14`,
+  consultada 09-01) en `project.yml`.
+- **A-3** (CTA secundario del overlay, 2,92:1 en claro — no pasa WCAG AA): la
+  corrección sugerida por el propio informe (`brandPrimary`) no cambiaba nada — es
+  el mismo `#0091FF` que `brandTint` en claro, verificado en los colorsets. Se usó
+  `brandPrimaryPressed` (#005BB8, 5,93:1) en su lugar.
+- **A-4** (dos interruptores Debug/Release para la misma decisión de ads): única
+  fuente de verdad en `project.yml` (`GAD_BANNER_UNIT_ID`/`GAD_DETAIL_UNIT_ID` por
+  config → `FuelMapBannerAdUnitID`/`FuelMapDetailAdUnitID` en Info.plist,
+  `AdClient` los lee de ahí). El `#if DEBUG` desaparece.
+- **A-5** (Dynamic Type de accesibilidad recortaba las 3 vistas nuevas): `ScrollView`
+  en `OnboardingView`/`LocationPromptOverlay`/`LocationSearchView`. No se hizo el
+  "badge adaptativo" que también sugería el informe — el recorte era el problema
+  real, el tamaño del icono es cosmético.
+- **A-6** (cualquier fallo de geocoding se leía como "no hay resultados"):
+  `GeocodingError` gana `.network` con mensaje distinto.
+- **A-7 + M-1** (deep link a Ajustes fuera del reducer; hoja de búsqueda cerrada por
+  inferencia): `.openLocationSettingsTapped` vía `@Dependency(\.openURL)`;
+  `isShowingLocationSearch` pasa a `MapFeature.State`, se cierra explícitamente en
+  `.success`.
+- **M-3, M-6, M-7, M-10**: detents `[.medium, .large]` en la búsqueda; "Salta" ahora
+  se renderiza condicionalmente (no `.opacity(0)`, que dejaba el botón en el árbol de
+  accesibilidad) — ya no se muestra en la página 2 porque, tras C-1, "Attiva
+  posizione" hace exactamente lo mismo; `nilIfEmpty` unifica el criterio de trim
+  entre vista y reducer; `CancelID.locationSearch` sustituye al `SearchCancelID`
+  duplicado.
+- **M-5**: page control expuesto a VoiceOver (`accessibilityValue` "1 di 2"/"2 di 2"),
+  punto inactivo pasa de `separator` (1,40:1) a `textTertiary` (3,13:1).
+- **M-4** (parcial): el botón de búsqueda lleva `accessibilityLabel` fijo ("Cerca")
+  aunque muestre un `ProgressView` sin texto. No se implementó el anuncio de
+  accesibilidad del error (`AccessibilityNotification.Announcement`) — queda como
+  deuda menor.
+- **M-11**: `PrivacyInfo.xcprivacy` pasa de `PreciseLocation` a `CoarseLocation`
+  (coherente con `kCLLocationAccuracyHundredMeters`).
+- **D-1** (ring de elevación en oscuro, deuda de RESTYLE-001): `elevation(_:in:)`
+  nuevo en `Elevation.swift` — añade un `strokeBorder` en oscuro sobre la misma forma
+  del fondo. Aplicado a la tarjeta de `LocationPromptOverlay`, el banner de estado y
+  el chrome de los controles flotantes del mapa. No aplicado a los pins (ya tienen
+  su `strokeBorder` de tier) ni al pill de filtros (`.e1`, decorativo, bajo riesgo).
+- **D-2** (dedup `separator`, deuda de RESTYLE-001): `HairlineDivider` en
+  `SheetComponents.swift`, sustituye las 6 copias (`AppView`, `StationDetailView`×2,
+  `FavoritesView`, `StationListView`, `PaywallView`).
+- **Reuso #6**: `LegalLinksRow` sustituye las dos filas de enlaces legales
+  duplicadas (orden y estilo distintos) de `PaywallView`/`SettingsView`.
+- **Nit #8**: reconciliada la entrada de PHASE_LOG de Fase 1 que seguía diciendo que
+  `showOnboarding` se resolvía en `.onAppear` (la corrección real quedó en una
+  entrada de "Fix" posterior).
+- **Diferido a propósito** (documentado, no bloqueante): rediseño con
+  `enum LocationContext` (Altitud #18); `FMButtonStyle`/`BrandIconBadge` compartidos
+  (reuso #1/#2); `SheetEmptyState` con slot de acciones en vez de que
+  `LocationPromptOverlay` reimplemente su propia tarjeta (reuso #3); anuncio de
+  accesibilidad del error de búsqueda (M-4 parcial); `@Shared(.appStorage(...))` en
+  vez de `OnboardingStorage` propio (Altitud #19); helpers de simplificación #8-#17
+  del informe (no afectan corrección).
+- `MapFeature.swift` volvió a superar el límite de 400 líneas (`file_length`) tras
+  los nuevos casos → `MapDefaults`/`MapStyleOption`/`StationSort` extraídos a
+  `MapTypes.swift`.
+
+### QA (tests)
+- Tests existentes actualizados por los cambios de contrato: `OnboardingFeatureTests`
+  (`Delegate.finished` ahora lleva status; skip también pide permiso),
+  `AppFeatureTests`/`PremiumTests` (`didAppear` en los `send(.onAppear)` exhaustivos),
+  `LocationPermissionTests` (el guard de `appBecameActive` cambió de campo).
+- Tests nuevos, todos anclando un hallazgo concreto del informe: segundo `.onAppear`
+  no-op (A-1), `setCompleted()` se llama al terminar el onboarding (M-12),
+  `appBecameActive` tras búsqueda manual sigue recuperando ubicación real (C-2),
+  fallo de red se reporta como error de conexión (A-6), abrir/cerrar la hoja de
+  búsqueda limpia el error y la presentación la posee el reducer (M-1),
+  `openLocationSettingsTapped` abre la URL correcta vía `openURL` (A-7).
+- **95 tests en 23 suites, todos verdes** (87 → 95). SwiftLint 0. Build Debug **y**
+  Release verdes (iPhone 17 sim).
+
+### Review
+- Aprendizaje de proceso: un `store.finish()` sin ningún `store.receive()` explícito
+  no bastó para que `AppFeatureTests.appFeature_firstLaunch_defersAdsUntilOnboardingFinishes`
+  reflejara el estado final de una acción reenviada a `MapFeature` vía `.merge` —
+  hubo que añadir `store.receive()` explícitos para las tres acciones en cascada.
+  Quedó así en el test final: más verboso, pero determinista.
+- No verificado en simulador de forma interactiva (headless), acumulado con lo
+  pendiente de fases anteriores: que "Salta" ya no dispare el permiso sin priming,
+  que el blur bloquee de verdad a VoiceOver, que volver de Ajustes tras una búsqueda
+  manual recupere la ubicación real, y el resto de verificaciones visuales ya
+  anotadas en el Current State.
+- Verdict tras remediación: **APPROVED**.
+
+---
+
 ## Current State
-**Date:** 2026-07-17
+**Date:** 2026-09-01
 - **Restyle visual completo aplicado** (RESTYLE-001, design system "bold/energetic" azul): tokens semánticos claro/oscuro, tiers daltónico-seguros, pins/cluster/chrome nuevos + **control de capas**, barra de filtros, sheets (lista/favoritos/detalle), skeletons, Reduce Motion, Dynamic Type capada en pin. Referencia: `.claude/design/`, ADR-005.
-- iOS: **61 tests** (17 suites), SwiftLint 0. Build verde (iPhone 17 sim). Repo `Danmarjim/FuelMap` al día. ADRs 001–005.
+- **Capa premium entregada** (PREMIUM-001, 09-01): pago único (~€3,99) sin ads vía StoreKit 2 directo; paywall + hoja de ajustes; entitlement resuelto antes de UMP/ATT. Ver ADR-006. Falta la acción del usuario en ASC (aceptar PLA + crear el IAP) antes de TestFlight/producción.
+- **Onboarding entregado** (RELEASE-001 Fase 1, 09-01): 2 pantallas (valor + priming de ubicación), navegables por swipe (`TabView` paginado) o botón, con page control animado (cápsulas) y siempre saltable; sin pitch de premium. El consentimiento UMP/ATT se difiere hasta que el onboarding termina (evita apilar el formulario GDPR sobre la bienvenida). `showOnboarding` se resuelve en el `init()` de `AppFeature.State` (síncrono) tras un bug reportado por el usuario (se pedía el permiso de golpe en el paso 1 por una condición de carrera con el primer frame de SwiftUI). Falta verificación visual manual en simulador (no bloqueante).
+- **Plan para permiso de ubicación denegado** (LOCATION-FALLBACK-001, 09-01): sin contexto de ubicación (ni permiso ni ciudad buscada), el mapa se difumina con una tarjeta bloqueante que ofrece **activar permiso** (Ajustes, `appBecameActive` recupera la ubicación al volver) o **buscar una ciudad** (`GeocodingClient` vía `MKLocalSearch`, salida con el mismo peso, no un consuelo) con el mismo peso visual. El botón de búsqueda queda además disponible siempre en el chrome del mapa, no solo en la tarjeta. Falta verificación visual manual (Ajustes real + blur bloqueando interacción + flujo de búsqueda completo).
+- **Ads en producción** (RELEASE-001 Fase 2, 09-01): cuenta AdMob real creada, App ID + 2 ad units cableados (TEST en Debug / reales en Release, única fuente de verdad en `project.yml` tras la remediación de Fase 3 — ya no `#if DEBUG`), `SKAdNetworkItems` (lista completa de Google), `PrivacyInfo.xcprivacy`. Bloqueante no previsto resuelto: **privacy policy publicada** en `https://danmarjim.github.io/FuelMap/privacy-policy.html` (repo pasado a público para servir GitHub Pages, sin secretos expuestos) y enlazada desde Ajustes + paywall (`LegalLinksRow` compartido). Falta verificar banner real en device/TestFlight y que el UMP cargue el mensaje GDPR configurado en AdMob.
+- **Polish/HIG pass + remediación** (RELEASE-001 Fase 3, 09-01): `ios-reviewer` sobre todo el diff del día → 3 críticos (permiso sin priming al saltar el onboarding, `appBecameActive` roto tras búsqueda manual, blur bloqueante invisible para VoiceOver) + 7 altos, todos remediados. De paso se cerró la deuda diferida de RESTYLE-001 (ring de elevación en oscuro, dedup `separator`). Informe: `.claude/reviews/2026-09-01-release-001-f1-f2-review.md`.
+- iOS: **95 tests** (23 suites), SwiftLint 0. Build verde en Debug y Release (iPhone 17 sim). Repo `Danmarjim/FuelMap` **público** desde hoy; commit `83f05a8` en `main` (solo la privacy policy) — el resto de la sesión (onboarding, location-fallback, ads, remediación) sigue sin commitear. ADRs 001–006.
 - **Backend sync endurecido** (06-09): `download()` con retry+timeout; workflow en actions v5. Cron diario verde, ~23.7k stations / ~92k prices por run.
 - **App icon entregado** (APPICON-001, 07-17): surtidor blanco sobre azure con display oro y € (gasolinera héroe + € = ahorro). Fuente SVG en `.claude/design/appicon/`; el PNG del catálogo se genera desde ahí. Tacha una dependencia de FM-14.
 - **Favoritos con precio en vivo** (FAV-PRICE, 07-17): la hoja ordena por precio (desempate por distancia), marca el más barato y muestra distancia + tier; refresca al cambiar de combustible. Salda la deuda de RESTYLE-001 R4/R6. **`0004_stations_by_ids.sql` aplicada en Supabase y verificada end-to-end en simulador.** Zoom inicial del mapa a ≈5 km (`MapDefaults.span` 0.02).
-- Issues de producto: hechos FM-1…FM-13, FM-15…FM-19. **Restante: FM-14** (App Store prep).
-- **Pendiente usuario:** aplicar `0002_station_detail.sql` si no estaba (aplicarlo **antes** que `0003_expose_fuel_raw.sql`, que hace drop+recreate de las RPC); aceptar PLA Apple (device/TestFlight).
-- **Próximo paso:** FM-14 (IDs AdMob reales, SKAdNetwork, privacy labels, Info.plist l10n, IODL2, TestFlight). Deuda menor: ring de elevación en oscuro (M-4), dedup `separator`; `stations_by_ids` sin `fuel_raw` (irrelevante hoy).
+- Issues de producto: hechos FM-1…FM-13, FM-15…FM-19, PREMIUM-001, RELEASE-001 Fases 1-3 (Onboarding, Ads producción, Polish/HIG), LOCATION-FALLBACK-001. **Restante: FM-14** (App Store prep) + Fase 4 del roadmap de release (ver `.claude/plan.md`).
+- **Pendiente usuario:** aplicar `0002_station_detail.sql` si no estaba (aplicarlo **antes** que `0003_expose_fuel_raw.sql`, que hace drop+recreate de las RPC); aceptar PLA Apple (device/TestFlight/IAP); crear el no-consumible en App Store Connect; completar verificación de cuenta AdMob (datos de pago, cuando quiera cobrar de verdad); verificar visualmente en simulador/device el onboarding, el flujo de permiso denegado/búsqueda manual, y el banner real de ads.
+- **Próximo paso:** RELEASE-001 Fase 4 (`.claude/plan.md`) — App Store submission prep (FM-14): Info.plist l10n, App Privacy en ASC, metadata, capturas, TestFlight, verificar compra real. España queda fuera del release v1 (fast-follow v1.1, ver `.claude/prd/PRD-002-espana.md` cuando exista). Deuda diferida a propósito (documentada en la review de Fase 3): `enum LocationContext` unificado, `FMButtonStyle`/`BrandIconBadge` compartidos, anuncio de accesibilidad del error de búsqueda; `stations_by_ids` sin `fuel_raw` (irrelevante hoy); Info.plist aún solo en italiano (usage strings) — entra en FM-14; `PrivacyInfo.xcprivacy` es borrador razonado, revisar antes de submission.
 
 ---
 
