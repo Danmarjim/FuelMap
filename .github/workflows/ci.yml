@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_PATH: ${{ vars.XCODE_PATH || '/Applications/Xcode_26.6.app' }}
+
+jobs:
+  test:
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s "$XCODE_PATH" && xcodebuild -version
+
+      # El .xcodeproj (y su Package.resolved) no se commitea: la clave de caché sale de project.yml,
+      # que es donde se declaran los paquetes SPM.
+      - name: Cache Swift packages
+        uses: actions/cache@v4
+        with:
+          path: .build/spm
+          key: spm-${{ runner.os }}-${{ hashFiles('project.yml') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Install tools
+        run: |
+          command -v xcodegen >/dev/null || brew install xcodegen
+          command -v swiftlint >/dev/null || brew install swiftlint
+
+      # Rutas explícitas: .swiftlint.yml no declara `included` y el checkout de paquetes en .build/spm
+      # también contiene Swift.
+      - name: SwiftLint
+        run: swiftlint lint --strict --reporter github-actions-logging FuelMap FuelMapTests
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Tests (app + backend/sync)
+        run: scripts/test.sh

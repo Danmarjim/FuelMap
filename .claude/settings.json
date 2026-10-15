@@ -1,5 +1,68 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(xcodegen generate*)",
+      "Bash(xcodebuild *)",
+      "Bash(xcrun simctl *)",
+      "Bash(xcrun xcresulttool *)",
+      "Bash(swiftlint *)",
+      "Bash(scripts/*)",
+      "Bash(./scripts/*)",
+      "Bash(node --test*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git switch *)",
+      "Bash(git checkout -b *)",
+      "Bash(git push -u origin *)",
+      "Bash(git push origin *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh issue *)"
+    ],
+    "ask": [
+      "Edit(.github/**)",
+      "Edit(project.yml)",
+      "Edit(FuelMap/FuelMap.entitlements)",
+      "Edit(backend/migrations/**)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push origin main*)",
+      "Bash(git push origin HEAD:main*)",
+      "Bash(git reset --hard*)",
+      "Bash(rm -rf *)",
+      "Bash(xcodebuild archive*)",
+      "Bash(xcodebuild -exportArchive*)",
+      "Bash(xcrun altool *)",
+      "Bash(gh workflow run *)",
+      "Bash(supabase db push*)",
+      "Bash(node sync.mjs*)",
+      "Bash(npm run sync*)",
+      "Read(./.env*)",
+      "Read(./backend/.env*)",
+      "Read(**/*.p8)",
+      "Read(**/*.p12)",
+      "Read(**/*.mobileprovision)"
+    ]
+  },
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/swiftlint-edited-file.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
